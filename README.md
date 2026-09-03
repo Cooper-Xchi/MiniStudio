@@ -23,10 +23,11 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 初步学习构造、析构、`std::move` 和 `std::unique_ptr`。
 - 完成第一课的 CLion 生命周期调试，观察栈对象、堆对象、`this`、`get()` 和逆序析构。
 - 完成第二课的 `unique_ptr` 移动实验，验证所有权转移、移动后空状态、对象地址稳定和单次析构。
+- 完成第三课的 RAII 与函数所有权边界实验，理解引用借用、按值转移以及所有者离开作用域时的自动释放。
 
-尚未开始 GLFW 或 OpenGL。第二课的代码和概念验收已经通过，课程分支已提交、推送并合并回 `main`；下一门课程尚未开始。
+尚未开始 GLFW 或 OpenGL。第三课的代码和概念验收已经通过，课程分支已提交、推送并合并回 `main`；下一课继续第 1 周的 Sanitizer 故障定位。
 
-仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。第二课分支 `codex/lesson-02-unique-ptr-move` 在合并后继续保留，第一课分支也仍然保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
+仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。第三课分支 `codex/lesson-03-raii-ownership-boundaries` 在合并后继续保留，前两课分支也仍然保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
 ## 构建与运行
 
