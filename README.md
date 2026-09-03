@@ -13,7 +13,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目目前处于第 1 周：**C++ 生命周期、RAII、`std::unique_ptr` 与基本工具链**。
+项目已经完成第 1 周：**C++ 生命周期、RAII、`std::unique_ptr` 与基本工具链**。
 
 已经完成：
 
@@ -24,10 +24,11 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第一课的 CLion 生命周期调试，观察栈对象、堆对象、`this`、`get()` 和逆序析构。
 - 完成第二课的 `unique_ptr` 移动实验，验证所有权转移、移动后空状态、对象地址稳定和单次析构。
 - 完成第三课的 RAII 与函数所有权边界实验，理解引用借用、按值转移以及所有者离开作用域时的自动释放。
+- 完成第四课的 Sanitizer 故障定位实验，使用 AddressSanitizer 定位并修复一次受控的 heap-use-after-free。
 
-尚未开始 GLFW 或 OpenGL。第三课的代码和概念验收已经通过，课程分支已提交、推送并合并回 `main`；下一课继续第 1 周的 Sanitizer 故障定位。
+尚未开始 GLFW 或 OpenGL。第 1 周的四课均已完成并合并回 `main`；下一步是在新的课程分支开始第 2 周。
 
-仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。第三课分支 `codex/lesson-03-raii-ownership-boundaries` 在合并后继续保留，前两课分支也仍然保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
+仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。四个已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
 ## 构建与运行
 
@@ -43,6 +44,18 @@ cmake --build build --parallel
 ```
 
 CLion 可以使用自身提供的 Ninja，并将构建产物放在独立的 `cmake-build-*` 目录中。
+
+需要 AddressSanitizer 和 UndefinedBehaviorSanitizer 时，使用独立构建目录：
+
+```bash
+cmake -S . -B cmake-build-sanitize \
+  -G "Unix Makefiles" \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DMINISTUDIO_ENABLE_SANITIZERS=ON
+
+cmake --build cmake-build-sanitize --parallel
+./cmake-build-sanitize/ministudio
+```
 
 ## 版本路线
 

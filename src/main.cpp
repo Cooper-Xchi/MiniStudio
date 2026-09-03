@@ -15,31 +15,10 @@ struct LifeTimeProbe {
 
     std::string name_;
 };
-
-void observe(const LifeTimeProbe& probe) {
-    std::cout << "observe: " << probe.name_<<'\n';
-}
-
-
-void consume(
-    std::unique_ptr<LifeTimeProbe> probe,
-    bool early_return
-    ) {
-    std::cout << "consume: " << probe->name_<<'\n';
-    if (early_return) {
-        return;
-    }
-}
-
-
-
 int main() {
     auto heap_probe = std::make_unique<LifeTimeProbe>("heap");
-    observe(*heap_probe);
-    if (heap_probe.get() != nullptr) {
-        consume(std::move(heap_probe), true);
-    }
-    std::cout << heap_probe.get()<<'\n';
-    std::cout << "main is ending" << std::endl;
+    LifeTimeProbe* borrowed_probe = heap_probe.get();
+    std::cout << "probe: " << borrowed_probe->name_<<'\n';
+    heap_probe.reset();
     return 0;
 }

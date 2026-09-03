@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 当前稳定分支为 `main`；第三课分支 `codex/lesson-03-raii-ownership-boundaries` 已提交、推送并合并，分支暂时保留。
+- 当前稳定分支为 `main`；第四课分支 `codex/lesson-04-sanitizer-debugging` 已提交、推送并合并，分支继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -141,6 +141,7 @@ cmake-build-*/
 - 编写了项目入口 `README.md`，记录目标、构建方式和当前学习检查点。
 - 项目使用 C++20，并关闭编译器私有语言扩展。
 - Apple Clang/GCC 路径开启 `-Wall -Wextra -Wpedantic`。
+- 增加 `MINISTUDIO_ENABLE_SANITIZERS` CMake 选项；开启时为 Clang/GCC 编译和链接 AddressSanitizer、UndefinedBehaviorSanitizer，并保留帧指针。
 - 已使用终端完成一次实际配置、编译和运行，构建成功且没有警告。
 
 已验证的命令：
@@ -152,6 +153,14 @@ cmake -S . -B build \
 
 cmake --build build --parallel
 ./build/ministudio
+
+cmake -S . -B cmake-build-sanitize \
+  -G "Unix Makefiles" \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DMINISTUDIO_ENABLE_SANITIZERS=ON
+
+cmake --build cmake-build-sanitize --parallel
+./cmake-build-sanitize/ministudio
 ```
 
 第一课验收时的运行输出：
@@ -186,6 +195,14 @@ destroy: heap
 main is ending
 ```
 
+第四课先在 `heap_probe.reset()` 后解引用 `borrowed_probe`，AddressSanitizer 报告 `heap-use-after-free`：对象在 `main.cpp:37` 分配、在 `main.cpp:45` 释放、在 `main.cpp:46` 被非法读取。把借用限定在对象生命周期内后，普通构建和 Sanitizer 构建的验收输出均为：
+
+```text
+construct: heap
+probe: heap
+destroy: heap
+```
+
 ### 已讲解的概念
 
 - CLion、CMake、Ninja、Clang、LLDB 各自的职责。
@@ -206,6 +223,9 @@ main is ending
 - 已区分裸指针保存的对象地址与裸指针变量自身的地址，并理解裸指针不拥有对象、对象销毁后会悬空。
 - 已区分 `const T&` 的非拥有借用、`T*` 的可空非拥有借用，以及 `unique_ptr<T>` 按值传参表达的所有权转移。
 - 已理解 RAII 是把资源释放责任绑定到所有者对象的生命周期；`unique_ptr` 函数参数在提前 `return` 时仍会析构并自动删除其拥有的对象。
+- 已理解 `unique_ptr::reset()` 删除被管理对象并让所有者进入空状态，但之前取得的裸指针仍保存旧地址并成为悬空指针。
+- 已能从 AddressSanitizer 报告中对应非法访问、释放和分配位置，并理解 Sanitizer 依靠运行时插桩发现普通编译通常无法证明的动态生命周期错误。
+- 已理解独立 Sanitizer 构建目录能够隔离编译选项、CMake 缓存和构建产物，也避免把诊断开销默认带入普通构建。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
@@ -229,50 +249,32 @@ struct LifeTimeProbe {
 
     std::string name_;
 };
-
-void observe(const LifeTimeProbe& probe) {
-    std::cout << "observe: " << probe.name_<<'\n';
-}
-
-void consume(
-    std::unique_ptr<LifeTimeProbe> probe,
-    bool early_return
-    ) {
-    std::cout << "consume: " << probe->name_<<'\n';
-    if (early_return) {
-        return;
-    }
-}
-
 int main() {
     auto heap_probe = std::make_unique<LifeTimeProbe>("heap");
-    observe(*heap_probe);
-    if (heap_probe.get() != nullptr) {
-        consume(std::move(heap_probe), true);
-    }
-    std::cout << heap_probe.get()<<'\n';
-    std::cout << "main is ending" << std::endl;
+    LifeTimeProbe* borrowed_probe = heap_probe.get();
+    std::cout << "probe: " << borrowed_probe->name_<<'\n';
+    heap_probe.reset();
     return 0;
 }
 ```
 
-代码已经通过实际配置、编译和运行检查，没有编译警告；`observe` 不转移所有权，`consume` 的参数取得所有权并在提前返回时自动删除对象，回到 `main` 后原指针为空。学习者能够解释不是“普通指针离开作用域就释放”，而是“RAII 所有者离开作用域就释放它拥有的资源”。
+代码已经通过普通构建与 Sanitizer 构建的实际编译和运行检查，没有编译警告或 Sanitizer 报告。`borrowed_probe` 的读取发生在 `heap_probe.reset()` 之前，因此借用没有超过被管理对象的生命周期；`reset()` 随后删除对象并让 `heap_probe` 进入空状态。
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1 周——C++ 生命周期、RAII、智能指针与基本工具链。**
+当前处于：**第 1 周已完成，等待开始第 2 周。**
 
 还没有开始 GLFW 或 OpenGL；不要跳到窗口和三角形。
 
-仓库远端和 AI 约束准备已经完成，初始基线和前三课均已合并到 `main`。第三课已在 `codex/lesson-03-raii-ownership-boundaries` 完成并合并：代码格式检查和实际编译运行通过，学习者能够解释借用、所有权转移、提前返回和 RAII 自动释放。
+仓库远端和 AI 约束准备已经完成，初始基线和第 1 周的四课均已合并到 `main`。
 
-第三课的 Git 收尾已经完成，课程分支保留。下一课继续第 1 周的 Sanitizer 故障定位；开始时必须从最新 `main` 创建新的课程分支，仍不进入 GLFW 或 OpenGL。
+第四课已在 `codex/lesson-04-sanitizer-debugging` 完成并合并：Sanitizer 配置有效，受控的悬空指针访问已被复现、读懂并修复，普通构建和 Sanitizer 构建均运行正常。第 1 周已经完成生命周期、所有权移动、RAII 边界和 Sanitizer 故障定位四项核心练习。下一步由学习者明确开始第 2 周；开始时从最新 `main` 新建课程分支，再进入 GLFW/OpenGL 窗口与上下文，不在当前分支继续开发。
 
 ## 11. 前四周计划
 
 | 周 | 核心目标 | 状态 |
 | --- | --- | --- |
-| 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 进行中；生命周期、所有权移动和 RAII 边界已完成，Sanitizer 尚未完成 |
+| 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 未开始 |
 | 第 3 周 | Shader 编译、VAO/VBO、彩色三角形、错误日志 | 未开始 |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
