@@ -16,6 +16,10 @@ set_target_properties(ministudio PROPERTIES
         CXX_EXTENSIONS OFF
 )
 
+find_package(glfw3 3.4 REQUIRED)
+
+target_link_libraries(ministudio PRIVATE glfw)
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     target_compile_options(ministudio PRIVATE
             -Wall
