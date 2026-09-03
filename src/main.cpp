@@ -18,12 +18,12 @@ void SetContextHints() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 }
 
-int Render() {
-    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniStudio", nullptr, nullptr);
+GLFWwindow* CreateWindow(int width,int height) {
+    GLFWwindow* window = glfwCreateWindow(width, height, "MiniStudio", nullptr, nullptr);
     if (window == nullptr) {
         std::cerr << "GLFW Window creation failed!" << std::endl;
         glfwTerminate();
-        return 1;
+        return nullptr;
     }
     glfwMakeContextCurrent(window);
     int major = glfwGetWindowAttrib(window,GLFW_CONTEXT_VERSION_MAJOR);
@@ -33,6 +33,25 @@ int Render() {
     std::cout << "GLFW context version " << major << "." << minor << std::endl;
     std::cout << "GLFW core profile equal profile： " << is_core_profile << std::endl;
     std::cout << "GLFW Window created!" << std::endl;
+    int f_width;
+    int f_height;
+
+    glfwGetWindowSize(window,&width,&height);
+    glfwGetFramebufferSize(window,&f_width,&f_height);
+    std::cout<<"windowSize: "<<width<<"x"<<height<<std::endl;
+    std::cout<<"FrameBufferSize"<<f_width<<"x"<<f_height<<std::endl;
+    glViewport(0,0,f_width,f_height);
+    return window;
+
+}
+
+void onSizeChanged(GLFWwindow*,int w,int h) {
+    glViewport(0,0,w,h);
+    std::cout<<w<<"x"<<h<<std::endl;
+}
+
+int Render(GLFWwindow* window) {
+    glfwSetFramebufferSizeCallback(window,onSizeChanged);
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         if (glfwGetKey(window,GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -45,7 +64,11 @@ int Render() {
 }
 
 int main() {
+    int width = 800;
+    int height = 600;
     if (!Init()) return 1;
     SetContextHints();
-    return Render();
+    GLFWwindow* window = CreateWindow(width,height);
+    if (window == nullptr) return 1;
+    return Render(window);
 }
