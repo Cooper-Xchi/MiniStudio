@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 稳定分支为 `main`；第 5 课已在 `codex/lesson-05-glfw-window` 完成、推送并合并。课程规划分支与前五课分支均继续保留。
+- 稳定分支为 `main`；第 6 课已在 `codex/lesson-06-opengl-core-context` 完成、推送并合并。课程规划分支与前六课分支均继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -212,6 +212,15 @@ GLFW initialized!
 GLFW Window created!
 ```
 
+第六课在创建窗口前请求 OpenGL 4.1、Core Profile 和 forward-compatible Context，创建成功后将 Context 绑定到主线程，并查询实际属性。普通构建和 Sanitizer 构建均编译通过；普通构建实际运行得到：
+
+```text
+GLFW initialized!
+GLFW context version 4.1
+GLFW core profile equal profile? 1
+GLFW Window created!
+```
+
 ### 已讲解的概念
 
 - CLion、CMake、Ninja、Clang、LLDB 各自的职责。
@@ -238,6 +247,9 @@ GLFW Window created!
 - 已区分 GLFW 头文件、GLFW 动态库和 CMake 导入目标；`find_package` 加载包配置，`target_link_libraries` 建立链接依赖并应用目标携带的使用要求。
 - 已理解 `glfwInit`/`glfwTerminate` 管理 GLFW 的全局生命周期，`GLFWwindow*` 是不透明窗口句柄，调用方负责用 `glfwDestroyWindow` 销毁。
 - 已理解关闭按钮只设置窗口关闭标志，事件循环读取该标志后退出，窗口随后才由代码显式销毁。
+- 已理解 Context hints 必须在 `glfwCreateWindow` 前设置，因为它们约束随后创建的窗口及其 OpenGL Context，而不能修改已经创建的 Context。
+- 已理解 `glfwMakeContextCurrent` 把窗口关联的 Context 绑定到调用线程；当前程序中的调用线程是主线程。
+- 已理解版本 hints 表达最低兼容要求：无法满足 OpenGL 4.1 时窗口创建失败并返回空指针，而不是静默降级；查询 Context 属性用于确认实际版本和 Profile。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
@@ -247,19 +259,37 @@ GLFW Window created!
 #include <iostream>
 #include <GLFW/glfw3.h>
 
-int run() {
+bool Init() {
     int result = glfwInit();
     if (result == GLFW_FALSE) {
         std::cerr << "GLFW initialization failed!" << std::endl;
-        return 1;
+        return false;
     }
     std::cout << "GLFW initialized!" << std::endl;
+    return true;
+}
+
+void SetContextHints() {
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+}
+
+int Render() {
     GLFWwindow* window = glfwCreateWindow(800, 600, "MiniStudio", nullptr, nullptr);
     if (window == nullptr) {
         std::cerr << "GLFW Window creation failed!" << std::endl;
         glfwTerminate();
         return 1;
     }
+    glfwMakeContextCurrent(window);
+    int major = glfwGetWindowAttrib(window,GLFW_CONTEXT_VERSION_MAJOR);
+    int minor = glfwGetWindowAttrib(window,GLFW_CONTEXT_VERSION_MINOR);
+    int profile = glfwGetWindowAttrib(window, GLFW_OPENGL_PROFILE);
+    bool is_core_profile = profile == GLFW_OPENGL_CORE_PROFILE;
+    std::cout << "GLFW context version " << major << "." << minor << std::endl;
+    std::cout << "GLFW core profile equal profile? " << is_core_profile << std::endl;
     std::cout << "GLFW Window created!" << std::endl;
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -270,23 +300,27 @@ int run() {
 }
 
 int main() {
-    return run();
+    if (!Init()) return 1;
+    SetContextHints();
+    return Render();
 }
 ```
 
-代码已经通过普通构建与 Sanitizer 构建的实际编译检查，没有编译警告；普通构建已实际运行并确认窗口能够显示、处理关闭事件并正常退出。当前仍使用 GLFW C API 的手动生命周期，以便在后续 RAII 封装前清楚观察所有权和清理顺序。
+代码已经通过普通构建与 Sanitizer 构建的实际编译检查，没有编译警告；普通构建已实际运行并确认获得 OpenGL 4.1 Core Profile Context。当前仍使用 GLFW C API 的手动生命周期，以便在后续 RAII 封装前清楚观察所有权和清理顺序。
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 2 周第 5 课已完成，等待开始第 6 课。**
+当前处于：**第 2 周第 6 课已完成，等待开始第 7 课。**
 
-本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。当前代码已创建第一个窗口并完成手动清理；尚未配置明确的 OpenGL Context 版本，也未进入 Shader 或三角形。
+本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。当前代码已创建窗口，明确请求并验证 OpenGL 4.1 Core Profile Context，并完成手动清理；尚未进入 Shader 或三角形。
 
 仓库远端和 AI 约束准备已经完成，初始基线和第 1 周的四课均已合并到 `main`。
 
 第四课已在 `codex/lesson-04-sanitizer-debugging` 完成并合并：Sanitizer 配置有效，受控的悬空指针访问已被复现、读懂并修复，普通构建和 Sanitizer 构建均运行正常。第 1 周已经完成生命周期、所有权移动、RAII 边界和 Sanitizer 故障定位四项核心练习。
 
-第 5 课已完成 CMake 包查找与链接、GLFW 初始化、窗口创建、最小事件处理和有序清理，并已提交、推送和合并。学习者能够解释关闭标志、窗口销毁责任，以及 `find_package` 与 `target_link_libraries` 的区别。下一步是在学习者明确开始第 6 课后，从最新 `main` 新建课程分支，再请求并检查 OpenGL 4.1 Core Context。
+第 5 课已完成 CMake 包查找与链接、GLFW 初始化、窗口创建、最小事件处理和有序清理，并已提交、推送和合并。学习者能够解释关闭标志、窗口销毁责任，以及 `find_package` 与 `target_link_libraries` 的区别。
+
+第 6 课已完成 Context hints、OpenGL 4.1 Core Profile 创建、主线程 Context 绑定和实际属性查询，并已提交、推送和合并。学习者能够解释 hints 的生效时机、current Context 的线程含义，以及版本不可用时窗口创建失败而不会静默降级。下一步是在学习者明确开始第 7 课后，从最新 `main` 新建课程分支，再学习事件循环、关闭流程和输入。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -297,7 +331,7 @@ int main() {
 | 周 | 核心目标 | 状态 |
 | --- | --- | --- |
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
-| 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 进行中；第 5 课已完成，等待第 6 课 |
+| 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 进行中；第 6 课已完成，等待第 7 课 |
 | 第 3 周 | Shader 编译、VAO/VBO、彩色三角形、错误日志 | 未开始 |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
 

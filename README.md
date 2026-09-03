@@ -28,10 +28,11 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第三课的 RAII 与函数所有权边界实验，理解引用借用、按值转移以及所有者离开作用域时的自动释放。
 - 完成第四课的 Sanitizer 故障定位实验，使用 AddressSanitizer 定位并修复一次受控的 heap-use-after-free。
 - 完成第五课的 GLFW 窗口实验，理解 CMake 包查找与链接、GLFW 初始化、窗口句柄、关闭标志和手动清理顺序。
+- 完成第六课的 OpenGL Context 实验，理解创建前 hints、主线程 Context 绑定、实际属性查询和版本不可用时的失败行为。
 
-第 1 周的四课以及第 2 周第 5 课均已完成并合并回 `main`。第五课的课程分支为 `codex/lesson-05-glfw-window`；当前尚未进入 OpenGL 绘制。
+第 1 周的四课以及第 2 周前两课均已完成并合并回 `main`。第六课的课程分支为 `codex/lesson-06-opengl-core-context`；当前等待开始第 7 课，尚未进入 OpenGL 绘制。
 
-仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。五个已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
+仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。六个已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
 ## 构建与运行
 
