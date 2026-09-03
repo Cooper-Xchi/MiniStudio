@@ -15,7 +15,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成第 1 周，当前进入第 2 周：**GLFW、OpenGL 上下文、事件循环与 Retina viewport**。
+项目已经完成前 2 周，当前准备进入第 3 周。下一步先建立最小应用与窗口模块边界，再进入第一条 GPU 绘制链路。
 
 已经完成：
 
@@ -84,7 +84,7 @@ cmake --build cmake-build-sanitize --parallel
 | 第 25～30 月 | 2D 动画、视频素材和 Metal | 扩展多媒体与第三平台能力 |
 | 第 31～36 月 | 大场景、性能架构、AI 工作流和真实协作 | 建立高级/专家方向的能力证据 |
 
-完整的阶段目标、验收标准、前四周课程和求职时间线见 [`MiniStudio-curriculum-24-36-months.md`](MiniStudio-curriculum-24-36-months.md)。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
+完整的阶段目标、验收标准、前四周课程和求职时间线见 [`docs/MiniStudio-curriculum-24-36-months.md`](docs/MiniStudio-curriculum-24-36-months.md)。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
 
 ## 仓库结构
 
@@ -93,10 +93,11 @@ MiniStudio/
 ├── AGENTS.md
 ├── CMakeLists.txt
 ├── README.md
-├── MiniStudio-curriculum-24-36-months.md
-├── MiniStudio-learning-handoff-2026-09-03.md
+├── docs/
+│   ├── MiniStudio-curriculum-24-36-months.md
+│   └── MiniStudio-learning-handoff-2026-09-03.md
 └── src/
     └── main.cpp
 ```
 
-完整课程路线见 [`MiniStudio-curriculum-24-36-months.md`](MiniStudio-curriculum-24-36-months.md)，当前状态和下一步见 [`MiniStudio-learning-handoff-2026-09-03.md`](MiniStudio-learning-handoff-2026-09-03.md)。README 只提供稳定的项目入口和概览；AI 助手在本仓库中的操作和教学边界见 [`AGENTS.md`](AGENTS.md)。
+完整课程路线见 [`docs/MiniStudio-curriculum-24-36-months.md`](docs/MiniStudio-curriculum-24-36-months.md)，当前状态和下一步见 [`docs/MiniStudio-learning-handoff-2026-09-03.md`](docs/MiniStudio-learning-handoff-2026-09-03.md)。README 只提供稳定的项目入口和概览；AI 助手在本仓库中的操作和教学边界见 [`AGENTS.md`](AGENTS.md)。

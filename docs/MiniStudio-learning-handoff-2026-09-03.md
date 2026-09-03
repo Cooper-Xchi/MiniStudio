@@ -114,9 +114,10 @@ MiniStudio/
 ├── .gitignore
 ├── AGENTS.md
 ├── CMakeLists.txt
-├── MiniStudio-curriculum-24-36-months.md
-├── MiniStudio-learning-handoff-2026-09-03.md
 ├── README.md
+├── docs/
+│   ├── MiniStudio-curriculum-24-36-months.md
+│   └── MiniStudio-learning-handoff-2026-09-03.md
 └── src/
     └── main.cpp
 ```
@@ -124,13 +125,13 @@ MiniStudio/
 `.gitignore` 当前包含：
 
 ```gitignore
-build/
+../build/
 cmake-build-*/
 .idea/
 .DS_Store
 ```
 
-`README.md` 保存稳定项目概览，`MiniStudio-curriculum-24-36-months.md` 保存完整课程和阶段验收，详细学习状态仍以本文档为准。
+`README.md` 保存稳定项目概览，`docs/MiniStudio-curriculum-24-36-months.md` 保存完整课程和阶段验收，详细学习状态仍以本文档为准。
 
 ## 8. 已完成内容
 
@@ -360,7 +361,9 @@ int main() {
 
 第 7 课已完成事件轮询、`Esc` 按键状态查询、关闭标志设置和统一清理流程，并已提交、推送和合并。学习者能够解释 `glfwPollEvents` 的位置，以及设置关闭标志并不等于立即销毁窗口。
 
-第 8 课已完成 window size、framebuffer size、viewport 和 resize callback，并已提交、推送和合并。学习者能够解释逻辑尺寸与物理像素尺寸的区别、为什么 viewport 使用 framebuffer 尺寸，以及回调的触发条件和当前执行线程。下一步是在学习者明确开始第 9 课后，从最新 `main` 新建课程分支，再学习 Shader 源码、编译、链接和错误日志。
+第 8 课已完成 window size、framebuffer size、viewport 和 resize callback，并已提交、推送和合并。学习者能够解释逻辑尺寸与物理像素尺寸的区别、为什么 viewport 使用 framebuffer 尺寸，以及回调的触发条件和当前执行线程。
+
+课程新增架构、解耦与面向对象约束：后续不能继续把功能堆入 `main.cpp`；新增有状态或资源型职责前必须明确模块边界、所有权、生命周期和依赖方向；面向对象服务于封装与 RAII，禁止为了形式制造深继承、万能管理器或过早的跨后端抽象。下一步是在学习者明确开始第 9 课后，从最新 `main` 新建课程分支，先梳理项目骨架并拆分 Application 与 Window 职责，再进入 Shader。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -372,7 +375,7 @@ int main() {
 | --- | --- | --- |
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
-| 第 3 周 | Shader 编译、VAO/VBO、彩色三角形、错误日志 | 未开始；等待第 9 课 |
+| 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 未开始；等待第 9 课 |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
 
 ## 12. 协作要求
@@ -388,6 +391,8 @@ int main() {
 - 区分“面试需要知道”“项目必须实现”和“以后再学”，控制范围。
 - 对初学者解释陌生语法时，说明对象由谁拥有、何时销毁、在哪个线程运行以及潜在风险。
 - 在第一套 OpenGL 渲染器完成前，不并行学习 Metal、Vulkan、DirectX。
+- 每次新课先做架构只读检查；`main.cpp` 只保留组装和顶层流程，有状态或拥有资源的职责逐步拆成内聚对象，依赖保持单向。
+- 面向对象用于职责、状态和生命周期封装；无状态逻辑可使用普通函数，禁止深继承、Singleton、万能 Manager 和无真实需求的接口层。
 
 ## 13. 新任务建议启动语
 
@@ -399,7 +404,7 @@ int main() {
 
 - `AGENTS.md` 是项目级 AI 执行约束，规定教学方式、修改权限、课程分支、Git 安全边界和验证要求。
 - `README.md` 是项目入口，保存相对稳定的项目目标、构建命令和路线概览。
-- `MiniStudio-curriculum-24-36-months.md` 是当前有效的完整课程路线，保存 24 个月核心路线、第 25～36 个月进阶路线、阶段验收和求职时间线。
+- `docs/MiniStudio-curriculum-24-36-months.md` 是当前有效的完整课程路线，保存 24 个月核心路线、第 25～36 个月进阶路线、阶段验收和求职时间线。
 - 本文档是当前学习状态的主要记录，后续应在阶段、代码状态或下一步发生变化时同步更新。
 - `graphics-rendering-learning-brief.md` 是最初的长期学习需求和协作原则来源；其中 12 个月要求已被学习者当前提出的 24～36 个月路线取代，“第一次阅读后完成的任务”和“启动语”也只属于历史启动说明。
 - 如果文档之间出现冲突，依次以学习者当前明确请求、实际仓库状态、本文档的较新记录为准。
