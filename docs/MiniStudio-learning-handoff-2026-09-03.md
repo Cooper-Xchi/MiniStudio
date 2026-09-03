@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 稳定分支为 `main`；第 8 课已在 `codex/lesson-08-retina-viewport` 完成、推送并合并。课程规划分支与前八课分支均继续保留。
+- 稳定分支为 `main`；第 9 课已在 `codex/lesson-09-project-architecture` 完成、推送并合并。课程规划分支与前九课分支均继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -119,13 +119,19 @@ MiniStudio/
 │   ├── MiniStudio-curriculum-24-36-months.md
 │   └── MiniStudio-learning-handoff-2026-09-03.md
 └── src/
-    └── main.cpp
+    ├── main.cpp
+    ├── app/
+    │   ├── Application.h
+    │   └── Application.cpp
+    └── platform/
+        ├── GlfwWindow.h
+        └── GlfwWindow.cpp
 ```
 
 `.gitignore` 当前包含：
 
 ```gitignore
-../build/
+build/
 cmake-build-*/
 .idea/
 .DS_Store
@@ -146,6 +152,7 @@ cmake-build-*/
 - 增加 `MINISTUDIO_ENABLE_SANITIZERS` CMake 选项；开启时为 Clang/GCC 编译和链接 AddressSanitizer、UndefinedBehaviorSanitizer，并保留帧指针。
 - 使用 `find_package(glfw3 3.4 REQUIRED)` 查找已安装的 GLFW，并将其导出的 `glfw` 目标以 `PRIVATE` 方式链接到 `ministudio`。
 - 使用 `find_package(OpenGL REQUIRED)` 查找系统 OpenGL，并将 `OpenGL::GL` 目标链接到 `ministudio`；macOS 构建定义 `GL_SILENCE_DEPRECATION`，避免系统弃用提示掩盖项目自身警告。
+- CMake 显式编译 `Application.cpp` 和 `GlfwWindow.cpp`，并以 `src` 作为私有头文件搜索根目录；不会把目录名误当成源文件。
 - 已使用终端完成一次实际配置、编译和运行，构建成功且没有警告。
 
 已验证的命令：
@@ -227,6 +234,8 @@ GLFW Window created!
 
 第八课分别查询窗口逻辑尺寸和 framebuffer 物理像素尺寸，用 framebuffer 尺寸设置初始 `glViewport`，并注册 framebuffer size callback 在尺寸变化时同步更新 viewport。当前显示环境实测初始尺寸均为 `800×600`；拖动窗口时回调连续输出新的 framebuffer 尺寸，按 `Esc` 后退出码为 `0`。普通构建和 Sanitizer 构建均无警告。
 
+第九课将单文件程序拆分为 `main`、`Application` 和 `GlfwWindow`：`main` 只创建并运行应用；`Application` 按值拥有窗口并编排初始化、事件和退出流程；`GlfwWindow` 独占 `GLFWwindow*`，封装 GLFW/OpenGL 调用并在析构时统一销毁窗口和终止 GLFW。窗口缩放、`Esc` 退出和退出码 `0` 已实际验证，普通与 Sanitizer 构建均无警告。
+
 ### 已讲解的概念
 
 - CLion、CMake、Ninja、Clang、LLDB 各自的职责。
@@ -262,94 +271,31 @@ GLFW Window created!
 - 已区分 window size 的逻辑屏幕坐标与 framebuffer size 的物理像素；两者在内容缩放为 `1×` 时通常相同，在高 DPI 环境中可能不同。
 - 已理解 `glViewport` 规定标准化设备坐标映射到 framebuffer 的像素区域，因此必须使用实际 framebuffer 尺寸，而不是假定它等于窗口逻辑尺寸。
 - 已理解 framebuffer 尺寸变化会触发注册的 callback；当前程序在主线程调用 `glfwPollEvents`，因此回调也在主线程的事件处理中执行。
+- 已理解构造 `Application` 时会先构造其按值成员 `window_`，随后才进入 `Application` 构造函数体；销毁时先执行 `Application` 析构函数体，再销毁 `window_`。
+- 已区分对象成员与指针成员：`GlfwWindow window_` 表示直接拥有对象，`GlfwWindow* window_` 只保存地址且不会构造所指对象。
+- 已理解所有权与解耦是两个问题：按值成员表达 `Application` 拥有窗口，不公开 `GLFWwindow*` 则避免应用层直接依赖 GLFW 实现。
+- 已理解初始化成功但窗口创建失败时，`Application::Run` 返回后成员仍会自动析构，并依据初始化状态调用 `glfwTerminate`，从而保持统一清理路径。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
-## 9. 当前 `main.cpp` 的真实状态
+## 9. 当前代码结构与 `main.cpp` 的真实状态
 
 ```cpp
-#include <iostream>
-#include <GLFW/glfw3.h>
-
-bool Init() {
-    int result = glfwInit();
-    if (result == GLFW_FALSE) {
-        std::cerr << "GLFW initialization failed!" << std::endl;
-        return false;
-    }
-    std::cout << "GLFW initialized!" << std::endl;
-    return true;
-}
-
-void SetContextHints() {
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-}
-
-GLFWwindow* CreateWindow(int width,int height) {
-    GLFWwindow* window = glfwCreateWindow(width, height, "MiniStudio", nullptr, nullptr);
-    if (window == nullptr) {
-        std::cerr << "GLFW Window creation failed!" << std::endl;
-        glfwTerminate();
-        return nullptr;
-    }
-    glfwMakeContextCurrent(window);
-    int major = glfwGetWindowAttrib(window,GLFW_CONTEXT_VERSION_MAJOR);
-    int minor = glfwGetWindowAttrib(window,GLFW_CONTEXT_VERSION_MINOR);
-    int profile = glfwGetWindowAttrib(window, GLFW_OPENGL_PROFILE);
-    bool is_core_profile = profile == GLFW_OPENGL_CORE_PROFILE;
-    std::cout << "GLFW context version " << major << "." << minor << std::endl;
-    std::cout << "GLFW core profile equal profile： " << is_core_profile << std::endl;
-    std::cout << "GLFW Window created!" << std::endl;
-    int f_width;
-    int f_height;
-
-    glfwGetWindowSize(window,&width,&height);
-    glfwGetFramebufferSize(window,&f_width,&f_height);
-    std::cout<<"windowSize: "<<width<<"x"<<height<<std::endl;
-    std::cout<<"FrameBufferSize"<<f_width<<"x"<<f_height<<std::endl;
-    glViewport(0,0,f_width,f_height);
-    return window;
-}
-
-void onSizeChanged(GLFWwindow*,int w,int h) {
-    glViewport(0,0,w,h);
-    std::cout<<w<<"x"<<h<<std::endl;
-}
-
-int Render(GLFWwindow* window) {
-    glfwSetFramebufferSizeCallback(window,onSizeChanged);
-    while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
-        if (glfwGetKey(window,GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window,GLFW_TRUE);
-        }
-    }
-    glfwDestroyWindow(window);
-    glfwTerminate();
-    return 0;
-}
+#include "app/Application.h"
 
 int main() {
-    int width = 800;
-    int height = 600;
-    if (!Init()) return 1;
-    SetContextHints();
-    GLFWwindow* window = CreateWindow(width,height);
-    if (window == nullptr) return 1;
-    return Render(window);
+    Application app;
+    return app.Run();
 }
 ```
 
-代码已经通过普通构建与 Sanitizer 构建的实际编译检查，没有编译警告；普通构建已实际运行并确认获得 OpenGL 4.1 Core Profile Context。窗口与 framebuffer 尺寸查询、viewport 初始设置和 resize callback 均已验证，关闭按钮和 `Esc` 均能进入统一清理流程。当前仍使用 GLFW C API 的手动生命周期，以便在后续 RAII 封装前清楚观察所有权和清理顺序。
+当前依赖为 `main → Application → GlfwWindow → GLFW/OpenGL`。`Application` 通过公开的意图型接口控制窗口，不取得原始句柄；`GlfwWindow.h` 只前置声明 `GLFWwindow`，具体 GLFW/OpenGL 头文件和调用留在 `GlfwWindow.cpp`。代码已经通过普通与 Sanitizer 构建，没有编译警告；窗口创建、缩放回调、`Esc` 退出和自动清理均已实际验证。
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 2 周第 8 课已完成，等待开始第 9 课。**
+当前处于：**第 3 周第 9 课已完成，等待开始第 10 课。**
 
-本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已创建窗口，明确请求并验证 OpenGL 4.1 Core Profile Context，能根据实际 framebuffer 像素尺寸设置和更新 viewport，并支持关闭按钮和 `Esc` 退出；尚未进入 Shader 或三角形。
+本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已经拆分应用流程与具体窗口实现，能根据实际 framebuffer 像素尺寸设置和更新 viewport，并支持关闭按钮和 `Esc` 退出；尚未进入 Shader 或三角形。
 
 仓库远端和 AI 约束准备已经完成，初始基线和第 1 周的四课均已合并到 `main`。
 
@@ -363,7 +309,7 @@ int main() {
 
 第 8 课已完成 window size、framebuffer size、viewport 和 resize callback，并已提交、推送和合并。学习者能够解释逻辑尺寸与物理像素尺寸的区别、为什么 viewport 使用 framebuffer 尺寸，以及回调的触发条件和当前执行线程。
 
-课程新增架构、解耦与面向对象约束：后续不能继续把功能堆入 `main.cpp`；新增有状态或资源型职责前必须明确模块边界、所有权、生命周期和依赖方向；面向对象服务于封装与 RAII，禁止为了形式制造深继承、万能管理器或过早的跨后端抽象。下一步是在学习者明确开始第 9 课后，从最新 `main` 新建课程分支，先梳理项目骨架并拆分 Application 与 Window 职责，再进入 Shader。
+第 9 课已完成最小项目骨架：`main` 负责启动，`Application` 按值拥有 `GlfwWindow` 并编排流程，`GlfwWindow` 封装具体平台调用和资源释放。下一步是在学习者明确开始第 10 课后，从最新 `main` 新建课程分支，以独立 `ShaderProgram` 模块学习 Shader 编译、链接、错误日志和资源生命周期。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -375,7 +321,7 @@ int main() {
 | --- | --- | --- |
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
-| 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 未开始；等待第 9 课 |
+| 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 进行中；第 9 课已完成，等待第 10 课 |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
 
 ## 12. 协作要求
