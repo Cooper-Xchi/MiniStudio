@@ -4,12 +4,14 @@ project(MiniStudio LANGUAGES CXX)
 
 add_executable(ministudio
         src/main.cpp
+        src/app/Application.cpp
+        src/platform/GlfwWindow.cpp
 )
 
 option(MINISTUDIO_ENABLE_SANITIZERS
         "Enable AddressSanitizer and UndefinedBehaviorSanitizer"
         OFF)
-
+target_include_directories(ministudio PRIVATE src)
 target_compile_features(ministudio PRIVATE cxx_std_20)
 
 set_target_properties(ministudio PROPERTIES
