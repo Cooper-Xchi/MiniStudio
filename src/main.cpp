@@ -1,24 +1,28 @@
 #include <iostream>
-#include <memory>
-#include <string>
-#include <utility>
+#include <GLFW/glfw3.h>
 
-struct LifeTimeProbe {
-    explicit LifeTimeProbe(std::string name)
-        :name_(std::move(name)){
-        std::cout << "construct: " << name_<<'\n';
+int run() {
+    int result = glfwInit();
+    if (result == GLFW_FALSE) {
+        std::cerr << "GLFW initialization failed!" << std::endl;
+        return 1;
     }
-
-    ~LifeTimeProbe() {
-        std::cout << "destroy: " << name_<<'\n';
+    std::cout << "GLFW initialized!" << std::endl;
+    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniStudio", nullptr, nullptr);
+    if (window == nullptr) {
+        std::cerr << "GLFW Window creation failed!" << std::endl;
+        glfwTerminate();
+        return 1;
     }
-
-    std::string name_;
-};
-int main() {
-    auto heap_probe = std::make_unique<LifeTimeProbe>("heap");
-    LifeTimeProbe* borrowed_probe = heap_probe.get();
-    std::cout << "probe: " << borrowed_probe->name_<<'\n';
-    heap_probe.reset();
+    std::cout << "GLFW Window created!" << std::endl;
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+    }
+    glfwDestroyWindow(window);
+    glfwTerminate();
     return 0;
+}
+
+int main() {
+    return run();
 }

@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 当前稳定分支为 `main`；课程规划分支 `codex/curriculum-24-36-months` 已提交、推送并合并，规划分支和前四课分支均继续保留。
+- 稳定分支为 `main`；第 5 课已在 `codex/lesson-05-glfw-window` 完成、推送并合并。课程规划分支与前五课分支均继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -143,6 +143,7 @@ cmake-build-*/
 - 项目使用 C++20，并关闭编译器私有语言扩展。
 - Apple Clang/GCC 路径开启 `-Wall -Wextra -Wpedantic`。
 - 增加 `MINISTUDIO_ENABLE_SANITIZERS` CMake 选项；开启时为 Clang/GCC 编译和链接 AddressSanitizer、UndefinedBehaviorSanitizer，并保留帧指针。
+- 使用 `find_package(glfw3 3.4 REQUIRED)` 查找已安装的 GLFW，并将其导出的 `glfw` 目标以 `PRIVATE` 方式链接到 `ministudio`。
 - 已使用终端完成一次实际配置、编译和运行，构建成功且没有警告。
 
 已验证的命令：
@@ -204,6 +205,13 @@ probe: heap
 destroy: heap
 ```
 
+第五课已实际创建 `800×600`、标题为 `MiniStudio` 的 GLFW 窗口。窗口保持显示，点击关闭后循环退出，程序按 `glfwDestroyWindow`、`glfwTerminate` 的顺序清理并正常结束。普通构建和 Sanitizer 构建均编译通过；运行时输出为：
+
+```text
+GLFW initialized!
+GLFW Window created!
+```
+
 ### 已讲解的概念
 
 - CLion、CMake、Ninja、Clang、LLDB 各自的职责。
@@ -227,6 +235,9 @@ destroy: heap
 - 已理解 `unique_ptr::reset()` 删除被管理对象并让所有者进入空状态，但之前取得的裸指针仍保存旧地址并成为悬空指针。
 - 已能从 AddressSanitizer 报告中对应非法访问、释放和分配位置，并理解 Sanitizer 依靠运行时插桩发现普通编译通常无法证明的动态生命周期错误。
 - 已理解独立 Sanitizer 构建目录能够隔离编译选项、CMake 缓存和构建产物，也避免把诊断开销默认带入普通构建。
+- 已区分 GLFW 头文件、GLFW 动态库和 CMake 导入目标；`find_package` 加载包配置，`target_link_libraries` 建立链接依赖并应用目标携带的使用要求。
+- 已理解 `glfwInit`/`glfwTerminate` 管理 GLFW 的全局生命周期，`GLFWwindow*` 是不透明窗口句柄，调用方负责用 `glfwDestroyWindow` 销毁。
+- 已理解关闭按钮只设置窗口关闭标志，事件循环读取该标志后退出，窗口随后才由代码显式销毁。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
@@ -234,42 +245,48 @@ destroy: heap
 
 ```cpp
 #include <iostream>
-#include <memory>
-#include <string>
-#include <utility>
+#include <GLFW/glfw3.h>
 
-struct LifeTimeProbe {
-    explicit LifeTimeProbe(std::string name)
-        :name_(std::move(name)){
-        std::cout << "construct: " << name_<<'\n';
+int run() {
+    int result = glfwInit();
+    if (result == GLFW_FALSE) {
+        std::cerr << "GLFW initialization failed!" << std::endl;
+        return 1;
     }
-
-    ~LifeTimeProbe() {
-        std::cout << "destroy: " << name_<<'\n';
+    std::cout << "GLFW initialized!" << std::endl;
+    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniStudio", nullptr, nullptr);
+    if (window == nullptr) {
+        std::cerr << "GLFW Window creation failed!" << std::endl;
+        glfwTerminate();
+        return 1;
     }
-
-    std::string name_;
-};
-int main() {
-    auto heap_probe = std::make_unique<LifeTimeProbe>("heap");
-    LifeTimeProbe* borrowed_probe = heap_probe.get();
-    std::cout << "probe: " << borrowed_probe->name_<<'\n';
-    heap_probe.reset();
+    std::cout << "GLFW Window created!" << std::endl;
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+    }
+    glfwDestroyWindow(window);
+    glfwTerminate();
     return 0;
+}
+
+int main() {
+    return run();
 }
 ```
 
-代码已经通过普通构建与 Sanitizer 构建的实际编译和运行检查，没有编译警告或 Sanitizer 报告。`borrowed_probe` 的读取发生在 `heap_probe.reset()` 之前，因此借用没有超过被管理对象的生命周期；`reset()` 随后删除对象并让 `heap_probe` 进入空状态。
+代码已经通过普通构建与 Sanitizer 构建的实际编译检查，没有编译警告；普通构建已实际运行并确认窗口能够显示、处理关闭事件并正常退出。当前仍使用 GLFW C API 的手动生命周期，以便在后续 RAII 封装前清楚观察所有权和清理顺序。
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1 周已完成，等待开始第 2 周。**
+当前处于：**第 2 周第 5 课已完成，等待开始第 6 课。**
 
-还没有开始 GLFW 或 OpenGL；不要跳到窗口和三角形。
+本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。当前代码已创建第一个窗口并完成手动清理；尚未配置明确的 OpenGL Context 版本，也未进入 Shader 或三角形。
 
 仓库远端和 AI 约束准备已经完成，初始基线和第 1 周的四课均已合并到 `main`。
 
-第四课已在 `codex/lesson-04-sanitizer-debugging` 完成并合并：Sanitizer 配置有效，受控的悬空指针访问已被复现、读懂并修复，普通构建和 Sanitizer 构建均运行正常。第 1 周已经完成生命周期、所有权移动、RAII 边界和 Sanitizer 故障定位四项核心练习。下一步由学习者明确开始第 2 周；开始时从最新 `main` 新建课程分支，再进入 GLFW/OpenGL 窗口与上下文，不在当前分支继续开发。
+第四课已在 `codex/lesson-04-sanitizer-debugging` 完成并合并：Sanitizer 配置有效，受控的悬空指针访问已被复现、读懂并修复，普通构建和 Sanitizer 构建均运行正常。第 1 周已经完成生命周期、所有权移动、RAII 边界和 Sanitizer 故障定位四项核心练习。
+
+第 5 课已完成 CMake 包查找与链接、GLFW 初始化、窗口创建、最小事件处理和有序清理，并已提交、推送和合并。学习者能够解释关闭标志、窗口销毁责任，以及 `find_package` 与 `target_link_libraries` 的区别。下一步是在学习者明确开始第 6 课后，从最新 `main` 新建课程分支，再请求并检查 OpenGL 4.1 Core Context。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -280,7 +297,7 @@ int main() {
 | 周 | 核心目标 | 状态 |
 | --- | --- | --- |
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
-| 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 未开始 |
+| 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 进行中；第 5 课已完成，等待第 6 课 |
 | 第 3 周 | Shader 编译、VAO/VBO、彩色三角形、错误日志 | 未开始 |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
 
