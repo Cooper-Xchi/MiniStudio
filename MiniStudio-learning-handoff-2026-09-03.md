@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 稳定分支为 `main`；第 6 课已在 `codex/lesson-06-opengl-core-context` 完成、推送并合并。课程规划分支与前六课分支均继续保留。
+- 稳定分支为 `main`；第 7 课已在 `codex/lesson-07-event-loop-input` 完成、推送并合并。课程规划分支与前七课分支均继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -221,6 +221,8 @@ GLFW core profile equal profile? 1
 GLFW Window created!
 ```
 
+第七课在事件循环中先处理系统事件，再查询 `Esc` 的按键状态；按下后仅设置窗口关闭标志，让循环自然退出并复用统一清理路径。实际运行按 `Esc` 后窗口关闭，Shell 退出码为 `0`。macOS 同时输出过一条与键盘处理有关的 TSM 系统诊断信息，但不影响程序结果。
+
 ### 已讲解的概念
 
 - CLion、CMake、Ninja、Clang、LLDB 各自的职责。
@@ -250,6 +252,9 @@ GLFW Window created!
 - 已理解 Context hints 必须在 `glfwCreateWindow` 前设置，因为它们约束随后创建的窗口及其 OpenGL Context，而不能修改已经创建的 Context。
 - 已理解 `glfwMakeContextCurrent` 把窗口关联的 Context 绑定到调用线程；当前程序中的调用线程是主线程。
 - 已理解版本 hints 表达最低兼容要求：无法满足 OpenGL 4.1 时窗口创建失败并返回空指针，而不是静默降级；查询 Context 属性用于确认实际版本和 Profile。
+- 已理解 `glfwPollEvents` 处理当前事件队列并更新输入状态，轮询式输入应在事件处理后查询本轮最新按键状态。
+- 已理解 `glfwGetKey` 返回按键状态；当前练习明确比较 `GLFW_PRESS`，不把任意非零值笼统当作按下。
+- 已理解 `glfwSetWindowShouldClose` 只修改关闭标志，不立即销毁窗口；`Esc` 和关闭按钮最终都从循环退出并经过同一套销毁与终止代码。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
@@ -289,10 +294,13 @@ int Render() {
     int profile = glfwGetWindowAttrib(window, GLFW_OPENGL_PROFILE);
     bool is_core_profile = profile == GLFW_OPENGL_CORE_PROFILE;
     std::cout << "GLFW context version " << major << "." << minor << std::endl;
-    std::cout << "GLFW core profile equal profile? " << is_core_profile << std::endl;
+    std::cout << "GLFW core profile equal profile： " << is_core_profile << std::endl;
     std::cout << "GLFW Window created!" << std::endl;
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
+        if (glfwGetKey(window,GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window,GLFW_TRUE);
+        }
     }
     glfwDestroyWindow(window);
     glfwTerminate();
@@ -306,13 +314,13 @@ int main() {
 }
 ```
 
-代码已经通过普通构建与 Sanitizer 构建的实际编译检查，没有编译警告；普通构建已实际运行并确认获得 OpenGL 4.1 Core Profile Context。当前仍使用 GLFW C API 的手动生命周期，以便在后续 RAII 封装前清楚观察所有权和清理顺序。
+代码已经通过普通构建与 Sanitizer 构建的实际编译检查，没有编译警告；普通构建已实际运行并确认获得 OpenGL 4.1 Core Profile Context，关闭按钮和 `Esc` 均能进入统一清理流程。当前仍使用 GLFW C API 的手动生命周期，以便在后续 RAII 封装前清楚观察所有权和清理顺序。
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 2 周第 6 课已完成，等待开始第 7 课。**
+当前处于：**第 2 周第 7 课已完成，等待开始第 8 课。**
 
-本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。当前代码已创建窗口，明确请求并验证 OpenGL 4.1 Core Profile Context，并完成手动清理；尚未进入 Shader 或三角形。
+本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。当前代码已创建窗口，明确请求并验证 OpenGL 4.1 Core Profile Context，并支持关闭按钮和 `Esc` 退出；尚未进入 Shader 或三角形。
 
 仓库远端和 AI 约束准备已经完成，初始基线和第 1 周的四课均已合并到 `main`。
 
@@ -320,7 +328,9 @@ int main() {
 
 第 5 课已完成 CMake 包查找与链接、GLFW 初始化、窗口创建、最小事件处理和有序清理，并已提交、推送和合并。学习者能够解释关闭标志、窗口销毁责任，以及 `find_package` 与 `target_link_libraries` 的区别。
 
-第 6 课已完成 Context hints、OpenGL 4.1 Core Profile 创建、主线程 Context 绑定和实际属性查询，并已提交、推送和合并。学习者能够解释 hints 的生效时机、current Context 的线程含义，以及版本不可用时窗口创建失败而不会静默降级。下一步是在学习者明确开始第 7 课后，从最新 `main` 新建课程分支，再学习事件循环、关闭流程和输入。
+第 6 课已完成 Context hints、OpenGL 4.1 Core Profile 创建、主线程 Context 绑定和实际属性查询，并已提交、推送和合并。学习者能够解释 hints 的生效时机、current Context 的线程含义，以及版本不可用时窗口创建失败而不会静默降级。
+
+第 7 课已完成事件轮询、`Esc` 按键状态查询、关闭标志设置和统一清理流程，并已提交、推送和合并。学习者能够解释 `glfwPollEvents` 的位置，以及设置关闭标志并不等于立即销毁窗口。下一步是在学习者明确开始第 8 课后，从最新 `main` 新建课程分支，再学习 Retina framebuffer 尺寸、viewport 和 resize callback。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -331,7 +341,7 @@ int main() {
 | 周 | 核心目标 | 状态 |
 | --- | --- | --- |
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
-| 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 进行中；第 6 课已完成，等待第 7 课 |
+| 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 进行中；第 7 课已完成，等待第 8 课 |
 | 第 3 周 | Shader 编译、VAO/VBO、彩色三角形、错误日志 | 未开始 |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
 

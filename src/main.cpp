@@ -31,10 +31,13 @@ int Render() {
     int profile = glfwGetWindowAttrib(window, GLFW_OPENGL_PROFILE);
     bool is_core_profile = profile == GLFW_OPENGL_CORE_PROFILE;
     std::cout << "GLFW context version " << major << "." << minor << std::endl;
-    std::cout << "GLFW core profile equal profile? " << is_core_profile << std::endl;
+    std::cout << "GLFW core profile equal profile： " << is_core_profile << std::endl;
     std::cout << "GLFW Window created!" << std::endl;
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
+        if (glfwGetKey(window,GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window,GLFW_TRUE);
+        }
     }
     glfwDestroyWindow(window);
     glfwTerminate();
