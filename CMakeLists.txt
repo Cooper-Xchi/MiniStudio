@@ -17,9 +17,9 @@ set_target_properties(ministudio PROPERTIES
 )
 
 find_package(glfw3 3.4 REQUIRED)
+find_package(OpenGL REQUIRED)
 
-target_link_libraries(ministudio PRIVATE glfw)
-
+target_link_libraries(ministudio PRIVATE glfw OpenGL::GL)
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     target_compile_options(ministudio PRIVATE
             -Wall
@@ -36,4 +36,9 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
                 -fsanitize=address,undefined
         )
     endif()
+endif()
+if(APPLE)
+    target_compile_definitions(ministudio PRIVATE
+            GL_SILENCE_DEPRECATION
+    )
 endif()

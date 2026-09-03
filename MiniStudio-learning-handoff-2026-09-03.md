@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 稳定分支为 `main`；第 7 课已在 `codex/lesson-07-event-loop-input` 完成、推送并合并。课程规划分支与前七课分支均继续保留。
+- 稳定分支为 `main`；第 8 课已在 `codex/lesson-08-retina-viewport` 完成、推送并合并。课程规划分支与前八课分支均继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -144,6 +144,7 @@ cmake-build-*/
 - Apple Clang/GCC 路径开启 `-Wall -Wextra -Wpedantic`。
 - 增加 `MINISTUDIO_ENABLE_SANITIZERS` CMake 选项；开启时为 Clang/GCC 编译和链接 AddressSanitizer、UndefinedBehaviorSanitizer，并保留帧指针。
 - 使用 `find_package(glfw3 3.4 REQUIRED)` 查找已安装的 GLFW，并将其导出的 `glfw` 目标以 `PRIVATE` 方式链接到 `ministudio`。
+- 使用 `find_package(OpenGL REQUIRED)` 查找系统 OpenGL，并将 `OpenGL::GL` 目标链接到 `ministudio`；macOS 构建定义 `GL_SILENCE_DEPRECATION`，避免系统弃用提示掩盖项目自身警告。
 - 已使用终端完成一次实际配置、编译和运行，构建成功且没有警告。
 
 已验证的命令：
@@ -223,6 +224,8 @@ GLFW Window created!
 
 第七课在事件循环中先处理系统事件，再查询 `Esc` 的按键状态；按下后仅设置窗口关闭标志，让循环自然退出并复用统一清理路径。实际运行按 `Esc` 后窗口关闭，Shell 退出码为 `0`。macOS 同时输出过一条与键盘处理有关的 TSM 系统诊断信息，但不影响程序结果。
 
+第八课分别查询窗口逻辑尺寸和 framebuffer 物理像素尺寸，用 framebuffer 尺寸设置初始 `glViewport`，并注册 framebuffer size callback 在尺寸变化时同步更新 viewport。当前显示环境实测初始尺寸均为 `800×600`；拖动窗口时回调连续输出新的 framebuffer 尺寸，按 `Esc` 后退出码为 `0`。普通构建和 Sanitizer 构建均无警告。
+
 ### 已讲解的概念
 
 - CLion、CMake、Ninja、Clang、LLDB 各自的职责。
@@ -255,6 +258,9 @@ GLFW Window created!
 - 已理解 `glfwPollEvents` 处理当前事件队列并更新输入状态，轮询式输入应在事件处理后查询本轮最新按键状态。
 - 已理解 `glfwGetKey` 返回按键状态；当前练习明确比较 `GLFW_PRESS`，不把任意非零值笼统当作按下。
 - 已理解 `glfwSetWindowShouldClose` 只修改关闭标志，不立即销毁窗口；`Esc` 和关闭按钮最终都从循环退出并经过同一套销毁与终止代码。
+- 已区分 window size 的逻辑屏幕坐标与 framebuffer size 的物理像素；两者在内容缩放为 `1×` 时通常相同，在高 DPI 环境中可能不同。
+- 已理解 `glViewport` 规定标准化设备坐标映射到 framebuffer 的像素区域，因此必须使用实际 framebuffer 尺寸，而不是假定它等于窗口逻辑尺寸。
+- 已理解 framebuffer 尺寸变化会触发注册的 callback；当前程序在主线程调用 `glfwPollEvents`，因此回调也在主线程的事件处理中执行。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
@@ -281,12 +287,12 @@ void SetContextHints() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 }
 
-int Render() {
-    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniStudio", nullptr, nullptr);
+GLFWwindow* CreateWindow(int width,int height) {
+    GLFWwindow* window = glfwCreateWindow(width, height, "MiniStudio", nullptr, nullptr);
     if (window == nullptr) {
         std::cerr << "GLFW Window creation failed!" << std::endl;
         glfwTerminate();
-        return 1;
+        return nullptr;
     }
     glfwMakeContextCurrent(window);
     int major = glfwGetWindowAttrib(window,GLFW_CONTEXT_VERSION_MAJOR);
@@ -296,6 +302,24 @@ int Render() {
     std::cout << "GLFW context version " << major << "." << minor << std::endl;
     std::cout << "GLFW core profile equal profile： " << is_core_profile << std::endl;
     std::cout << "GLFW Window created!" << std::endl;
+    int f_width;
+    int f_height;
+
+    glfwGetWindowSize(window,&width,&height);
+    glfwGetFramebufferSize(window,&f_width,&f_height);
+    std::cout<<"windowSize: "<<width<<"x"<<height<<std::endl;
+    std::cout<<"FrameBufferSize"<<f_width<<"x"<<f_height<<std::endl;
+    glViewport(0,0,f_width,f_height);
+    return window;
+}
+
+void onSizeChanged(GLFWwindow*,int w,int h) {
+    glViewport(0,0,w,h);
+    std::cout<<w<<"x"<<h<<std::endl;
+}
+
+int Render(GLFWwindow* window) {
+    glfwSetFramebufferSizeCallback(window,onSizeChanged);
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         if (glfwGetKey(window,GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -308,19 +332,23 @@ int Render() {
 }
 
 int main() {
+    int width = 800;
+    int height = 600;
     if (!Init()) return 1;
     SetContextHints();
-    return Render();
+    GLFWwindow* window = CreateWindow(width,height);
+    if (window == nullptr) return 1;
+    return Render(window);
 }
 ```
 
-代码已经通过普通构建与 Sanitizer 构建的实际编译检查，没有编译警告；普通构建已实际运行并确认获得 OpenGL 4.1 Core Profile Context，关闭按钮和 `Esc` 均能进入统一清理流程。当前仍使用 GLFW C API 的手动生命周期，以便在后续 RAII 封装前清楚观察所有权和清理顺序。
+代码已经通过普通构建与 Sanitizer 构建的实际编译检查，没有编译警告；普通构建已实际运行并确认获得 OpenGL 4.1 Core Profile Context。窗口与 framebuffer 尺寸查询、viewport 初始设置和 resize callback 均已验证，关闭按钮和 `Esc` 均能进入统一清理流程。当前仍使用 GLFW C API 的手动生命周期，以便在后续 RAII 封装前清楚观察所有权和清理顺序。
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 2 周第 7 课已完成，等待开始第 8 课。**
+当前处于：**第 2 周第 8 课已完成，等待开始第 9 课。**
 
-本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。当前代码已创建窗口，明确请求并验证 OpenGL 4.1 Core Profile Context，并支持关闭按钮和 `Esc` 退出；尚未进入 Shader 或三角形。
+本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已创建窗口，明确请求并验证 OpenGL 4.1 Core Profile Context，能根据实际 framebuffer 像素尺寸设置和更新 viewport，并支持关闭按钮和 `Esc` 退出；尚未进入 Shader 或三角形。
 
 仓库远端和 AI 约束准备已经完成，初始基线和第 1 周的四课均已合并到 `main`。
 
@@ -330,7 +358,9 @@ int main() {
 
 第 6 课已完成 Context hints、OpenGL 4.1 Core Profile 创建、主线程 Context 绑定和实际属性查询，并已提交、推送和合并。学习者能够解释 hints 的生效时机、current Context 的线程含义，以及版本不可用时窗口创建失败而不会静默降级。
 
-第 7 课已完成事件轮询、`Esc` 按键状态查询、关闭标志设置和统一清理流程，并已提交、推送和合并。学习者能够解释 `glfwPollEvents` 的位置，以及设置关闭标志并不等于立即销毁窗口。下一步是在学习者明确开始第 8 课后，从最新 `main` 新建课程分支，再学习 Retina framebuffer 尺寸、viewport 和 resize callback。
+第 7 课已完成事件轮询、`Esc` 按键状态查询、关闭标志设置和统一清理流程，并已提交、推送和合并。学习者能够解释 `glfwPollEvents` 的位置，以及设置关闭标志并不等于立即销毁窗口。
+
+第 8 课已完成 window size、framebuffer size、viewport 和 resize callback，并已提交、推送和合并。学习者能够解释逻辑尺寸与物理像素尺寸的区别、为什么 viewport 使用 framebuffer 尺寸，以及回调的触发条件和当前执行线程。下一步是在学习者明确开始第 9 课后，从最新 `main` 新建课程分支，再学习 Shader 源码、编译、链接和错误日志。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -341,8 +371,8 @@ int main() {
 | 周 | 核心目标 | 状态 |
 | --- | --- | --- |
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
-| 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 进行中；第 7 课已完成，等待第 8 课 |
-| 第 3 周 | Shader 编译、VAO/VBO、彩色三角形、错误日志 | 未开始 |
+| 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
+| 第 3 周 | Shader 编译、VAO/VBO、彩色三角形、错误日志 | 未开始；等待第 9 课 |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
 
 ## 12. 协作要求
