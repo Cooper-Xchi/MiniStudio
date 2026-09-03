@@ -7,9 +7,11 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 掌握现代 C++ 的对象生命周期、RAII、所有权、移动语义和常用工程工具。
 - 理解 CPU 到 GPU 的数据流，以及 Buffer、Shader、Texture、Framebuffer 等核心对象。
 - 逐步实现模型加载、材质与光照、后处理、资源管理、异步加载、动画和编辑界面。
+- 建立 Android/OpenGL ES、Vulkan 和移动端性能经验，再用 Metal 验证跨后端设计。
+- 打通图片、动画、视频、3D 素材与 AI Agent/Tool Calling 的客户端创作链路。
 - 通过真实调试与性能数据验证结果，而不是把“看完教程”当作完成标准。
 
-当前的图形 API 路线是 **OpenGL 4.1 Core Profile + GLFW + macOS OpenGL.framework**。OpenGL 只作为第一套学习后端；完成基础渲染器后，再根据目标平台选择 Metal 或 Vulkan。
+当前第一套图形 API 是 **OpenGL 4.1 Core Profile + GLFW + macOS OpenGL.framework**。完成桌面渲染器后，目标岗位路线依次进入 Android/OpenGL ES 和 Vulkan；Metal 放在专家能力进阶阶段验证。第一套渲染器完成前不并行学习多套 API。
 
 ## 当前进度
 
@@ -65,7 +67,20 @@ cmake --build cmake-build-sanitize --parallel
 | v0.3～v0.4 | 图片/glTF、基础材质与光照、Framebuffer、阴影、PBR 和后处理 |
 | v0.5～v0.6 | 场景层级、资源缓存、Handle、热重载、后台解析和主线程 GPU 上传 |
 | v0.7～v0.8 | 动画、粒子、ImGui，以及一次有数据对比的性能优化 |
-| v0.9～v1.0 | RenderDevice、Metal/Vulkan 迁移，以及模拟 AI 素材任务接入 |
+| v0.9～v1.0 | Vulkan、RenderDevice，以及 AI 素材任务和 Tool Calling 接入 |
+
+## 24～36 个月课程路线
+
+| 时间 | 重点 | 目标 |
+| --- | --- | --- |
+| 第 1～6 月 | C++、OpenGL、模型、材质、光照与后处理 | 建成第一套可解释、可调试的桌面渲染器 |
+| 第 7～12 月 | 场景、资源、热更新、异步加载、动画与 ImGui | 形成第一版公开作品集 |
+| 第 13～18 月 | 性能分析、稳定性、Android 与 OpenGL ES | 获得真机兼容和优化证据 |
+| 第 19～24 月 | Vulkan、跨后端抽象、素材引擎与 AI Tool Calling | 具备投递同方向岗位的完整项目证据 |
+| 第 25～30 月 | 2D 动画、视频素材和 Metal | 扩展多媒体与第三平台能力 |
+| 第 31～36 月 | 大场景、性能架构、AI 工作流和真实协作 | 建立高级/专家方向的能力证据 |
+
+完整的阶段目标、验收标准、前四周课程和求职时间线见 [`MiniStudio-curriculum-24-36-months.md`](MiniStudio-curriculum-24-36-months.md)。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
 
 ## 仓库结构
 
@@ -74,9 +89,10 @@ MiniStudio/
 ├── AGENTS.md
 ├── CMakeLists.txt
 ├── README.md
+├── MiniStudio-curriculum-24-36-months.md
 ├── MiniStudio-learning-handoff-2026-09-03.md
 └── src/
     └── main.cpp
 ```
 
-详细的学习背景、路线、当前状态和下一步验收问题见 [`MiniStudio-learning-handoff-2026-09-03.md`](MiniStudio-learning-handoff-2026-09-03.md)。该交接文档是当前学习进度的主要记录；README 只提供稳定的项目入口和概览。AI 助手在本仓库中的操作和教学边界见 [`AGENTS.md`](AGENTS.md)。
+完整课程路线见 [`MiniStudio-curriculum-24-36-months.md`](MiniStudio-curriculum-24-36-months.md)，当前状态和下一步见 [`MiniStudio-learning-handoff-2026-09-03.md`](MiniStudio-learning-handoff-2026-09-03.md)。README 只提供稳定的项目入口和概览；AI 助手在本仓库中的操作和教学边界见 [`AGENTS.md`](AGENTS.md)。
