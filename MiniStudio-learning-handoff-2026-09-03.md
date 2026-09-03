@@ -23,7 +23,7 @@
 6. 理解 Windows、macOS、iOS、Android 的图形兼容问题。
 7. 最终理解 AI 素材任务与客户端渲染系统之间的数据协议、异步任务和格式转换。
 
-现实阶段目标是先达到初级图形开发或引擎向 TA 的可面试水平，再逐渐靠近高级 C++ 图形岗位。
+课程已根据目标岗位重新规划为 24～36 个月：前 24 个月先达到同方向初级岗位或引擎向 TA 的竞争水平，第 25～36 个月继续积累移动端、多媒体、跨后端、性能架构与 AI 创作工具证据。课程不能替代目标岗位要求的多年商业项目经验。
 
 ## 3. 学习优先级
 
@@ -32,7 +32,7 @@
 3. OpenGL 小型渲染器
 4. 场景、资源、动画及渲染架构
 5. 多线程、异步加载和性能分析
-6. Metal 或 Vulkan 中的一种现代显式图形 API
+6. Android/OpenGL ES 与 Vulkan，之后用 Metal 验证跨后端设计
 7. 跨平台抽象
 8. AI 素材接入、Agent、Tool Calling 和 RAG
 
@@ -40,7 +40,7 @@
 
 ## 4. 主项目与版本目标
 
-项目名：**MiniStudio**
+项目名：**MiniStudio**。版本号表示可验收的项目能力，不与月份一一对应；完整时间线见 `MiniStudio-curriculum-24-36-months.md`。
 
 | 版本 | 目标 |
 | --- | --- |
@@ -52,7 +52,7 @@
 | v0.6 | 后台解析素材、任务队列、取消机制和主线程 GPU 上传 |
 | v0.7 | 简单动画/粒子系统和 ImGui 编辑界面 |
 | v0.8 | 定位一次真实性能问题，记录优化前后数据 |
-| v0.9 | 抽象 RenderDevice，将核心场景迁移至 Metal 或 Vulkan |
+| v0.9 | 使用 Vulkan 迁移核心场景，并在两个真实后端之后抽象 RenderDevice |
 | v1.0 | 模拟 AI 素材任务的请求、轮询、取消、重试、下载、缓存与场景导入 |
 
 最终项目需要保留源码、构建说明、架构说明、关键对象生命周期说明、性能报告和演示素材。每个版本必须保持可编译、可运行。
@@ -84,7 +84,7 @@ CLion 使用它自带的 Ninja，因此 CLion 内可以使用 Ninja；终端练�
 
 理由：首次成像链路短，便于在学习 C++、CMake 和调试器的同时理解 Buffer、Shader、Framebuffer 与 draw call；本机已有 GLFW 和 OpenGL.framework，无需立刻安装依赖。
 
-边界：OpenGL 在 macOS 已被弃用，因此它只作为 v0.1～v0.8 的学习后端，不作为未来生产技术。v0.9 如果目标偏 macOS/iOS，优先 Metal；如果目标偏 Windows/Android 跨平台，再选择 Vulkan/MoltenVK。
+边界：OpenGL 在 macOS 已被弃用，因此它只作为第一套学习后端，不作为未来生产技术。当前目标岗位偏客户端跨平台渲染与 AI 创作工具：完成桌面渲染器后先进入 Android/OpenGL ES，再以 Vulkan 作为主要现代显式 API；Metal 放入第 25～36 个月，用于验证 Apple 平台和跨后端设计。目标岗位发生变化时可在季度复盘中调整。
 
 ## 7. 当前仓库状态
 
@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 当前稳定分支为 `main`；第四课分支 `codex/lesson-04-sanitizer-debugging` 已提交、推送并合并，分支继续保留。
+- 当前稳定分支为 `main`；课程规划分支 `codex/curriculum-24-36-months` 已提交、推送并合并，规划分支和前四课分支均继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -114,6 +114,7 @@ MiniStudio/
 ├── .gitignore
 ├── AGENTS.md
 ├── CMakeLists.txt
+├── MiniStudio-curriculum-24-36-months.md
 ├── MiniStudio-learning-handoff-2026-09-03.md
 ├── README.md
 └── src/
@@ -129,7 +130,7 @@ cmake-build-*/
 .DS_Store
 ```
 
-`README.md` 已补充项目目标、当前进度、构建方式、版本路线和仓库结构，作为稳定的项目入口。详细学习状态仍以本文档为准。
+`README.md` 保存稳定项目概览，`MiniStudio-curriculum-24-36-months.md` 保存完整课程和阶段验收，详细学习状态仍以本文档为准。
 
 ## 8. 已完成内容
 
@@ -270,7 +271,11 @@ int main() {
 
 第四课已在 `codex/lesson-04-sanitizer-debugging` 完成并合并：Sanitizer 配置有效，受控的悬空指针访问已被复现、读懂并修复，普通构建和 Sanitizer 构建均运行正常。第 1 周已经完成生命周期、所有权移动、RAII 边界和 Sanitizer 故障定位四项核心练习。下一步由学习者明确开始第 2 周；开始时从最新 `main` 新建课程分支，再进入 GLFW/OpenGL 窗口与上下文，不在当前分支继续开发。
 
-## 11. 前四周计划
+课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
+
+## 11. 课程路线入口与前四周计划
+
+完整课程阶段、验收规则、求职时间线和暂缓内容见 `MiniStudio-curriculum-24-36-months.md`。当前仍只执行下一节课程，不批量展开远期任务。
 
 | 周 | 核心目标 | 状态 |
 | --- | --- | --- |
@@ -303,6 +308,7 @@ int main() {
 
 - `AGENTS.md` 是项目级 AI 执行约束，规定教学方式、修改权限、课程分支、Git 安全边界和验证要求。
 - `README.md` 是项目入口，保存相对稳定的项目目标、构建命令和路线概览。
+- `MiniStudio-curriculum-24-36-months.md` 是当前有效的完整课程路线，保存 24 个月核心路线、第 25～36 个月进阶路线、阶段验收和求职时间线。
 - 本文档是当前学习状态的主要记录，后续应在阶段、代码状态或下一步发生变化时同步更新。
-- `graphics-rendering-learning-brief.md` 是最初的长期学习需求和协作原则来源。其中“第一次阅读后完成的任务”和“启动语”属于历史启动说明，不应在每次新任务中重复执行。
+- `graphics-rendering-learning-brief.md` 是最初的长期学习需求和协作原则来源；其中 12 个月要求已被学习者当前提出的 24～36 个月路线取代，“第一次阅读后完成的任务”和“启动语”也只属于历史启动说明。
 - 如果文档之间出现冲突，依次以学习者当前明确请求、实际仓库状态、本文档的较新记录为准。
