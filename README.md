@@ -21,10 +21,11 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 配置 C++20，以及 Clang/GCC 的常用编译警告。
 - 成功配置、编译并运行生命周期实验。
 - 初步学习构造、析构、`std::move` 和 `std::unique_ptr`。
+- 完成第一课的 CLion 生命周期调试，观察栈对象、堆对象、`this`、`get()` 和逆序析构。
 
-尚未开始 GLFW 或 OpenGL。当前检查点是先修正 [`src/main.cpp`](src/main.cpp) 中栈/堆对象的命名与输出格式，然后使用 CLion 调试器观察对象地址和析构顺序。
+尚未开始 GLFW 或 OpenGL。第一课的代码和概念验收已经通过，课程分支已提交、推送并合并回 `main`；下一门课程尚未开始。
 
-仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。开始生命周期调试课程时，应从最新 `main` 创建 `codex/lesson-01-lifetime-debug`；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
+仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。第一课分支 `codex/lesson-01-lifetime-debug` 在合并后继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
 ## 构建与运行
 

@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 当前分支为 `main`。
+- 当前稳定分支为 `main`；第一课分支 `codex/lesson-01-lifetime-debug` 已提交、推送并合并，分支暂时保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -154,14 +154,14 @@ cmake --build build --parallel
 ./build/ministudio
 ```
 
-当时的运行输出：
+第一课验收时的运行输出：
 
 ```text
-LifeTimeProbeheap
-LifeTimeProbedad
+construct: stack
+construct: heap
 main is ending
-~LifeTimeProbedad
-~LifeTimeProbeheap
+destroy: heap
+destroy: stack
 ```
 
 ### 已讲解的概念
@@ -176,6 +176,9 @@ main is ending
 - `std::make_unique<T>()` 的基本过程。
 - 简化版智能指针内部原理：保存裸指针、析构时 `delete`、禁止复制、允许移动。
 - `operator` 是运算符重载关键字，例如 `operator=` 和 `operator->`。
+- 已通过 CLion 断点观察两个对象构造和析构时的 `this` 与 `name_`。
+- 已确认 `heap_probe` 是局部的独占智能指针对象，拥有堆上的 `LifeTimeProbe`；`heap_probe.get()` 返回不转移所有权的裸指针。
+- 已理解同一作用域的局部变量按声明顺序的逆序析构，以及 `unique_ptr` 禁止复制、允许移动所有权的原因。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
@@ -190,45 +193,25 @@ main is ending
 struct LifeTimeProbe {
     explicit LifeTimeProbe(std::string name)
         :name_(std::move(name)){
-        std::cout << "LifeTimeProbe" << name_<<std::endl;
+        std::cout << "construct: " << name_<<'\n';
     }
 
     ~LifeTimeProbe() {
-        std::cout << "~LifeTimeProbe" << name_<<std::endl;
+        std::cout << "destroy: " << name_<<'\n';
     }
 
     std::string name_;
 };
 
 int main() {
-    LifeTimeProbe heap_probe("heap");
-    auto probe = std::make_unique<LifeTimeProbe>("dad");
+    LifeTimeProbe stack_probe("stack");
+    auto heap_probe = std::make_unique<LifeTimeProbe>("heap");
     std::cout << "main is ending" << std::endl;
     return 0;
 }
 ```
 
-代码可以编译运行，但存在一个尚未修正的概念性命名问题：
-
-```cpp
-LifeTimeProbe heap_probe("heap");
-```
-
-这一行创建的其实是栈对象，而不是堆对象。建议下一步改成：
-
-```cpp
-LifeTimeProbe stack_probe{"stack"};
-auto heap_probe = std::make_unique<LifeTimeProbe>("heap");
-```
-
-同时将输出格式整理为：
-
-```cpp
-std::cout << "construct: " << name_ << '\n';
-std::cout << "destroy: " << name_ << '\n';
-```
-
-这些建议目前还没有写入源码。
+代码已经通过实际配置、编译和运行检查，没有编译警告；对象命名与输出格式已修正。
 
 ## 10. 当前阶段与下一步
 
@@ -236,35 +219,15 @@ std::cout << "destroy: " << name_ << '\n';
 
 还没有开始 GLFW 或 OpenGL；不要跳到窗口和三角形。
 
-仓库远端和 AI 约束准备已经完成：`AGENTS.md` 已创建，GitHub `origin` 已配置，仓库专用 SSH 密钥已作为可写 Deploy key 完成认证，初始基线已推送到 `main`。开始下面的生命周期调试课程时，先从最新 `main` 创建课程分支 `codex/lesson-01-lifetime-debug`。
+仓库远端和 AI 约束准备已经完成，初始基线已推送到 `main`。第一课已在 `codex/lesson-01-lifetime-debug` 完成并合并：代码格式检查通过，实际编译运行无警告，学习者能够解释两个对象的构造/析构、局部变量逆序析构、`unique_ptr` 所有权和 `get()` 的非拥有语义。
 
-下一次只安排一个核心任务：
-
-> **使用 CLion 调试器观察栈对象、`unique_ptr` 所有对象以及析构顺序。预计 45～60 分钟。**
-
-步骤：
-
-1. 先修正上一节的对象命名和输出格式。
-2. 在构造函数、析构函数以及 `main is ending` 行设置断点。
-3. 使用 CLion 的 Debug 功能运行。
-4. 在 `main is ending` 处观察 `&stack_probe` 和 `heap_probe.get()`。
-5. 析构函数命中两次时，观察 `this` 与 `name_`。
-
-验收问题：
-
-1. 构造函数为什么执行两次？
-2. 析构函数为什么执行两次？
-3. 为什么 `heap` 对象先销毁、`stack` 对象后销毁？
-4. `heap_probe` 与 `heap_probe.get()` 分别是什么？
-5. 如果把 `unique_ptr` 复制给另一个变量，为什么编译器会拒绝？
-
-完成调试器练习并能回答以上问题后，再整理 `README.md` 并创建第一个本地 commit。之后才进入下一项 C++ 练习或 GLFW 初始化。
+第一课的 Git 收尾已经完成，课程分支保留。下一门课程尚未开始；开始时必须从最新 `main` 创建新的课程分支。当前仍应继续第 1 周的 C++ 与工具链内容，不进入 GLFW 或 OpenGL。
 
 ## 11. 前四周计划
 
 | 周 | 核心目标 | 状态 |
 | --- | --- | --- |
-| 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 进行中；最小构建已完成，调试器和 Sanitizer 尚未完成 |
+| 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 进行中；最小构建和生命周期调试已完成，Sanitizer 尚未完成 |
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 未开始 |
 | 第 3 周 | Shader 编译、VAO/VBO、彩色三角形、错误日志 | 未开始 |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
