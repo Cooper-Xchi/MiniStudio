@@ -17,8 +17,10 @@ struct LifeTimeProbe {
 };
 
 int main() {
-    LifeTimeProbe stack_probe("stack");
     auto heap_probe = std::make_unique<LifeTimeProbe>("heap");
+    LifeTimeProbe* lt_probe = heap_probe.get();
+    std::unique_ptr<LifeTimeProbe> moved_probe = std::move(heap_probe);
+    std::cout << heap_probe.get()<<'\n'<<moved_probe.get()<<'\n'<<lt_probe<<'\n';
     std::cout << "main is ending" << std::endl;
     return 0;
 }
