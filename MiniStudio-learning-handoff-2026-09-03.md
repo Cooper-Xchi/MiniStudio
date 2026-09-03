@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 当前稳定分支为 `main`；第一课分支 `codex/lesson-01-lifetime-debug` 已提交、推送并合并，分支暂时保留。
+- 当前稳定分支为 `main`；第二课分支 `codex/lesson-02-unique-ptr-move` 已提交、推送并合并，分支暂时保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -164,6 +164,17 @@ destroy: heap
 destroy: stack
 ```
 
+第二课验收时的运行输出：
+
+```text
+construct: heap
+0
+<heap-address>
+<same-heap-address>
+main is ending
+destroy: heap
+```
+
 ### 已讲解的概念
 
 - CLion、CMake、Ninja、Clang、LLDB 各自的职责。
@@ -179,6 +190,9 @@ destroy: stack
 - 已通过 CLion 断点观察两个对象构造和析构时的 `this` 与 `name_`。
 - 已确认 `heap_probe` 是局部的独占智能指针对象，拥有堆上的 `LifeTimeProbe`；`heap_probe.get()` 返回不转移所有权的裸指针。
 - 已理解同一作用域的局部变量按声明顺序的逆序析构，以及 `unique_ptr` 禁止复制、允许移动所有权的原因。
+- 已验证移动 `unique_ptr` 只转移所有权和内部地址值，不重新构造或搬移堆对象。
+- 已验证移动后的源 `unique_ptr` 为空，新所有者保留原地址，最终只删除对象一次。
+- 已区分裸指针保存的对象地址与裸指针变量自身的地址，并理解裸指针不拥有对象、对象销毁后会悬空。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
@@ -204,14 +218,16 @@ struct LifeTimeProbe {
 };
 
 int main() {
-    LifeTimeProbe stack_probe("stack");
     auto heap_probe = std::make_unique<LifeTimeProbe>("heap");
+    LifeTimeProbe* lt_probe = heap_probe.get();
+    std::unique_ptr<LifeTimeProbe> moved_probe = std::move(heap_probe);
+    std::cout << heap_probe.get()<<'\n'<<moved_probe.get()<<'\n'<<lt_probe<<'\n';
     std::cout << "main is ending" << std::endl;
     return 0;
 }
 ```
 
-代码已经通过实际配置、编译和运行检查，没有编译警告；对象命名与输出格式已修正。
+代码已经通过实际配置、编译和运行检查，没有编译警告；移动后的源为空，新所有者与观察用裸指针保存相同地址，堆对象只析构一次。
 
 ## 10. 当前阶段与下一步
 
@@ -219,15 +235,15 @@ int main() {
 
 还没有开始 GLFW 或 OpenGL；不要跳到窗口和三角形。
 
-仓库远端和 AI 约束准备已经完成，初始基线已推送到 `main`。第一课已在 `codex/lesson-01-lifetime-debug` 完成并合并：代码格式检查通过，实际编译运行无警告，学习者能够解释两个对象的构造/析构、局部变量逆序析构、`unique_ptr` 所有权和 `get()` 的非拥有语义。
+仓库远端和 AI 约束准备已经完成，初始基线和前两课均已合并到 `main`。第二课已在 `codex/lesson-02-unique-ptr-move` 完成并合并：代码格式检查通过，实际编译运行无警告，学习者能够解释 `unique_ptr` 所有权转移、移动后状态、地址稳定、单次析构和裸指针的非拥有语义。
 
-第一课的 Git 收尾已经完成，课程分支保留。下一门课程尚未开始；开始时必须从最新 `main` 创建新的课程分支。当前仍应继续第 1 周的 C++ 与工具链内容，不进入 GLFW 或 OpenGL。
+第二课的 Git 收尾已经完成，课程分支保留。下一门课程尚未开始；开始时必须从最新 `main` 创建新的课程分支。当前仍应继续第 1 周的 C++ 与工具链内容，不进入 GLFW 或 OpenGL。
 
 ## 11. 前四周计划
 
 | 周 | 核心目标 | 状态 |
 | --- | --- | --- |
-| 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 进行中；最小构建和生命周期调试已完成，Sanitizer 尚未完成 |
+| 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 进行中；生命周期调试和所有权移动实验已完成，Sanitizer 尚未完成 |
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 未开始 |
 | 第 3 周 | Shader 编译、VAO/VBO、彩色三角形、错误日志 | 未开始 |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
