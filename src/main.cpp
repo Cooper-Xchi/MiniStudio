@@ -6,19 +6,19 @@
 struct LifeTimeProbe {
     explicit LifeTimeProbe(std::string name)
         :name_(std::move(name)){
-        std::cout << "LifeTimeProbe" << name_<<std::endl;
+        std::cout << "construct: " << name_<<'\n';
     }
 
     ~LifeTimeProbe() {
-        std::cout << "~LifeTimeProbe" << name_<<std::endl;
+        std::cout << "destroy: " << name_<<'\n';
     }
 
     std::string name_;
 };
 
 int main() {
-    LifeTimeProbe heap_probe("heap");
-    auto probe = std::make_unique<LifeTimeProbe>("dad");
+    LifeTimeProbe stack_probe("stack");
+    auto heap_probe = std::make_unique<LifeTimeProbe>("heap");
     std::cout << "main is ending" << std::endl;
     return 0;
 }
