@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 稳定分支为 `main`；第 15 课已在 `codex/lesson-15-opengl-error-debug` 完成、推送并合并。课程规划分支与前十五课分支均继续保留。
+- 稳定分支为 `main`；第 16 课已在 `codex/lesson-16-v0-1-release` 完成、推送并合并。课程规划分支与前十六课分支均继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -314,7 +314,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 4 周第 16 课和第一个月 v0.1.0 收尾已完成验收，等待提交、推送并合并。**
+当前处于：**第 4 周第 16 课和第一个月 v0.1.0 收尾已完成并合并，等待开始第 17 课。**
 
 本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源和无状态渲染命令，并通过 `glDrawArrays` 与双缓冲交换稳定呈现 RGB 插值三角形。
 
@@ -344,7 +344,7 @@ int main() {
 
 第 15 课已在 `codex/lesson-15-opengl-error-debug` 完成：新增不拥有资源的 `OpenGLDebug` 命名空间模块，用 `ClearErrors()` 排空当前 Context 的旧错误，用 `CheckErrors(label)` 循环读取并报告本次渲染产生的错误；`Renderer::DrawFrame()` 仅在未定义 `NDEBUG` 时执行检查，Release 构建没有每帧查询开销。课程通过一次只发生一帧的负数 draw count 故障注入稳定复现并识别 `0x501`（`GL_INVALID_VALUE`），随后移除注入；Debug、Release 与 Sanitizer 三套构建均无警告，正常渲染无 OpenGL 错误日志，一帧正常退出路径通过 ASan/UBSan。学习者能够解释检查顺序及 Release 移除检查的性能原因。课程代码和里程碑记录已提交、推送并合并回 `main`。
 
-第 16 课已在 `codex/lesson-16-v0-1-release` 完成验收：CMake 项目版本明确为 0.1.0；README 补齐 Homebrew 依赖、Debug/Release/Sanitizer 可复现命令、v0.1 运行标准和最新目录；新增 `docs/MiniStudio-v0.1-lifecycle.md`，记录所有权、Context、主线程、初始化、逐帧流程、逆序析构、move-only 与错误检查边界。三种配置均从全新 Unix Makefiles 构建目录成功配置和编译且无警告；Sanitizer 版本实际显示彩色三角形，resize callback 持续收到 framebuffer 尺寸，Esc 后以退出码 0 正常结束，未出现 OpenGL、ASan 或 UBSan 错误。学习者能够独立解释 v0.1 的主要生命周期关系。本课尚未提交、推送或合并；完成版本操作后，第一个月结束，下一步根据阶段 A 路线从最新 `main` 开始第 17 课。
+第 16 课已在 `codex/lesson-16-v0-1-release` 完成：CMake 项目版本明确为 0.1.0；README 补齐 Homebrew 依赖、Debug/Release/Sanitizer 可复现命令、v0.1 运行标准和最新目录；新增 `docs/MiniStudio-v0.1-lifecycle.md`，记录所有权、Context、主线程、初始化、逐帧流程、逆序析构、move-only 与错误检查边界。三种配置均从全新 Unix Makefiles 构建目录成功配置和编译且无警告；Sanitizer 版本实际显示彩色三角形，resize callback 持续收到 framebuffer 尺寸，Esc 后以退出码 0 正常结束，未出现 OpenGL、ASan 或 UBSan 错误。学习者能够独立解释 v0.1 的主要生命周期关系。课程代码和里程碑记录已提交、推送并合并回 `main`，第一个月正式结束。下一步在学习者明确开始后，从最新 `main` 创建第 17 课分支，用 EBO 索引绘制学习顶点复用和索引数据生命周期。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -357,7 +357,7 @@ int main() {
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
 | 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 已完成；第 9～12 课均已验收并合并到 `main` |
-| 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 已完成；第 16 课及 v0.1.0 收尾已验收，等待提交、推送并合并 |
+| 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 已完成；第 16 课及 v0.1.0 收尾已完成并合并 |
 
 ## 12. 协作要求
 
