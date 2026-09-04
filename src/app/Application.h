@@ -1,7 +1,6 @@
 #pragma once
-#include "render/VertexArray.h"
 #include "platform/GlfwWindow.h"
-#include "render/ShaderProgram.h"
+#include "render/Renderer.h"
 
 class Application {
 public:
@@ -9,6 +8,5 @@ public:
 
 private:
     GlfwWindow window_;
-    ShaderProgram shader_program_;
-    VertexArray vertex_array_;
+    Renderer renderer_;
 };

@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 稳定分支为 `main`；第 12 课已在 `codex/lesson-12-colored-triangle` 完成、推送并合并。课程规划分支与前十二课分支均继续保留。
+- 稳定分支为 `main`；第 12 课已在 `codex/lesson-12-colored-triangle` 完成、推送并合并。第 13 课已在 `codex/lesson-13-renderer-boundary` 完成验收，尚未提交、推送或合并。课程规划分支与前十二课分支均继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -132,7 +132,9 @@ MiniStudio/
         ├── VertexArray.h
         ├── VertexArray.cpp
         ├── RenderCommand.h
-        └── RenderCommand.cpp
+        ├── RenderCommand.cpp
+        ├── Renderer.h
+        └── Renderer.cpp
 ```
 
 `.gitignore` 当前包含：
@@ -159,7 +161,7 @@ cmake-build-*/
 - 增加 `MINISTUDIO_ENABLE_SANITIZERS` CMake 选项；开启时为 Clang/GCC 编译和链接 AddressSanitizer、UndefinedBehaviorSanitizer，并保留帧指针。
 - 使用 `find_package(glfw3 3.4 REQUIRED)` 查找已安装的 GLFW，并将其导出的 `glfw` 目标以 `PRIVATE` 方式链接到 `ministudio`。
 - 使用 `find_package(OpenGL REQUIRED)` 查找系统 OpenGL，并将 `OpenGL::GL` 目标链接到 `ministudio`；macOS 构建定义 `GL_SILENCE_DEPRECATION`，避免系统弃用提示掩盖项目自身警告。
-- CMake 显式编译 `Application.cpp`、`GlfwWindow.cpp`、`ShaderProgram.cpp`、`VertexArray.cpp` 和 `RenderCommand.cpp`，并以 `src` 作为私有头文件搜索根目录；不会把目录名误当成源文件。
+- CMake 显式编译 `Application.cpp`、`GlfwWindow.cpp`、`ShaderProgram.cpp`、`VertexArray.cpp`、`RenderCommand.cpp` 和 `Renderer.cpp`，并以 `src` 作为私有头文件搜索根目录；不会把目录名误当成源文件。
 - 已使用终端完成一次实际配置、编译和运行，构建成功且没有警告。
 
 已验证的命令：
@@ -308,11 +310,11 @@ int main() {
 }
 ```
 
-当前依赖为 `main → Application → GlfwWindow/ShaderProgram/VertexArray/RenderCommand → GLFW/OpenGL`。`Application` 按值拥有窗口、Shader Program 和顶点输入资源，通过公开的意图型接口使用它们，不取得原始 OpenGL 资源 ID；无状态的清屏和 draw call 留在 `RenderCommand` 模块中，具体 GLFW/OpenGL 头文件和调用分别留在实现文件中。代码已经通过普通与 Sanitizer 构建，没有编译警告；窗口流程、Shader 编译/链接、顶点上传、attribute 配置、彩色三角形绘制、尺寸变化、Esc 退出、错误路径和自动清理均已实际验证。
+当前依赖为 `main → Application → GlfwWindow/Renderer`，Renderer 再单向依赖 `ShaderProgram/VertexArray/RenderCommand`，平台与渲染实现最终依赖 GLFW/OpenGL。`Application` 按值拥有窗口和 Renderer，Renderer 按值拥有 Shader Program 与顶点输入资源；成员声明顺序保证 Renderer 先析构、窗口和 Context 后析构。`Application` 只编排窗口初始化、事件、绘制和呈现，具体渲染数据与命令留在 Renderer 内。代码已经通过普通与 Sanitizer 构建，没有编译警告；重构后的彩色三角形画面和资源自动清理均已实际验证。
 
 ## 10. 当前阶段与下一步
 
-当前处于：**前 3 周及第 1～12 课已完成并合并，等待开始第 13 课。**
+当前处于：**第 4 周第 13 课已验收，等待提交、推送并合并。**
 
 本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源和无状态渲染命令，并通过 `glDrawArrays` 与双缓冲交换稳定呈现 RGB 插值三角形。
 
@@ -334,7 +336,9 @@ int main() {
 
 第 11 课已完成独立 `VertexArray` 模块、交错顶点布局和非法数量输入验收，并已提交、推送及合并回 `main`。
 
-第 12 课已在 `codex/lesson-12-colored-triangle` 完成：新增无状态 `RenderCommand` 模块和 `GlfwWindow::Present()`，建立 `Clear → Use Program → Bind VAO → DrawTriangles → Present` 的一帧顺序。普通与 Sanitizer 构建无警告，RGB 插值三角形、背景清屏、窗口缩放和 Esc 退出均已实际验证；学习者能够解释 Program、VAO/VBO、draw call 与双缓冲呈现的关系。课程代码和里程碑记录已提交、推送并合并回 `main`。下一步在学习者明确开始后，从最新 `main` 创建第 13 课分支，整理最小 Renderer 边界。
+第 12 课已在 `codex/lesson-12-colored-triangle` 完成：新增无状态 `RenderCommand` 模块和 `GlfwWindow::Present()`，建立 `Clear → Use Program → Bind VAO → DrawTriangles → Present` 的一帧顺序。普通与 Sanitizer 构建无警告，RGB 插值三角形、背景清屏、窗口缩放和 Esc 退出均已实际验证；学习者能够解释 Program、VAO/VBO、draw call 与双缓冲呈现的关系。课程代码和里程碑记录已提交、推送并合并回 `main`。
+
+第 13 课已在 `codex/lesson-13-renderer-boundary` 完成：新增拥有 `ShaderProgram` 和 `VertexArray` 的最小 Renderer，把 Shader 源码、顶点数据和 `Clear → Use → Bind → Draw` 流程移出 Application；Application 只拥有 Window 与 Renderer，并继续负责编排事件、绘制和双缓冲呈现。窗口初始化新增可选副屏独占全屏模式，仅在开关启用时查询显示器；副屏或视频模式不可用时会打印提示并安全退回普通窗口。普通与 Sanitizer 构建无警告，普通窗口、副屏全屏、重构后的彩色三角形和析构路径均已实际验证；学习者能够解释资源所有权、逆序析构以及 Present 保持在窗口侧的依赖原因。当前尚未提交、推送或合并。下一步先在学习者明确确认后完成这些 Git 操作，再从最新 `main` 开始第 14 课的 RAII、move-only 和头文件依赖审查。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -347,7 +351,7 @@ int main() {
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
 | 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 已完成；第 9～12 课均已验收并合并到 `main` |
-| 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
+| 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 进行中；第 13 课已验收并等待提交、推送和合并 |
 
 ## 12. 协作要求
 
