@@ -15,7 +15,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成前 2 周和第 3 周第 9 课。当前已经建立最小应用与窗口模块边界，下一步进入独立 `ShaderProgram` 模块和第一条 GPU 绘制链路。
+项目已经完成前 2 周和第 3 周第 9～10 课。当前已经建立最小应用、窗口与 `ShaderProgram` 模块边界，下一步进入独立顶点资源模块和第一条 GPU 绘制链路。
 
 已经完成：
 
@@ -32,10 +32,11 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第七课的事件循环与键盘输入实验，理解事件轮询、按键状态、关闭标志和统一清理流程。
 - 完成第八课的窗口尺寸与 framebuffer 尺寸实验，使用实际 framebuffer 像素设置 viewport，并在尺寸变化时通过回调同步更新。
 - 完成第九课的项目骨架整理，将启动、应用流程和 GLFW 窗口资源拆分为单向依赖的 `main`、`Application` 与 `GlfwWindow`。
+- 完成第十课的 `ShaderProgram` 模块，能够编译顶点/片元 Shader、链接 Program、输出完整错误日志，并按 Context 生命周期释放 OpenGL 资源。
 
-前九课均已完成并合并回 `main`。第九课的课程分支为 `codex/lesson-09-project-architecture`；当前等待开始第 10 课，尚未进入 Shader 或三角形绘制。
+前九课均已完成并合并回 `main`。第十课已在 `codex/lesson-10-shader-program` 通过技术与口头验收，当前等待提交、推送并合并；尚未进入顶点 Buffer 或三角形绘制。
 
-仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。九个已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
+仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
 ## 构建与运行
 
@@ -102,9 +103,12 @@ MiniStudio/
     ├── app/
     │   ├── Application.h
     │   └── Application.cpp
-    └── platform/
-        ├── GlfwWindow.h
-        └── GlfwWindow.cpp
+    ├── platform/
+    │   ├── GlfwWindow.h
+    │   └── GlfwWindow.cpp
+    └── render/
+        ├── ShaderProgram.h
+        └── ShaderProgram.cpp
 ```
 
 完整课程路线见 [`docs/MiniStudio-curriculum-24-36-months.md`](docs/MiniStudio-curriculum-24-36-months.md)，当前状态和下一步见 [`docs/MiniStudio-learning-handoff-2026-09-03.md`](docs/MiniStudio-learning-handoff-2026-09-03.md)。README 只提供稳定的项目入口和概览；AI 助手在本仓库中的操作和教学边界见 [`AGENTS.md`](AGENTS.md)。

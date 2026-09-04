@@ -1,6 +1,6 @@
 # MiniStudio C++ 图形渲染学习交接文档
 
-> 更新时间：2026-09-03
+> 更新时间：2026-09-04
 > 用途：作为新 Codex 任务的背景与进度附件。本文是学习上下文，不代表要求一次完成全部路线。新任务应从“当前状态”和“下一步”继续，不要重新初始化项目。
 
 ## 1. 学习者背景
@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 稳定分支为 `main`；第 9 课已在 `codex/lesson-09-project-architecture` 完成、推送并合并。课程规划分支与前九课分支均继续保留。
+- 稳定分支为 `main`；第 9 课已完成、推送并合并。第 10 课已在 `codex/lesson-10-shader-program` 通过技术与口头验收，当前改动尚未提交、推送或合并。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -123,9 +123,12 @@ MiniStudio/
     ├── app/
     │   ├── Application.h
     │   └── Application.cpp
-    └── platform/
-        ├── GlfwWindow.h
-        └── GlfwWindow.cpp
+    ├── platform/
+    │   ├── GlfwWindow.h
+    │   └── GlfwWindow.cpp
+    └── render/
+        ├── ShaderProgram.h
+        └── ShaderProgram.cpp
 ```
 
 `.gitignore` 当前包含：
@@ -152,7 +155,7 @@ cmake-build-*/
 - 增加 `MINISTUDIO_ENABLE_SANITIZERS` CMake 选项；开启时为 Clang/GCC 编译和链接 AddressSanitizer、UndefinedBehaviorSanitizer，并保留帧指针。
 - 使用 `find_package(glfw3 3.4 REQUIRED)` 查找已安装的 GLFW，并将其导出的 `glfw` 目标以 `PRIVATE` 方式链接到 `ministudio`。
 - 使用 `find_package(OpenGL REQUIRED)` 查找系统 OpenGL，并将 `OpenGL::GL` 目标链接到 `ministudio`；macOS 构建定义 `GL_SILENCE_DEPRECATION`，避免系统弃用提示掩盖项目自身警告。
-- CMake 显式编译 `Application.cpp` 和 `GlfwWindow.cpp`，并以 `src` 作为私有头文件搜索根目录；不会把目录名误当成源文件。
+- CMake 显式编译 `Application.cpp`、`GlfwWindow.cpp` 和 `ShaderProgram.cpp`，并以 `src` 作为私有头文件搜索根目录；不会把目录名误当成源文件。
 - 已使用终端完成一次实际配置、编译和运行，构建成功且没有警告。
 
 已验证的命令：
@@ -236,6 +239,8 @@ GLFW Window created!
 
 第九课将单文件程序拆分为 `main`、`Application` 和 `GlfwWindow`：`main` 只创建并运行应用；`Application` 按值拥有窗口并编排初始化、事件和退出流程；`GlfwWindow` 独占 `GLFWwindow*`，封装 GLFW/OpenGL 调用并在析构时统一销毁窗口和终止 GLFW。窗口缩放、`Esc` 退出和退出码 `0` 已实际验证，普通与 Sanitizer 构建均无警告。
 
+第十课新增独立 `ShaderProgram`：分别编译顶点与片元 Shader、读取编译日志、链接 Program，并使用返回值逐层传播失败。`Application` 先拥有 `GlfwWindow`、后拥有 `ShaderProgram`，因此析构时先删除 Program，再销毁窗口与 OpenGL Context。普通与 Sanitizer 构建均无警告；正确源码链接成功。验收时临时删除片元 Shader 分号，程序输出完整 `0:6` 语法错误、跳过链接并返回 `1`，恢复源码后重新构建成功。
+
 ### 已讲解的概念
 
 - CLion、CMake、Ninja、Clang、LLDB 各自的职责。
@@ -275,6 +280,10 @@ GLFW Window created!
 - 已区分对象成员与指针成员：`GlfwWindow window_` 表示直接拥有对象，`GlfwWindow* window_` 只保存地址且不会构造所指对象。
 - 已理解所有权与解耦是两个问题：按值成员表达 `Application` 拥有窗口，不公开 `GLFWwindow*` 则避免应用层直接依赖 GLFW 实现。
 - 已理解初始化成功但窗口创建失败时，`Application::Run` 返回后成员仍会自动析构，并依据初始化状态调用 `glfwTerminate`，从而保持统一清理路径。
+- 已理解 OpenGL Context 不是线程，而是绑定到调用线程的状态与资源环境；OpenGL API 操作调用线程的 Current Context。
+- 已理解 Shader 的源码提交、编译与状态查询，以及 Program 的附加、链接、使用和释放顺序；单阶段编译错误与跨阶段链接错误需要使用不同日志 API。
+- 已理解临时 Shader 在链接结束后可以删除，长期资源由 `ShaderProgram` 独占；编译或链接任一步失败时，当前函数必须释放尚未移交的资源并传播失败。
+- 已理解成员按声明顺序构造、逆序析构；`window_` 先声明、`shader_program_` 后声明，使 Program 在 OpenGL Context 之前销毁。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
@@ -289,13 +298,13 @@ int main() {
 }
 ```
 
-当前依赖为 `main → Application → GlfwWindow → GLFW/OpenGL`。`Application` 通过公开的意图型接口控制窗口，不取得原始句柄；`GlfwWindow.h` 只前置声明 `GLFWwindow`，具体 GLFW/OpenGL 头文件和调用留在 `GlfwWindow.cpp`。代码已经通过普通与 Sanitizer 构建，没有编译警告；窗口创建、缩放回调、`Esc` 退出和自动清理均已实际验证。
+当前依赖为 `main → Application → GlfwWindow/ShaderProgram → GLFW/OpenGL`。`Application` 按值拥有窗口和 Shader Program，通过公开的意图型接口使用它们，不取得原始 OpenGL 资源 ID；具体 GLFW/OpenGL 头文件和调用分别留在实现文件中。代码已经通过普通与 Sanitizer 构建，没有编译警告；窗口流程、Shader 编译、Program 链接、完整错误日志和自动清理均已实际验证。
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 3 周第 9 课已完成，等待开始第 10 课。**
+当前处于：**第 3 周第 10 课已完成验收，等待提交、推送并合并。**
 
-本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已经拆分应用流程与具体窗口实现，能根据实际 framebuffer 像素尺寸设置和更新 viewport，并支持关闭按钮和 `Esc` 退出；尚未进入 Shader 或三角形。
+本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已经拆分应用、窗口和 Shader Program，能编译并链接 GLSL、输出错误日志，并支持关闭按钮和 `Esc` 退出；尚未进入顶点 Buffer 或三角形。
 
 仓库远端和 AI 约束准备已经完成，初始基线和第 1 周的四课均已合并到 `main`。
 
@@ -309,7 +318,9 @@ int main() {
 
 第 8 课已完成 window size、framebuffer size、viewport 和 resize callback，并已提交、推送和合并。学习者能够解释逻辑尺寸与物理像素尺寸的区别、为什么 viewport 使用 framebuffer 尺寸，以及回调的触发条件和当前执行线程。
 
-第 9 课已完成最小项目骨架：`main` 负责启动，`Application` 按值拥有 `GlfwWindow` 并编排流程，`GlfwWindow` 封装具体平台调用和资源释放。下一步是在学习者明确开始第 10 课后，从最新 `main` 新建课程分支，以独立 `ShaderProgram` 模块学习 Shader 编译、链接、错误日志和资源生命周期。
+第 9 课已完成最小项目骨架：`main` 负责启动，`Application` 按值拥有 `GlfwWindow` 并编排流程，`GlfwWindow` 封装具体平台调用和资源释放。
+
+第 10 课已完成独立 `ShaderProgram` 模块和受控 Shader 语法错误验收。待学习者确认后提交、推送并合并回 `main`；完成合并后再从最新 `main` 创建第 11 课分支，学习顶点数据、VBO、VAO、attribute 与资源所有权。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -321,7 +332,7 @@ int main() {
 | --- | --- | --- |
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
-| 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 进行中；第 9 课已完成，等待第 10 课 |
+| 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 进行中；第 9～10 课已完成，第 10 课等待提交、推送并合并 |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
 
 ## 12. 协作要求
