@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 稳定分支为 `main`；第 10 课已在 `codex/lesson-10-shader-program` 完成、推送并合并。课程规划分支与前十课分支均继续保留。
+- 稳定分支为 `main`；第 10 课已完成、推送并合并。第 11 课已在 `codex/lesson-11-vertex-resources` 通过技术与口头验收，当前改动尚未提交、推送或合并。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -128,7 +128,9 @@ MiniStudio/
     │   └── GlfwWindow.cpp
     └── render/
         ├── ShaderProgram.h
-        └── ShaderProgram.cpp
+        ├── ShaderProgram.cpp
+        ├── VertexArray.h
+        └── VertexArray.cpp
 ```
 
 `.gitignore` 当前包含：
@@ -155,7 +157,7 @@ cmake-build-*/
 - 增加 `MINISTUDIO_ENABLE_SANITIZERS` CMake 选项；开启时为 Clang/GCC 编译和链接 AddressSanitizer、UndefinedBehaviorSanitizer，并保留帧指针。
 - 使用 `find_package(glfw3 3.4 REQUIRED)` 查找已安装的 GLFW，并将其导出的 `glfw` 目标以 `PRIVATE` 方式链接到 `ministudio`。
 - 使用 `find_package(OpenGL REQUIRED)` 查找系统 OpenGL，并将 `OpenGL::GL` 目标链接到 `ministudio`；macOS 构建定义 `GL_SILENCE_DEPRECATION`，避免系统弃用提示掩盖项目自身警告。
-- CMake 显式编译 `Application.cpp`、`GlfwWindow.cpp` 和 `ShaderProgram.cpp`，并以 `src` 作为私有头文件搜索根目录；不会把目录名误当成源文件。
+- CMake 显式编译 `Application.cpp`、`GlfwWindow.cpp`、`ShaderProgram.cpp` 和 `VertexArray.cpp`，并以 `src` 作为私有头文件搜索根目录；不会把目录名误当成源文件。
 - 已使用终端完成一次实际配置、编译和运行，构建成功且没有警告。
 
 已验证的命令：
@@ -241,6 +243,8 @@ GLFW Window created!
 
 第十课新增独立 `ShaderProgram`：分别编译顶点与片元 Shader、读取编译日志、链接 Program，并使用返回值逐层传播失败。`Application` 先拥有 `GlfwWindow`、后拥有 `ShaderProgram`，因此析构时先删除 Program，再销毁窗口与 OpenGL Context。普通与 Sanitizer 构建均无警告；正确源码链接成功。验收时临时删除片元 Shader 分号，程序输出完整 `0:6` 语法错误、跳过链接并返回 `1`，恢复源码后重新构建成功。
 
+第十一课新增独立 `VertexArray`：上传三组交错排列的位置/颜色数据到 VBO，并用 VAO 记录 `location 0/1`、步长和偏移。`Application` 最后拥有 `VertexArray`，使 VAO/VBO 在 Shader Program 和 Context 之前释放。普通与 Sanitizer 构建均无警告；正确的 18 个 `float` 得到 3 个顶点并稳定运行。验收时临时传入 17 个 `float`，初始化在创建 OpenGL 资源前安全返回失败，程序返回 `1`，恢复后重新构建成功。
+
 ### 已讲解的概念
 
 - CLion、CMake、Ninja、Clang、LLDB 各自的职责。
@@ -284,6 +288,10 @@ GLFW Window created!
 - 已理解 Shader 的源码提交、编译与状态查询，以及 Program 的附加、链接、使用和释放顺序；单阶段编译错误与跨阶段链接错误需要使用不同日志 API。
 - 已理解临时 Shader 在链接结束后可以删除，长期资源由 `ShaderProgram` 独占；编译或链接任一步失败时，当前函数必须释放尚未移交的资源并传播失败。
 - 已理解成员按声明顺序构造、逆序析构；`window_` 先声明、`shader_program_` 后声明，使 Program 在 OpenGL Context 之前销毁。
+- 已理解 `glBufferData` 按字节分配并复制 CPU 顶点数据，调用结束后 VBO 不依赖原 CPU 数组的生命周期。
+- 已理解 VAO 不保存实际顶点数据，而是记录 attribute 如何从绑定的 VBO 取数；`glVertexAttribPointer` 调用时必须已有当前 VAO 和 VBO。
+- 已理解交错顶点布局中 `6 * sizeof(float)` 是相邻顶点同一 attribute 的步长，`3 * sizeof(float)` 是颜色 attribute 的起始字节偏移。
+- 已理解 `VertexArray` 独占 VAO/VBO，拒绝复制与移动，并在部分初始化失败时回滚已经创建的资源。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
@@ -298,13 +306,13 @@ int main() {
 }
 ```
 
-当前依赖为 `main → Application → GlfwWindow/ShaderProgram → GLFW/OpenGL`。`Application` 按值拥有窗口和 Shader Program，通过公开的意图型接口使用它们，不取得原始 OpenGL 资源 ID；具体 GLFW/OpenGL 头文件和调用分别留在实现文件中。代码已经通过普通与 Sanitizer 构建，没有编译警告；窗口流程、Shader 编译、Program 链接、完整错误日志和自动清理均已实际验证。
+当前依赖为 `main → Application → GlfwWindow/ShaderProgram/VertexArray → GLFW/OpenGL`。`Application` 按值拥有窗口、Shader Program 和顶点输入资源，通过公开的意图型接口使用它们，不取得原始 OpenGL 资源 ID；具体 GLFW/OpenGL 头文件和调用分别留在实现文件中。代码已经通过普通与 Sanitizer 构建，没有编译警告；窗口流程、Shader 编译/链接、顶点上传、attribute 配置、错误路径和自动清理均已实际验证。
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 3 周第 10 课已完成并合并，等待开始第 11 课。**
+当前处于：**第 3 周第 11 课已完成验收，等待提交、推送并合并。**
 
-本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已经拆分应用、窗口和 Shader Program，能编译并链接 GLSL、输出错误日志，并支持关闭按钮和 `Esc` 退出；尚未进入顶点 Buffer 或三角形。
+本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已经拆分应用、窗口、Shader Program 和顶点输入资源，能上传三角形位置/颜色并配置 VAO；尚未执行 draw call 或呈现三角形。
 
 仓库远端和 AI 约束准备已经完成，初始基线和第 1 周的四课均已合并到 `main`。
 
@@ -320,7 +328,9 @@ int main() {
 
 第 9 课已完成最小项目骨架：`main` 负责启动，`Application` 按值拥有 `GlfwWindow` 并编排流程，`GlfwWindow` 封装具体平台调用和资源释放。
 
-第 10 课已完成独立 `ShaderProgram` 模块和受控 Shader 语法错误验收，并已提交、推送及合并回 `main`。下一步在学习者明确开始第 11 课后，从最新 `main` 创建课程分支，学习顶点数据、VBO、VAO、attribute 与资源所有权。
+第 10 课已完成独立 `ShaderProgram` 模块和受控 Shader 语法错误验收，并已提交、推送及合并回 `main`。
+
+第 11 课已完成独立 `VertexArray` 模块、交错顶点布局和非法数量输入验收。待学习者确认后提交、推送并合并回 `main`；完成合并后再从最新 `main` 创建第 12 课分支，调用 draw call 绘制彩色三角形并完成一次状态错误定位。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -332,7 +342,7 @@ int main() {
 | --- | --- | --- |
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
-| 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 进行中；第 9～10 课已完成并合并，等待第 11 课 |
+| 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 进行中；第 9～11 课已完成，第 11 课等待提交、推送并合并 |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
 
 ## 12. 协作要求
