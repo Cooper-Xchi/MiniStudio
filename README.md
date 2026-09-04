@@ -15,7 +15,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成前 2 周和第 3 周第 9～11 课。当前已经建立最小应用、窗口、`ShaderProgram` 与顶点资源模块边界，下一步完成第一条 GPU 绘制链路。
+项目已经完成前 2 周和第 3 周第 9～12 课。当前已经建立最小应用、窗口、`ShaderProgram`、顶点资源与无状态渲染命令边界，并打通第一条 GPU 绘制链路；下一步进入第 4 周，建立最小 Renderer 边界。
 
 已经完成：
 
@@ -34,8 +34,9 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第九课的项目骨架整理，将启动、应用流程和 GLFW 窗口资源拆分为单向依赖的 `main`、`Application` 与 `GlfwWindow`。
 - 完成第十课的 `ShaderProgram` 模块，能够编译顶点/片元 Shader、链接 Program、输出完整错误日志，并按 Context 生命周期释放 OpenGL 资源。
 - 完成第十一课的 `VertexArray` 模块，将交错排列的位置/颜色数据上传到 VBO，以 VAO 记录 attribute 布局，并按 Context 生命周期释放顶点资源。
+- 完成第十二课的彩色三角形绘制：每帧依次清屏、绑定 Program 和 VAO、发出 draw call，再交换双缓冲呈现；实际验证了 RGB 插值、窗口缩放和 Esc 退出。
 
-前十一课均已完成并合并回 `main`。第十一课的课程分支为 `codex/lesson-11-vertex-resources`；当前等待开始第 12 课，尚未执行三角形 draw call。
+前十一课均已完成并合并回 `main`。第十二课已在 `codex/lesson-12-colored-triangle` 完成验收，当前尚未提交、推送或合并；稳定的 `main` 仍停留在第十一课。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
@@ -111,7 +112,9 @@ MiniStudio/
         ├── ShaderProgram.h
         ├── ShaderProgram.cpp
         ├── VertexArray.h
-        └── VertexArray.cpp
+        ├── VertexArray.cpp
+        ├── RenderCommand.h
+        └── RenderCommand.cpp
 ```
 
 完整课程路线见 [`docs/MiniStudio-curriculum-24-36-months.md`](docs/MiniStudio-curriculum-24-36-months.md)，当前状态和下一步见 [`docs/MiniStudio-learning-handoff-2026-09-03.md`](docs/MiniStudio-learning-handoff-2026-09-03.md)。README 只提供稳定的项目入口和概览；AI 助手在本仓库中的操作和教学边界见 [`AGENTS.md`](AGENTS.md)。
