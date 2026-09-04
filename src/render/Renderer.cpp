@@ -6,6 +6,7 @@
 
 #include <iterator>
 
+#include "OpenGLDebug.h"
 #include "RenderCommand.h"
 
 bool Renderer::Initialize() {
@@ -42,8 +43,14 @@ void main() {
 }
 
 void Renderer::DrawFrame() {
+    #ifndef NDEBUG
+        OpenGLDebug::ClearErrors();
+    #endif
     RenderCommand::Clear(0.36,0.5,0.6,1);
     shader_program_.Use();
     vertex_array_.Bind();
     RenderCommand::DrawTriangles(vertex_array_.VertexCount());
+    #ifndef NDEBUG
+        OpenGLDebug::CheckErrors("Renderer::DrawFrame");
+    #endif
 }
