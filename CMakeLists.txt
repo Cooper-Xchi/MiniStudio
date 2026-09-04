@@ -11,6 +11,7 @@ add_executable(ministudio
         src/render/RenderCommand.cpp
         src/render/RenderCommand.h
         src/render/Renderer.cpp
+        src/render/OpenGLDebug.cpp
 )
 
 option(MINISTUDIO_ENABLE_SANITIZERS
