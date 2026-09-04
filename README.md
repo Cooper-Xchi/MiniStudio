@@ -15,7 +15,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成前 3 周和第 4 周第 15 课。当前已经建立最小应用、窗口与 `Renderer` 边界，让渲染资源具备明确的 move-only RAII 语义，并能在 Debug 构建中定位 OpenGL 错误；第 15 课已在课程分支验收，等待提交、推送并合并后进入 v0.1 回归与文档收尾。
+项目已经完成前 3 周和第 4 周第 15 课。当前已经建立最小应用、窗口与 `Renderer` 边界，让渲染资源具备明确的 move-only RAII 语义，并能在 Debug 构建中定位 OpenGL 错误；下一步进入 v0.1 回归与文档收尾。
 
 已经完成：
 
@@ -39,7 +39,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第十四课的 RAII 与移动语义审查：`ShaderProgram`、`VertexArray` 和 `Renderer` 禁止复制并支持 `noexcept` 移动，资源句柄在所有权转移后清空源对象；实际验证了 move 构造、self-move、move 赋值以及单次释放。
 - 完成第十五课的 OpenGL 错误诊断：新增无状态 `OpenGLDebug` 模块，Debug 构建在每帧 OpenGL 调用前排空旧错误并在绘制后报告本帧错误；通过一次受控的负数顶点数量注入定位到 `GL_INVALID_VALUE`，Release 构建则通过 `NDEBUG` 移除每帧检查。
 
-前十四课均已完成并合并回 `main`。第十五课已在 `codex/lesson-15-opengl-error-debug` 完成验收，尚未提交、推送或合并；当前稳定的 `main` 仍是第十四课基线。
+前十五课均已完成并合并回 `main`。第十五课的课程分支为 `codex/lesson-15-opengl-error-debug`，该分支已推送并继续保留；当前稳定的 `main` 已包含仅在 Debug 生效的 OpenGL 错误诊断路径。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 

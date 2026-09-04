@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 稳定分支为 `main`；第 14 课已在 `codex/lesson-14-raii-move-only` 完成、推送并合并。课程规划分支与前十四课分支均继续保留。
+- 稳定分支为 `main`；第 15 课已在 `codex/lesson-15-opengl-error-debug` 完成、推送并合并。课程规划分支与前十五课分支均继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -314,7 +314,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 4 周第 15 课已完成验收，等待提交、推送并合并；之后进入第 16 课。**
+当前处于：**第 4 周第 15 课已完成并合并，等待开始第 16 课。**
 
 本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源和无状态渲染命令，并通过 `glDrawArrays` 与双缓冲交换稳定呈现 RGB 插值三角形。
 
@@ -342,7 +342,7 @@ int main() {
 
 第 14 课已在 `codex/lesson-14-raii-move-only` 完成：`ShaderProgram` 与 `VertexArray` 保持独占 OpenGL 资源所有权，禁止复制并实现 `noexcept` move 构造和 move 赋值；`Renderer` 显式遵循相同的 move-only 规则，`GlfwWindow` 因当前 Context 与 GLFW 全局生命周期约束继续保持不可移动。资源接管前会释放目标对象原有资源，接管后会清空源对象句柄，`Release()` 保持私有并将状态复位。普通与 Sanitizer 构建无警告；临时验证程序通过类型特征检查，并让真实 OpenGL Program、VAO 和 VBO 经历 move 构造、self-move 与 move 赋值，三次均成功绘制三角形且 ASan/UBSan 无报错。学习者能够解释 move 是资源句柄所有权转移而不是复制或重建 GPU 资源。课程代码和里程碑记录已提交、推送并合并回 `main`。
 
-第 15 课已在 `codex/lesson-15-opengl-error-debug` 完成验收：新增不拥有资源的 `OpenGLDebug` 命名空间模块，用 `ClearErrors()` 排空当前 Context 的旧错误，用 `CheckErrors(label)` 循环读取并报告本次渲染产生的错误；`Renderer::DrawFrame()` 仅在未定义 `NDEBUG` 时执行检查，Release 构建没有每帧查询开销。课程通过一次只发生一帧的负数 draw count 故障注入稳定复现并识别 `0x501`（`GL_INVALID_VALUE`），随后移除注入；Debug、Release 与 Sanitizer 三套构建均无警告，正常渲染无 OpenGL 错误日志，一帧正常退出路径通过 ASan/UBSan。学习者能够解释检查顺序及 Release 移除检查的性能原因。本课尚未提交、推送或合并；完成版本操作后，下一步从最新 `main` 创建第 16 课分支，进行 v0.1 回归检查、生命周期文档和演示收尾。
+第 15 课已在 `codex/lesson-15-opengl-error-debug` 完成：新增不拥有资源的 `OpenGLDebug` 命名空间模块，用 `ClearErrors()` 排空当前 Context 的旧错误，用 `CheckErrors(label)` 循环读取并报告本次渲染产生的错误；`Renderer::DrawFrame()` 仅在未定义 `NDEBUG` 时执行检查，Release 构建没有每帧查询开销。课程通过一次只发生一帧的负数 draw count 故障注入稳定复现并识别 `0x501`（`GL_INVALID_VALUE`），随后移除注入；Debug、Release 与 Sanitizer 三套构建均无警告，正常渲染无 OpenGL 错误日志，一帧正常退出路径通过 ASan/UBSan。学习者能够解释检查顺序及 Release 移除检查的性能原因。课程代码和里程碑记录已提交、推送并合并回 `main`。下一步在学习者明确开始后，从最新 `main` 创建第 16 课分支，进行 v0.1 回归检查、生命周期文档和演示收尾。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -355,7 +355,7 @@ int main() {
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
 | 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 已完成；第 9～12 课均已验收并合并到 `main` |
-| 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 进行中；第 15 课已验收，等待提交、推送并合并 |
+| 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 进行中；第 15 课已完成并合并，等待第 16 课 |
 
 ## 12. 协作要求
 
