@@ -77,3 +77,7 @@ bool GlfwWindow::IsEscapePressed() const {
 void GlfwWindow::RequestClose() {
     glfwSetWindowShouldClose(handle_, GLFW_TRUE);
 }
+
+void GlfwWindow::Present() {
+    glfwSwapBuffers(handle_);
+}

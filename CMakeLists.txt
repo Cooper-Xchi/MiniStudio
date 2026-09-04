@@ -8,6 +8,8 @@ add_executable(ministudio
         src/platform/GlfwWindow.cpp
         src/render/ShaderProgram.cpp
         src/render/VertexArray.cpp
+        src/render/RenderCommand.cpp
+        src/render/RenderCommand.h
 )
 
 option(MINISTUDIO_ENABLE_SANITIZERS
