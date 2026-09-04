@@ -3,6 +3,7 @@
 #include <iterator>
 
 #include "platform/GlfwWindow.h"
+#include "render/RenderCommand.h"
 #include "render/ShaderProgram.h"
 
 constexpr const char* vertex_source = R"(#version 410 core
@@ -35,13 +36,18 @@ int Application::Run() {
     if (!window_.Initialize(1280,960,"MiniStudio"))return 1;
     if (!shader_program_.Initialize(vertex_source, fragment_source)) return 1;
     if (!vertex_array_.Initialize(triangle_vertices,std::size(triangle_vertices))) return 1;
-    shader_program_.Use();
-    vertex_array_.Bind();
+
+
     while (!window_.ShouldClose()) {
         window_.PollEvents();
         if (window_.IsEscapePressed()) {
             window_.RequestClose();
         }
+        RenderCommand::Clear(0.36,0.5,0.6,1);
+        shader_program_.Use();
+        vertex_array_.Bind();
+        RenderCommand::DrawTriangles(vertex_array_.VertexCount());
+        window_.Present();
 
     }
     return 0;

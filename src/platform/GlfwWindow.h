@@ -17,6 +17,7 @@ public:
     void PollEvents();
     bool IsEscapePressed() const;
     void RequestClose();
+    void Present();
 
 
 private:
