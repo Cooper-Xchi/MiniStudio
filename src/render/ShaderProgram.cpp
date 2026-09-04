@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <OpenGL/gl3.h>
+#include <utility>
 
 bool ShaderProgram::Initialize(const char *vertex, const char *fragment) {
     if (program_id_!=0) return false;
@@ -28,7 +29,7 @@ void ShaderProgram::Use()  const{
 }
 
 ShaderProgram::~ShaderProgram() {
-    if (program_id_!=0) glDeleteProgram(program_id_);
+    Release();
 }
 
 
@@ -80,4 +81,23 @@ unsigned int ShaderProgram::LinkProgram(unsigned int vid, unsigned int fid) {
         return 0;
     }
     return pid;
+}
+
+void ShaderProgram::Release() {
+    if (program_id_!=0) {
+        glDeleteProgram(program_id_);
+        program_id_ = 0;
+    }
+}
+
+ShaderProgram::ShaderProgram(ShaderProgram&& other) noexcept :program_id_(other.program_id_) {
+    other.program_id_ = 0;
+}
+
+ShaderProgram& ShaderProgram::operator=(ShaderProgram&& other) noexcept{
+if (this == &other) return *this;
+    Release();
+    program_id_ = std::exchange(other.program_id_,0);
+    return *this;
+
 }
