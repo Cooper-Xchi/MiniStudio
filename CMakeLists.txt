@@ -6,6 +6,7 @@ add_executable(ministudio
         src/main.cpp
         src/app/Application.cpp
         src/platform/GlfwWindow.cpp
+        src/render/ShaderProgram.cpp
 )
 
 option(MINISTUDIO_ENABLE_SANITIZERS
