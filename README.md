@@ -15,7 +15,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成前 2 周和第 3 周第 9～12 课。当前已经建立最小应用、窗口、`ShaderProgram`、顶点资源与无状态渲染命令边界，并打通第一条 GPU 绘制链路；下一步进入第 4 周，建立最小 Renderer 边界。
+项目已经完成前 3 周和第 4 周第 13 课。当前已经建立最小应用、窗口与 `Renderer` 边界，Renderer 统一拥有 Shader Program 和顶点资源并组织 GPU 绘制；下一步审查各资源类的 RAII、move-only 语义和头文件依赖。
 
 已经完成：
 
@@ -35,8 +35,9 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第十课的 `ShaderProgram` 模块，能够编译顶点/片元 Shader、链接 Program、输出完整错误日志，并按 Context 生命周期释放 OpenGL 资源。
 - 完成第十一课的 `VertexArray` 模块，将交错排列的位置/颜色数据上传到 VBO，以 VAO 记录 attribute 布局，并按 Context 生命周期释放顶点资源。
 - 完成第十二课的彩色三角形绘制：每帧依次清屏、绑定 Program 和 VAO、发出 draw call，再交换双缓冲呈现；实际验证了 RGB 插值、窗口缩放和 Esc 退出。
+- 完成第十三课的最小 `Renderer` 边界，将 Shader 源码、顶点数据、资源所有权和绘制流程移出 `Application`，同时保持窗口呈现职责独立；窗口初始化可选在副屏独占全屏，并在副屏不可用时安全退回普通窗口。
 
-前十二课均已完成并合并回 `main`。第十二课的课程分支为 `codex/lesson-12-colored-triangle`，该分支已推送并继续保留；当前稳定的 `main` 已包含第一条完整 GPU 绘制链路。
+前十二课均已完成并合并回 `main`。第十三课已在 `codex/lesson-13-renderer-boundary` 完成验收，当前尚未提交、推送或合并；稳定的 `main` 仍停留在第十二课。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
@@ -114,7 +115,9 @@ MiniStudio/
         ├── VertexArray.h
         ├── VertexArray.cpp
         ├── RenderCommand.h
-        └── RenderCommand.cpp
+        ├── RenderCommand.cpp
+        ├── Renderer.h
+        └── Renderer.cpp
 ```
 
 完整课程路线见 [`docs/MiniStudio-curriculum-24-36-months.md`](docs/MiniStudio-curriculum-24-36-months.md)，当前状态和下一步见 [`docs/MiniStudio-learning-handoff-2026-09-03.md`](docs/MiniStudio-learning-handoff-2026-09-03.md)。README 只提供稳定的项目入口和概览；AI 助手在本仓库中的操作和教学边界见 [`AGENTS.md`](AGENTS.md)。
