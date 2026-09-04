@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 稳定分支为 `main`；第 9 课已完成、推送并合并。第 10 课已在 `codex/lesson-10-shader-program` 通过技术与口头验收，当前改动尚未提交、推送或合并。
+- 稳定分支为 `main`；第 10 课已在 `codex/lesson-10-shader-program` 完成、推送并合并。课程规划分支与前十课分支均继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -302,7 +302,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 3 周第 10 课已完成验收，等待提交、推送并合并。**
+当前处于：**第 3 周第 10 课已完成并合并，等待开始第 11 课。**
 
 本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已经拆分应用、窗口和 Shader Program，能编译并链接 GLSL、输出错误日志，并支持关闭按钮和 `Esc` 退出；尚未进入顶点 Buffer 或三角形。
 
@@ -320,7 +320,7 @@ int main() {
 
 第 9 课已完成最小项目骨架：`main` 负责启动，`Application` 按值拥有 `GlfwWindow` 并编排流程，`GlfwWindow` 封装具体平台调用和资源释放。
 
-第 10 课已完成独立 `ShaderProgram` 模块和受控 Shader 语法错误验收。待学习者确认后提交、推送并合并回 `main`；完成合并后再从最新 `main` 创建第 11 课分支，学习顶点数据、VBO、VAO、attribute 与资源所有权。
+第 10 课已完成独立 `ShaderProgram` 模块和受控 Shader 语法错误验收，并已提交、推送及合并回 `main`。下一步在学习者明确开始第 11 课后，从最新 `main` 创建课程分支，学习顶点数据、VBO、VAO、attribute 与资源所有权。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -332,7 +332,7 @@ int main() {
 | --- | --- | --- |
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
-| 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 进行中；第 9～10 课已完成，第 10 课等待提交、推送并合并 |
+| 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 进行中；第 9～10 课已完成并合并，等待第 11 课 |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
 
 ## 12. 协作要求
