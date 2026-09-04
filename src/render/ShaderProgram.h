@@ -7,8 +7,8 @@ public:
     ~ShaderProgram();
     ShaderProgram(const ShaderProgram&) = delete;
     ShaderProgram& operator=(const ShaderProgram&) = delete;
-    ShaderProgram(ShaderProgram&&) = delete;
-    ShaderProgram& operator=(ShaderProgram&&) = delete;
+    ShaderProgram(ShaderProgram&& other) noexcept ;
+    ShaderProgram& operator=(ShaderProgram&& other) noexcept;
 
     bool Initialize(
         const char* vertex,
@@ -19,7 +19,10 @@ public:
 
 
 
+
 private:
+
+    void Release();
     static unsigned int CompileShader(
 unsigned int shader_type,
 const char* source

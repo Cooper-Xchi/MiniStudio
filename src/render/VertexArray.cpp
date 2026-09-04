@@ -1,4 +1,6 @@
 #include "VertexArray.h"
+
+#include <utility>
 #include <OpenGL/gl3.h>
 
 bool VertexArray::Initialize(const float* data, std::size_t float_count) {
@@ -37,10 +39,32 @@ int VertexArray::VertexCount() const {
 }
 
 VertexArray::~VertexArray() {
+    Release();
+}
+
+void VertexArray::Release() {
     if (vbo_ != 0) {
         glDeleteBuffers(1, &vbo_);
+        vbo_ = 0;
     }
     if (vao_ != 0) {
         glDeleteVertexArrays(1, &vao_);
+        vao_ = 0;
     }
+    vertex_count_ = 0;
+}
+
+VertexArray::VertexArray(VertexArray&& other) noexcept:vao_(other.vao_),vbo_(other.vbo_),vertex_count_(other.vertex_count_) {
+    other.vao_ = 0;
+    other.vbo_ = 0;
+    other.vertex_count_ = 0;
+}
+VertexArray& VertexArray::operator=(VertexArray&& other) noexcept{
+    if (this == &other) return *this;
+    Release();
+    vao_ = std::exchange(other.vao_,0);
+    vbo_ = std::exchange(other.vbo_,0);
+    vertex_count_ = std::exchange(other.vertex_count_,0);
+    return *this;
+
 }

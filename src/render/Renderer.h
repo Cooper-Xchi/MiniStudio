@@ -5,6 +5,11 @@
 
 class Renderer {
 public:
+    Renderer() = default;
+    Renderer(const Renderer&) = delete;
+    Renderer& operator=(const Renderer&) = delete;
+    Renderer(Renderer&&) noexcept = default;
+    Renderer& operator=(Renderer&&) noexcept = default;
     bool Initialize();
     void DrawFrame();
 
