@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 稳定分支为 `main`；第 10 课已完成、推送并合并。第 11 课已在 `codex/lesson-11-vertex-resources` 通过技术与口头验收，当前改动尚未提交、推送或合并。
+- 稳定分支为 `main`；第 11 课已在 `codex/lesson-11-vertex-resources` 完成、推送并合并。课程规划分支与前十一课分支均继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -310,7 +310,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 3 周第 11 课已完成验收，等待提交、推送并合并。**
+当前处于：**第 3 周第 11 课已完成并合并，等待开始第 12 课。**
 
 本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已经拆分应用、窗口、Shader Program 和顶点输入资源，能上传三角形位置/颜色并配置 VAO；尚未执行 draw call 或呈现三角形。
 
@@ -330,7 +330,7 @@ int main() {
 
 第 10 课已完成独立 `ShaderProgram` 模块和受控 Shader 语法错误验收，并已提交、推送及合并回 `main`。
 
-第 11 课已完成独立 `VertexArray` 模块、交错顶点布局和非法数量输入验收。待学习者确认后提交、推送并合并回 `main`；完成合并后再从最新 `main` 创建第 12 课分支，调用 draw call 绘制彩色三角形并完成一次状态错误定位。
+第 11 课已完成独立 `VertexArray` 模块、交错顶点布局和非法数量输入验收，并已提交、推送及合并回 `main`。下一步在学习者明确开始第 12 课后，从最新 `main` 创建课程分支，调用 draw call 绘制彩色三角形并完成一次状态错误定位。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -342,7 +342,7 @@ int main() {
 | --- | --- | --- |
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
-| 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 进行中；第 9～11 课已完成，第 11 课等待提交、推送并合并 |
+| 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 进行中；第 9～11 课已完成并合并，等待第 12 课 |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 未开始 |
 
 ## 12. 协作要求

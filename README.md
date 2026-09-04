@@ -35,7 +35,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第十课的 `ShaderProgram` 模块，能够编译顶点/片元 Shader、链接 Program、输出完整错误日志，并按 Context 生命周期释放 OpenGL 资源。
 - 完成第十一课的 `VertexArray` 模块，将交错排列的位置/颜色数据上传到 VBO，以 VAO 记录 attribute 布局，并按 Context 生命周期释放顶点资源。
 
-前十课均已完成并合并回 `main`。第十一课已在 `codex/lesson-11-vertex-resources` 通过技术与口头验收，当前等待提交、推送并合并；尚未执行三角形 draw call。
+前十一课均已完成并合并回 `main`。第十一课的课程分支为 `codex/lesson-11-vertex-resources`；当前等待开始第 12 课，尚未执行三角形 draw call。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
