@@ -10,6 +10,7 @@ add_executable(ministudio
         src/render/VertexArray.cpp
         src/render/RenderCommand.cpp
         src/render/RenderCommand.h
+        src/render/Renderer.cpp
 )
 
 option(MINISTUDIO_ENABLE_SANITIZERS
