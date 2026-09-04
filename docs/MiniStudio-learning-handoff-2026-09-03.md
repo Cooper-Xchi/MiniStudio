@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 稳定分支为 `main`；第 12 课已在 `codex/lesson-12-colored-triangle` 完成、推送并合并。第 13 课已在 `codex/lesson-13-renderer-boundary` 完成验收，尚未提交、推送或合并。课程规划分支与前十二课分支均继续保留。
+- 稳定分支为 `main`；第 13 课已在 `codex/lesson-13-renderer-boundary` 完成、推送并合并。课程规划分支与前十三课分支均继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -314,7 +314,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 4 周第 13 课已验收，等待提交、推送并合并。**
+当前处于：**第 4 周第 13 课已完成并合并，等待开始第 14 课。**
 
 本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源和无状态渲染命令，并通过 `glDrawArrays` 与双缓冲交换稳定呈现 RGB 插值三角形。
 
@@ -338,7 +338,7 @@ int main() {
 
 第 12 课已在 `codex/lesson-12-colored-triangle` 完成：新增无状态 `RenderCommand` 模块和 `GlfwWindow::Present()`，建立 `Clear → Use Program → Bind VAO → DrawTriangles → Present` 的一帧顺序。普通与 Sanitizer 构建无警告，RGB 插值三角形、背景清屏、窗口缩放和 Esc 退出均已实际验证；学习者能够解释 Program、VAO/VBO、draw call 与双缓冲呈现的关系。课程代码和里程碑记录已提交、推送并合并回 `main`。
 
-第 13 课已在 `codex/lesson-13-renderer-boundary` 完成：新增拥有 `ShaderProgram` 和 `VertexArray` 的最小 Renderer，把 Shader 源码、顶点数据和 `Clear → Use → Bind → Draw` 流程移出 Application；Application 只拥有 Window 与 Renderer，并继续负责编排事件、绘制和双缓冲呈现。窗口初始化新增可选副屏独占全屏模式，仅在开关启用时查询显示器；副屏或视频模式不可用时会打印提示并安全退回普通窗口。普通与 Sanitizer 构建无警告，普通窗口、副屏全屏、重构后的彩色三角形和析构路径均已实际验证；学习者能够解释资源所有权、逆序析构以及 Present 保持在窗口侧的依赖原因。当前尚未提交、推送或合并。下一步先在学习者明确确认后完成这些 Git 操作，再从最新 `main` 开始第 14 课的 RAII、move-only 和头文件依赖审查。
+第 13 课已在 `codex/lesson-13-renderer-boundary` 完成：新增拥有 `ShaderProgram` 和 `VertexArray` 的最小 Renderer，把 Shader 源码、顶点数据和 `Clear → Use → Bind → Draw` 流程移出 Application；Application 只拥有 Window 与 Renderer，并继续负责编排事件、绘制和双缓冲呈现。窗口初始化新增可选副屏独占全屏模式，仅在开关启用时查询显示器；副屏或视频模式不可用时会打印提示并安全退回普通窗口。普通与 Sanitizer 构建无警告，普通窗口、副屏全屏、重构后的彩色三角形和析构路径均已实际验证；学习者能够解释资源所有权、逆序析构以及 Present 保持在窗口侧的依赖原因。课程代码和里程碑记录已提交、推送并合并回 `main`。下一步在学习者明确开始后，从最新 `main` 创建第 14 课分支，审查 RAII、move-only 语义和头文件依赖。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -351,7 +351,7 @@ int main() {
 | 第 1 周 | CMake/C++20、对象生命周期、RAII、`unique_ptr`、移动语义、LLDB、Sanitizer | 已完成；四课均已验收并合并到 `main` |
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
 | 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 已完成；第 9～12 课均已验收并合并到 `main` |
-| 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 进行中；第 13 课已验收并等待提交、推送和合并 |
+| 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 进行中；第 13 课已完成并合并，等待第 14 课 |
 
 ## 12. 协作要求
 

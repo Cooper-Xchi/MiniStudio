@@ -37,7 +37,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第十二课的彩色三角形绘制：每帧依次清屏、绑定 Program 和 VAO、发出 draw call，再交换双缓冲呈现；实际验证了 RGB 插值、窗口缩放和 Esc 退出。
 - 完成第十三课的最小 `Renderer` 边界，将 Shader 源码、顶点数据、资源所有权和绘制流程移出 `Application`，同时保持窗口呈现职责独立；窗口初始化可选在副屏独占全屏，并在副屏不可用时安全退回普通窗口。
 
-前十二课均已完成并合并回 `main`。第十三课已在 `codex/lesson-13-renderer-boundary` 完成验收，当前尚未提交、推送或合并；稳定的 `main` 仍停留在第十二课。
+前十三课均已完成并合并回 `main`。第十三课的课程分支为 `codex/lesson-13-renderer-boundary`，该分支已推送并继续保留；当前稳定的 `main` 已包含最小 Renderer 边界和安全的可选副屏全屏路径。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
