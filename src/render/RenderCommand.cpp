@@ -7,7 +7,7 @@ namespace RenderCommand {
 
     }
 
-    void DrawTriangles(int vertex_count) {
-        glDrawArrays(GL_TRIANGLES, 0, vertex_count);
+    void DrawIndexedTriangles(int vertex_count) {
+        glDrawElements(GL_TRIANGLES, vertex_count, GL_UNSIGNED_INT, nullptr);
     }
 }
