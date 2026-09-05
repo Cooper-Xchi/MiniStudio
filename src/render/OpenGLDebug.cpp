@@ -1,7 +1,7 @@
 #include "OpenGLDebug.h"
+#include "opengl/OpenGLHeaders.h"
 
 #include <iostream>
-#include <OpenGL/gl3.h>
 
 
 

@@ -90,6 +90,20 @@ cmake --build build/sanitize --parallel
 
 CLion 可以使用自身提供的 Ninja，并将构建产物放在独立的 `cmake-build-*` 目录中。
 
+### Windows 构建
+
+Windows 使用 vcpkg 提供 GLFW 和 GLAD；GLAD 只在 Windows 上负责加载 OpenGL 4.1 函数，macOS 仍使用系统的 `OpenGL.framework`。配置时将 `VCPKG_ROOT` 替换为本机 vcpkg 路径：
+
+```powershell
+cmake -S . -B build/windows `
+  -G Ninja `
+  -DCMAKE_BUILD_TYPE=Debug `
+  -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+cmake --build build/windows --parallel
+./build/windows/ministudio.exe
+```
+
 ## v0.1 运行验收
 
 程序启动后应显示一个带 RGB 插值颜色的三角形和蓝灰色背景。拖动窗口边缘时，viewport 应跟随实际 framebuffer 尺寸更新；按下 Esc 后程序应通过统一退出路径关闭。
