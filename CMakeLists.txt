@@ -12,6 +12,8 @@ add_executable(ministudio
         src/render/RenderCommand.h
         src/render/Renderer.cpp
         src/render/OpenGLDebug.cpp
+        src/render/Texture2D.cpp
+        src/render/Texture2D.h
 )
 
 option(MINISTUDIO_ENABLE_SANITIZERS

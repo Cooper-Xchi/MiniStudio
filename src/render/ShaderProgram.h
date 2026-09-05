@@ -17,6 +17,8 @@ public:
 
     void Use() const;
 
+    bool SetInt(const char* name, int value);
+
 
 
 

@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成前 4 周和第 17 课，v0.1.0 的代码、回归和文档均已通过验收并合并。当前已经建立最小应用、窗口与 `Renderer` 边界，让 Shader、VAO、VBO 和 EBO 具备明确的 move-only RAII 语义，并能用索引复用顶点绘制矩形；下一步进入第 18 课的最小 Texture2D 与程序生成纹理。
+项目已经完成前 4 周和第 17～18 课，相关代码、回归和文档均已通过验收并合并。当前已经建立最小应用、窗口与 `Renderer` 边界，让 Shader、VAO、VBO、EBO 和 Texture2D 具备明确的 move-only RAII 语义，并能用索引矩形显示程序生成的 RGBA 纹理；下一步进入第 19 课的纹理 wrapping 与 filtering 对比实验。
 
 已经完成：
 
@@ -43,8 +43,9 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第十六课的 v0.1.0 收尾：补齐生命周期说明、依赖与三种构建配置，并从全新构建目录完成 Debug、Release、Sanitizer 回归；实际验证彩色三角形、窗口缩放、Esc 正常退出和无 Sanitizer/OpenGL 错误。
 - 完成 Windows OpenGL 兼容维护：Windows 通过 GLAD 加载 OpenGL 4.1 函数，macOS 继续使用系统 `OpenGL.framework`，两条平台路径由 CMake 条件隔离。
 - 完成第十七课的 EBO 索引绘制：`VertexArray` 独占 VAO、VBO 和 EBO，用 4 个顶点与 6 个索引绘制矩形，并保持失败回滚、释放和移动所有权语义。
+- 完成第十八课的最小 `Texture2D`：Renderer 按值拥有纹理资源，顶点布局加入 UV，片元 Shader 通过 sampler 和 0 号纹理单元采样程序生成的 2×2 RGBA 四色纹理。
 
-前十七课均已完成并合并回 `main`。第十七课的课程分支为 `codex/lesson-17-indexed-drawing`，该分支已推送并继续保留；当前稳定的 `main` 在 v0.1.0 基线上增加了 Windows OpenGL 加载支持和 EBO 索引绘制。
+前十八课均已完成并合并回 `main`。第十八课的课程分支为 `codex/lesson-18-texture2d`，该分支已推送并继续保留；当前稳定的 `main` 在 v0.1.0 基线上增加了 Windows OpenGL 加载支持、EBO 索引绘制和最小二维纹理采样链路。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
@@ -168,6 +169,8 @@ MiniStudio/
         ├── RenderCommand.cpp
         ├── OpenGLDebug.h
         ├── OpenGLDebug.cpp
+        ├── Texture2D.h
+        ├── Texture2D.cpp
         ├── Renderer.h
         └── Renderer.cpp
 ```

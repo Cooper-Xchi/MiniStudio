@@ -9,7 +9,7 @@ bool VertexArray::Initialize(const float* vertices,
     std::size_t index_count) {
     if (vertices == nullptr
         || float_count  ==0
-        || float_count % 6 !=0
+        || float_count % 8 !=0
         || index_count  == 0
         || indices == nullptr
         || vao_ != 0
@@ -26,10 +26,12 @@ bool VertexArray::Initialize(const float* vertices,
     glBindVertexArray(vao_);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_);
     glBufferData(GL_ARRAY_BUFFER,static_cast<GLsizeiptr>(float_count * sizeof(float)),vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), reinterpret_cast<const void*>(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), reinterpret_cast<const void*>(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), reinterpret_cast<const void*>(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
     glGenBuffers(1, &ebo_);
     if (!ebo_) {
         glDeleteVertexArrays(1, &vao_);
@@ -42,7 +44,7 @@ bool VertexArray::Initialize(const float* vertices,
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER,static_cast<GLsizeiptr>(index_count * sizeof(unsigned int)),indices, GL_STATIC_DRAW);
     index_count_ = static_cast<int>(index_count);
-    vertex_count_ = static_cast<int>(float_count/6);
+    vertex_count_ = static_cast<int>(float_count/8);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     return true;
