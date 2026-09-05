@@ -102,3 +102,11 @@ if (this == &other) return *this;
     return *this;
 
 }
+
+bool ShaderProgram::SetInt(const char* name, int value) {
+    if (program_id_ == 0) return false;
+    const int location = glGetUniformLocation(program_id_, name);
+    if (location < 0) return false;
+    glUniform1i(location, value);
+    return true;
+}

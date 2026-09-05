@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Texture2D.h"
 #include "render/ShaderProgram.h"
 #include "render/VertexArray.h"
 
@@ -16,4 +17,5 @@ public:
 private:
     ShaderProgram shader_program_;
     VertexArray vertex_array_;
+    Texture2D texture_;
 };

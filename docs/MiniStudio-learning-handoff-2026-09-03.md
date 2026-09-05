@@ -298,6 +298,7 @@ GLFW Window created!
 - 已理解 `VertexArray` 独占 VAO/VBO，拒绝复制与移动，并在部分初始化失败时回滚已经创建的资源。
 - 已理解 EBO 保存顶点索引，VAO 记录 EBO 绑定关系，`glDrawElements` 的数量参数表示索引数量，最后一个 `nullptr` 表示从当前 EBO 的第 0 字节开始读取。
 - 已理解 `glBufferData` 会把局部 CPU 数组内容复制到驱动管理的 Buffer 存储；函数返回后局部顶点与索引数组按自动存储期销毁，不是由垃圾回收器回收。
+- 已理解 `glTexImage2D` 会复制局部 RGBA 像素数组；sampler uniform 保存的是纹理单元编号，不是纹理对象句柄，`glActiveTexture` 选择纹理单元，`glBindTexture` 再把纹理对象绑定到该单元。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
@@ -312,13 +313,13 @@ int main() {
 }
 ```
 
-当前依赖为 `main → Application → GlfwWindow/Renderer`，Renderer 再单向依赖 `ShaderProgram/VertexArray/RenderCommand`，平台与渲染实现最终依赖 GLFW/OpenGL。`Application` 按值拥有窗口和 Renderer，Renderer 按值拥有 Shader Program 与顶点输入资源；`VertexArray` 独占 VAO、VBO 和 EBO。成员声明顺序保证 Renderer 先析构、窗口和 Context 后析构。`Application` 只编排窗口初始化、事件、绘制和呈现，具体渲染数据与命令留在 Renderer 内。macOS 继续使用 `OpenGL/gl3.h` 与系统 framework，Windows 通过 GLAD 加载 OpenGL 4.1 函数；平台条件集中在共享头文件与 CMake 中。当前代码在 Windows Debug/Release 构建通过，索引矩形持续运行且没有 OpenGL 错误；macOS 的 v0.1 回归证据继续有效，新增平台改动仍需在 Mac 上做一次回归确认。
+当前依赖为 `main → Application → GlfwWindow/Renderer`，Renderer 再单向依赖 `ShaderProgram/VertexArray/Texture2D/RenderCommand`，平台与渲染实现最终依赖 GLFW/OpenGL。`Application` 按值拥有窗口和 Renderer，Renderer 按值拥有 Shader Program、顶点输入资源和二维纹理；`VertexArray` 独占 VAO、VBO 和 EBO，`Texture2D` 独占 OpenGL texture handle。成员声明顺序保证 Renderer 及其 GPU 资源先析构、窗口和 Context 后析构。`Application` 只编排窗口初始化、事件、绘制和呈现，具体渲染数据与命令留在 Renderer 内。macOS 继续使用 `OpenGL/gl3.h` 与系统 framework，Windows 通过 GLAD 加载 OpenGL 4.1 函数；平台条件集中在共享头文件与 CMake 中。第 18 课分支在 Windows Debug/Release 干净重建后均持续运行，程序生成的 2×2 RGBA 四色纹理显示正确且没有 OpenGL 错误；macOS 的 v0.1 回归证据继续有效，本课改动合并前仍需由 Mac 同事回归确认。
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 5 周第 17 课已完成并合并，等待开始第 18 课。**
+当前处于：**第 5 周第 18 课已完成并合并，等待开始第 19 课。**
 
-macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引稳定呈现 RGB 插值矩形。
+macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现程序生成的 2×2 RGBA 四色纹理。
 
 仓库远端和 AI 约束准备已经完成，初始基线和第 1 周的四课均已合并到 `main`。
 
@@ -350,7 +351,9 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 
 第 16 课后完成了一次 Windows 兼容维护：新增平台条件 OpenGL 头文件入口和 Windows GLAD 4.1 加载，在 vcpkg manifest 中把 GLFW/GLAD 限定为 Windows 依赖；macOS 继续使用原有系统头文件与 framework。Windows Debug、Release 配置和编译通过，实际创建 OpenGL 4.1 Core Context 并成功链接 Shader。
 
-第 17 课已在 `codex/lesson-17-indexed-drawing` 完成：`VertexArray` 新增并独占 EBO，把索引数据复制到 `GL_ELEMENT_ARRAY_BUFFER`，在释放、move 构造和 move 赋值中保持单一所有权；`RenderCommand` 改用 `glDrawElements`，Renderer 用 4 个顶点和 6 个索引绘制两个三角形组成的矩形。Windows Debug 与 Release 编译通过，Debug 实际持续运行且没有 OpenGL 错误。学习者能够解释索引数量、EBO 字节偏移，以及局部 CPU 数组在 `glBufferData` 完成后可以按作用域销毁的原因。下一步从最新 `main` 创建第 18 课分支，建立最小 Texture2D 资源并用程序生成像素学习 UV、采样器和纹理单元；暂不引入图片解码依赖。
+第 17 课已在 `codex/lesson-17-indexed-drawing` 完成：`VertexArray` 新增并独占 EBO，把索引数据复制到 `GL_ELEMENT_ARRAY_BUFFER`，在释放、move 构造和 move 赋值中保持单一所有权；`RenderCommand` 改用 `glDrawElements`，Renderer 用 4 个顶点和 6 个索引绘制两个三角形组成的矩形。Windows Debug 与 Release 编译通过，Debug 实际持续运行且没有 OpenGL 错误。学习者能够解释索引数量、EBO 字节偏移，以及局部 CPU 数组在 `glBufferData` 完成后可以按作用域销毁的原因。
+
+第 18 课已在 `codex/lesson-18-texture2d` 完成、验收并合并：新增 move-only `Texture2D`，由 Renderer 按值拥有；顶点布局扩展为 position、color、UV，片元 Shader 通过 `sampler2D` 从 0 号纹理单元采样，程序生成的 2×2 RGBA 像素经 `glTexImage2D` 上传。Windows Debug/Release 均完成干净重建并持续运行，学习者确认四色纹理矩形显示正确，且能够解释纹理对象、纹理单元、sampler 和局部像素数组生命周期的关系。验收时还定位到一次增量构建旧对象文件导致的类布局不一致；干净重建后问题消失。下一课计划对比 wrapping 与 filtering，继续使用程序生成纹理，暂不引入图片解码依赖。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -364,7 +367,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
 | 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 已完成；第 9～12 课均已验收并合并到 `main` |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 已完成；第 16 课及 v0.1.0 收尾已完成并合并 |
-| 第 5 周 | EBO 索引绘制与纹理起步 | 进行中；第 17 课已完成，等待第 18 课 |
+| 第 5 周 | EBO 索引绘制与纹理起步 | 进行中；第 17～18 课已完成并合并，等待第 19 课 |
 
 ## 12. 协作要求
 
