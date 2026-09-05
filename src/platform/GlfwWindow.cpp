@@ -1,4 +1,6 @@
 #include "GlfwWindow.h"
+#include "opengl/OpenGLHeaders.h"
+
 #include <iostream>
 #include <GLFW/glfw3.h>
 
@@ -71,11 +73,17 @@ bool GlfwWindow::Initialize(
         return false;
     }
     handle_ = window;
-    glfwSetFramebufferSizeCallback(
-    handle_,
-    OnFramebufferSizeChanged
-);
     glfwMakeContextCurrent(window);
+#if defined(_WIN32)
+    if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) == 0) {
+        std::cerr << "GLAD initialization failed!" << std::endl;
+        return false;
+    }
+#endif
+    glfwSetFramebufferSizeCallback(
+        handle_,
+        OnFramebufferSizeChanged
+    );
     int major = glfwGetWindowAttrib(window,GLFW_CONTEXT_VERSION_MAJOR);
     int minor = glfwGetWindowAttrib(window,GLFW_CONTEXT_VERSION_MINOR);
     int profile = glfwGetWindowAttrib(window, GLFW_OPENGL_PROFILE);

@@ -28,6 +28,11 @@ find_package(glfw3 3.4 REQUIRED)
 find_package(OpenGL REQUIRED)
 
 target_link_libraries(ministudio PRIVATE glfw OpenGL::GL)
+if(WIN32)
+    find_package(glad CONFIG REQUIRED)
+    target_link_libraries(ministudio PRIVATE glad::glad)
+    target_compile_definitions(ministudio PRIVATE GLFW_INCLUDE_NONE)
+endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     target_compile_options(ministudio PRIVATE
             -Wall
@@ -44,6 +49,11 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
                 -fsanitize=address,undefined
         )
     endif()
+endif()
+if(MSVC)
+    target_compile_options(ministudio PRIVATE
+            /utf-8
+    )
 endif()
 if(APPLE)
     target_compile_definitions(ministudio PRIVATE

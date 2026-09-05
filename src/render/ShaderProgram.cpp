@@ -1,7 +1,8 @@
 #include "ShaderProgram.h"
+#include "opengl/OpenGLHeaders.h"
+
 #include <string>
 #include <iostream>
-#include <OpenGL/gl3.h>
 #include <utility>
 
 bool ShaderProgram::Initialize(const char *vertex, const char *fragment) {

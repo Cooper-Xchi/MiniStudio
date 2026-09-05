@@ -1,7 +1,7 @@
 #include "VertexArray.h"
+#include "opengl/OpenGLHeaders.h"
 
 #include <utility>
-#include <OpenGL/gl3.h>
 
 bool VertexArray::Initialize(const float* data, std::size_t float_count) {
     if (data == nullptr

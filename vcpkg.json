@@ -1,0 +1,17 @@
+{
+  "name": "ministudio",
+  "version-string": "0.1.0",
+  "dependencies": [
+    {
+      "name": "glfw3",
+      "platform": "windows"
+    },
+    {
+      "name": "glad",
+      "features": [
+        "gl-api-41"
+      ],
+      "platform": "windows"
+    }
+  ]
+}
