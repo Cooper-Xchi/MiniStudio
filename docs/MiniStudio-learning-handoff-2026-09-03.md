@@ -1,6 +1,6 @@
 # MiniStudio C++ 图形渲染学习交接文档
 
-> 更新时间：2026-09-04
+> 更新时间：2026-09-05
 > 用途：作为新 Codex 任务的背景与进度附件。本文是学习上下文，不代表要求一次完成全部路线。新任务应从“当前状态”和“下一步”继续，不要重新初始化项目。
 
 ## 1. 学习者背景
@@ -97,7 +97,7 @@ MiniStudio/
 Git 状态：
 
 - 已执行 `git init`。
-- 稳定分支为 `main`；第 16 课已在 `codex/lesson-16-v0-1-release` 完成、推送并合并。课程规划分支与前十六课分支均继续保留。
+- 稳定分支为 `main`；第 17 课已在 `codex/lesson-17-indexed-drawing` 完成、推送并合并。课程规划分支与前十七课分支均继续保留。
 - 已创建包含最小 CMake 工程、学习文档和 AI 约束的初始基线提交。
 - 已配置 Git 远端 `origin`：`git@github.com:Cooper-Xchi/MiniStudio.git`。
 - 已按 GitHub 官方指纹核验并信任 `github.com` 的 Ed25519 主机密钥。
@@ -296,6 +296,8 @@ GLFW Window created!
 - 已理解 VAO 不保存实际顶点数据，而是记录 attribute 如何从绑定的 VBO 取数；`glVertexAttribPointer` 调用时必须已有当前 VAO 和 VBO。
 - 已理解交错顶点布局中 `6 * sizeof(float)` 是相邻顶点同一 attribute 的步长，`3 * sizeof(float)` 是颜色 attribute 的起始字节偏移。
 - 已理解 `VertexArray` 独占 VAO/VBO，拒绝复制与移动，并在部分初始化失败时回滚已经创建的资源。
+- 已理解 EBO 保存顶点索引，VAO 记录 EBO 绑定关系，`glDrawElements` 的数量参数表示索引数量，最后一个 `nullptr` 表示从当前 EBO 的第 0 字节开始读取。
+- 已理解 `glBufferData` 会把局部 CPU 数组内容复制到驱动管理的 Buffer 存储；函数返回后局部顶点与索引数组按自动存储期销毁，不是由垃圾回收器回收。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
@@ -310,13 +312,13 @@ int main() {
 }
 ```
 
-当前依赖为 `main → Application → GlfwWindow/Renderer`，Renderer 再单向依赖 `ShaderProgram/VertexArray/RenderCommand`，平台与渲染实现最终依赖 GLFW/OpenGL。`Application` 按值拥有窗口和 Renderer，Renderer 按值拥有 Shader Program 与顶点输入资源；成员声明顺序保证 Renderer 先析构、窗口和 Context 后析构。`Application` 只编排窗口初始化、事件、绘制和呈现，具体渲染数据与命令留在 Renderer 内。代码已经通过普通与 Sanitizer 构建，没有编译警告；重构后的彩色三角形画面和资源自动清理均已实际验证。
+当前依赖为 `main → Application → GlfwWindow/Renderer`，Renderer 再单向依赖 `ShaderProgram/VertexArray/RenderCommand`，平台与渲染实现最终依赖 GLFW/OpenGL。`Application` 按值拥有窗口和 Renderer，Renderer 按值拥有 Shader Program 与顶点输入资源；`VertexArray` 独占 VAO、VBO 和 EBO。成员声明顺序保证 Renderer 先析构、窗口和 Context 后析构。`Application` 只编排窗口初始化、事件、绘制和呈现，具体渲染数据与命令留在 Renderer 内。macOS 继续使用 `OpenGL/gl3.h` 与系统 framework，Windows 通过 GLAD 加载 OpenGL 4.1 函数；平台条件集中在共享头文件与 CMake 中。当前代码在 Windows Debug/Release 构建通过，索引矩形持续运行且没有 OpenGL 错误；macOS 的 v0.1 回归证据继续有效，新增平台改动仍需在 Mac 上做一次回归确认。
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 4 周第 16 课和第一个月 v0.1.0 收尾已完成并合并，等待开始第 17 课。**
+当前处于：**第 5 周第 17 课已完成并合并，等待开始第 18 课。**
 
-本机 Homebrew GLFW 3.4 已接入，头文件为 `/opt/homebrew/opt/glfw/include/GLFW/glfw3.h`，CMake 包配置导出的目标名为 `glfw`。系统 OpenGL 通过 `OpenGL::GL` 链接。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源和无状态渲染命令，并通过 `glDrawArrays` 与双缓冲交换稳定呈现 RGB 插值三角形。
+macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引稳定呈现 RGB 插值矩形。
 
 仓库远端和 AI 约束准备已经完成，初始基线和第 1 周的四课均已合并到 `main`。
 
@@ -344,7 +346,11 @@ int main() {
 
 第 15 课已在 `codex/lesson-15-opengl-error-debug` 完成：新增不拥有资源的 `OpenGLDebug` 命名空间模块，用 `ClearErrors()` 排空当前 Context 的旧错误，用 `CheckErrors(label)` 循环读取并报告本次渲染产生的错误；`Renderer::DrawFrame()` 仅在未定义 `NDEBUG` 时执行检查，Release 构建没有每帧查询开销。课程通过一次只发生一帧的负数 draw count 故障注入稳定复现并识别 `0x501`（`GL_INVALID_VALUE`），随后移除注入；Debug、Release 与 Sanitizer 三套构建均无警告，正常渲染无 OpenGL 错误日志，一帧正常退出路径通过 ASan/UBSan。学习者能够解释检查顺序及 Release 移除检查的性能原因。课程代码和里程碑记录已提交、推送并合并回 `main`。
 
-第 16 课已在 `codex/lesson-16-v0-1-release` 完成：CMake 项目版本明确为 0.1.0；README 补齐 Homebrew 依赖、Debug/Release/Sanitizer 可复现命令、v0.1 运行标准和最新目录；新增 `docs/MiniStudio-v0.1-lifecycle.md`，记录所有权、Context、主线程、初始化、逐帧流程、逆序析构、move-only 与错误检查边界。三种配置均从全新 Unix Makefiles 构建目录成功配置和编译且无警告；Sanitizer 版本实际显示彩色三角形，resize callback 持续收到 framebuffer 尺寸，Esc 后以退出码 0 正常结束，未出现 OpenGL、ASan 或 UBSan 错误。学习者能够独立解释 v0.1 的主要生命周期关系。课程代码和里程碑记录已提交、推送并合并回 `main`，第一个月正式结束。下一步在学习者明确开始后，从最新 `main` 创建第 17 课分支，用 EBO 索引绘制学习顶点复用和索引数据生命周期。
+第 16 课已在 `codex/lesson-16-v0-1-release` 完成：CMake 项目版本明确为 0.1.0；README 补齐 Homebrew 依赖、Debug/Release/Sanitizer 可复现命令、v0.1 运行标准和最新目录；新增 `docs/MiniStudio-v0.1-lifecycle.md`，记录所有权、Context、主线程、初始化、逐帧流程、逆序析构、move-only 与错误检查边界。三种配置均从全新 Unix Makefiles 构建目录成功配置和编译且无警告；Sanitizer 版本实际显示彩色三角形，resize callback 持续收到 framebuffer 尺寸，Esc 后以退出码 0 正常结束，未出现 OpenGL、ASan 或 UBSan 错误。学习者能够独立解释 v0.1 的主要生命周期关系。课程代码和里程碑记录已提交、推送并合并回 `main`，第一个月正式结束。
+
+第 16 课后完成了一次 Windows 兼容维护：新增平台条件 OpenGL 头文件入口和 Windows GLAD 4.1 加载，在 vcpkg manifest 中把 GLFW/GLAD 限定为 Windows 依赖；macOS 继续使用原有系统头文件与 framework。Windows Debug、Release 配置和编译通过，实际创建 OpenGL 4.1 Core Context 并成功链接 Shader。
+
+第 17 课已在 `codex/lesson-17-indexed-drawing` 完成：`VertexArray` 新增并独占 EBO，把索引数据复制到 `GL_ELEMENT_ARRAY_BUFFER`，在释放、move 构造和 move 赋值中保持单一所有权；`RenderCommand` 改用 `glDrawElements`，Renderer 用 4 个顶点和 6 个索引绘制两个三角形组成的矩形。Windows Debug 与 Release 编译通过，Debug 实际持续运行且没有 OpenGL 错误。学习者能够解释索引数量、EBO 字节偏移，以及局部 CPU 数组在 `glBufferData` 完成后可以按作用域销毁的原因。下一步从最新 `main` 创建第 18 课分支，建立最小 Texture2D 资源并用程序生成像素学习 UV、采样器和纹理单元；暂不引入图片解码依赖。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -358,6 +364,7 @@ int main() {
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
 | 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 已完成；第 9～12 课均已验收并合并到 `main` |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 已完成；第 16 课及 v0.1.0 收尾已完成并合并 |
+| 第 5 周 | EBO 索引绘制与纹理起步 | 进行中；第 17 课已完成，等待第 18 课 |
 
 ## 12. 协作要求
 

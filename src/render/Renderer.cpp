@@ -34,11 +34,17 @@ void main() {
     const float triangle_vertices[] = {
         -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
          0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,
-         0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f
+         0.5f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 1.0f,
+    };
+
+    const unsigned int indexes[] = {
+        0,1,2,
+        2,3,0
     };
 
     if (!shader_program_.Initialize(vertex_source, fragment_source)) return false;
-    if (!vertex_array_.Initialize(triangle_vertices,std::size(triangle_vertices))) return false;
+    if (!vertex_array_.Initialize(triangle_vertices,std::size(triangle_vertices),indexes,std::size(indexes))) return false;
     return true;
 }
 
@@ -49,7 +55,7 @@ void Renderer::DrawFrame() {
     RenderCommand::Clear(0.36,0.5,0.6,1);
     shader_program_.Use();
     vertex_array_.Bind();
-    RenderCommand::DrawTriangles(vertex_array_.VertexCount());
+    RenderCommand::DrawIndexedTriangles(vertex_array_.IndexCount());
     #ifndef NDEBUG
         OpenGLDebug::CheckErrors("Renderer::DrawFrame");
     #endif

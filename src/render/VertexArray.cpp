@@ -3,12 +3,18 @@
 
 #include <utility>
 
-bool VertexArray::Initialize(const float* data, std::size_t float_count) {
-    if (data == nullptr
+bool VertexArray::Initialize(const float* vertices,
+    std::size_t float_count,
+    const unsigned int* indices,
+    std::size_t index_count) {
+    if (vertices == nullptr
         || float_count  ==0
         || float_count % 6 !=0
+        || index_count  == 0
+        || indices == nullptr
         || vao_ != 0
-        || vbo_ != 0) return false;
+        || vbo_ != 0
+        || ebo_ != 0) return false;
     glGenVertexArrays(1, &vao_);
     if (!vao_) return false;
     glGenBuffers(1, &vbo_);
@@ -19,11 +25,23 @@ bool VertexArray::Initialize(const float* data, std::size_t float_count) {
     }
     glBindVertexArray(vao_);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-    glBufferData(GL_ARRAY_BUFFER,static_cast<GLsizeiptr>(float_count * sizeof(float)),data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,static_cast<GLsizeiptr>(float_count * sizeof(float)),vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), reinterpret_cast<const void*>(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glGenBuffers(1, &ebo_);
+    if (!ebo_) {
+        glDeleteVertexArrays(1, &vao_);
+        vao_ = 0;
+        glDeleteBuffers(1,&vbo_);
+        vbo_ = 0;
+        return false;
+    }
+    glBindVertexArray(vao_);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,static_cast<GLsizeiptr>(index_count * sizeof(unsigned int)),indices, GL_STATIC_DRAW);
+    index_count_ = static_cast<int>(index_count);
     vertex_count_ = static_cast<int>(float_count/6);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -36,6 +54,10 @@ void VertexArray::Bind() const {
 int VertexArray::VertexCount() const {
     return vertex_count_;
 
+}
+
+int VertexArray::IndexCount() const {
+    return index_count_;
 }
 
 VertexArray::~VertexArray() {
@@ -51,20 +73,34 @@ void VertexArray::Release() {
         glDeleteVertexArrays(1, &vao_);
         vao_ = 0;
     }
+    if (ebo_ != 0) {
+        glDeleteBuffers(1, &ebo_);
+        ebo_ = 0;
+    }
     vertex_count_ = 0;
+    index_count_ = 0;
 }
 
-VertexArray::VertexArray(VertexArray&& other) noexcept:vao_(other.vao_),vbo_(other.vbo_),vertex_count_(other.vertex_count_) {
+VertexArray::VertexArray(VertexArray&& other) noexcept:
+vao_(other.vao_),
+vbo_(other.vbo_),
+ebo_(other.ebo_),
+vertex_count_(other.vertex_count_),
+index_count_(other.index_count_){
     other.vao_ = 0;
     other.vbo_ = 0;
+    other.ebo_ = 0;
     other.vertex_count_ = 0;
+    other.index_count_ = 0;
 }
 VertexArray& VertexArray::operator=(VertexArray&& other) noexcept{
     if (this == &other) return *this;
     Release();
     vao_ = std::exchange(other.vao_,0);
     vbo_ = std::exchange(other.vbo_,0);
+    ebo_ = std::exchange(other.ebo_,0);
     vertex_count_ = std::exchange(other.vertex_count_,0);
+    index_count_ = std::exchange(other.index_count_,0);
     return *this;
 
 }

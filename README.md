@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成前 4 周和第 16 课，v0.1.0 的代码、回归和文档均已通过验收并合并。当前已经建立最小应用、窗口与 `Renderer` 边界，让渲染资源具备明确的 move-only RAII 语义，并能在 Debug 构建中定位 OpenGL 错误；下一步进入第 17 课的 EBO 索引绘制。
+项目已经完成前 4 周和第 17 课，v0.1.0 的代码、回归和文档均已通过验收并合并。当前已经建立最小应用、窗口与 `Renderer` 边界，让 Shader、VAO、VBO 和 EBO 具备明确的 move-only RAII 语义，并能用索引复用顶点绘制矩形；下一步进入第 18 课的最小 Texture2D 与程序生成纹理。
 
 已经完成：
 
@@ -41,8 +41,10 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第十四课的 RAII 与移动语义审查：`ShaderProgram`、`VertexArray` 和 `Renderer` 禁止复制并支持 `noexcept` 移动，资源句柄在所有权转移后清空源对象；实际验证了 move 构造、self-move、move 赋值以及单次释放。
 - 完成第十五课的 OpenGL 错误诊断：新增无状态 `OpenGLDebug` 模块，Debug 构建在每帧 OpenGL 调用前排空旧错误并在绘制后报告本帧错误；通过一次受控的负数顶点数量注入定位到 `GL_INVALID_VALUE`，Release 构建则通过 `NDEBUG` 移除每帧检查。
 - 完成第十六课的 v0.1.0 收尾：补齐生命周期说明、依赖与三种构建配置，并从全新构建目录完成 Debug、Release、Sanitizer 回归；实际验证彩色三角形、窗口缩放、Esc 正常退出和无 Sanitizer/OpenGL 错误。
+- 完成 Windows OpenGL 兼容维护：Windows 通过 GLAD 加载 OpenGL 4.1 函数，macOS 继续使用系统 `OpenGL.framework`，两条平台路径由 CMake 条件隔离。
+- 完成第十七课的 EBO 索引绘制：`VertexArray` 独占 VAO、VBO 和 EBO，用 4 个顶点与 6 个索引绘制矩形，并保持失败回滚、释放和移动所有权语义。
 
-前十六课均已完成并合并回 `main`。第十六课的课程分支为 `codex/lesson-16-v0-1-release`，该分支已推送并继续保留；当前稳定的 `main` 是完成首月回归和文档收尾的 v0.1.0 基线。
+前十七课均已完成并合并回 `main`。第十七课的课程分支为 `codex/lesson-17-indexed-drawing`，该分支已推送并继续保留；当前稳定的 `main` 在 v0.1.0 基线上增加了 Windows OpenGL 加载支持和 EBO 索引绘制。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
@@ -142,6 +144,7 @@ MiniStudio/
 ├── AGENTS.md
 ├── CMakeLists.txt
 ├── README.md
+├── vcpkg.json
 ├── docs/
 │   ├── MiniStudio-curriculum-24-36-months.md
 │   ├── MiniStudio-learning-handoff-2026-09-03.md
@@ -154,6 +157,8 @@ MiniStudio/
     ├── platform/
     │   ├── GlfwWindow.h
     │   └── GlfwWindow.cpp
+    ├── opengl/
+    │   └── OpenGLHeaders.h
     └── render/
         ├── ShaderProgram.h
         ├── ShaderProgram.cpp
