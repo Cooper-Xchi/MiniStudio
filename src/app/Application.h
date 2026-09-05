@@ -1,5 +1,6 @@
 #pragma once
 #include "platform/GlfwWindow.h"
+#include "render/Renderer.h"
 
 class Application {
 public:
@@ -7,4 +8,5 @@ public:
 
 private:
     GlfwWindow window_;
+    Renderer renderer_;
 };

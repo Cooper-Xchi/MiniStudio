@@ -12,11 +12,17 @@ public:
     GlfwWindow(GlfwWindow&&) = delete;
     GlfwWindow& operator=(GlfwWindow&&) = delete;
 
-    bool Initialize(int width, int height, const char* title);
+    bool Initialize(
+        int width,
+        int height,
+        const char* title,
+        bool fullscreen_on_secondary_monitor
+    );
     bool ShouldClose() const;
     void PollEvents();
     bool IsEscapePressed() const;
     void RequestClose();
+    void Present();
 
 
 private:

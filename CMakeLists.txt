@@ -1,11 +1,17 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(MiniStudio LANGUAGES CXX)
+project(MiniStudio VERSION 0.1.0 LANGUAGES CXX)
 
 add_executable(ministudio
         src/main.cpp
         src/app/Application.cpp
         src/platform/GlfwWindow.cpp
+        src/render/ShaderProgram.cpp
+        src/render/VertexArray.cpp
+        src/render/RenderCommand.cpp
+        src/render/RenderCommand.h
+        src/render/Renderer.cpp
+        src/render/OpenGLDebug.cpp
 )
 
 option(MINISTUDIO_ENABLE_SANITIZERS

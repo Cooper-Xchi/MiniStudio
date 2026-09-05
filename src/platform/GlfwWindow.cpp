@@ -1,5 +1,4 @@
 #include "GlfwWindow.h"
-#include <string>
 #include <iostream>
 #include <GLFW/glfw3.h>
 
@@ -12,7 +11,12 @@ GlfwWindow::~GlfwWindow() {
         glfwTerminate();
 }
 
-bool GlfwWindow::Initialize(int width, int height, const char* title) {
+bool GlfwWindow::Initialize(
+    int width,
+    int height,
+    const char* title,
+    bool fullscreen_on_secondary_monitor
+) {
     //glfw初始化
     if (glfwInit() == GLFW_FALSE) {
         std::cerr << "GLFW initialization failed!" << std::endl;
@@ -27,7 +31,41 @@ bool GlfwWindow::Initialize(int width, int height, const char* title) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
     //window初始化
-    GLFWwindow* window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+    GLFWmonitor* target_monitor = nullptr;
+    int actual_width = width;
+    int actual_height = height;
+
+    if (fullscreen_on_secondary_monitor) {
+        int monitor_count = 0;
+        GLFWmonitor** monitors = glfwGetMonitors(&monitor_count);
+
+        if (monitors == nullptr || monitor_count < 2) {
+            std::cerr
+                << "Secondary monitor unavailable; falling back to windowed mode."
+                << std::endl;
+        } else {
+            target_monitor = monitors[1];
+            const GLFWvidmode* mode = glfwGetVideoMode(target_monitor);
+
+            if (mode == nullptr) {
+                std::cerr
+                    << "Secondary monitor video mode unavailable; falling back to windowed mode."
+                    << std::endl;
+                target_monitor = nullptr;
+            } else {
+                actual_width = mode->width;
+                actual_height = mode->height;
+            }
+        }
+    }
+
+    GLFWwindow* window = glfwCreateWindow(
+        actual_width,
+        actual_height,
+        title,
+        target_monitor,
+        nullptr
+    );
     if (window == nullptr) {
         std::cerr << "GLFW Window creation failed!" << std::endl;
         return false;
@@ -76,4 +114,8 @@ bool GlfwWindow::IsEscapePressed() const {
 
 void GlfwWindow::RequestClose() {
     glfwSetWindowShouldClose(handle_, GLFW_TRUE);
+}
+
+void GlfwWindow::Present() {
+    glfwSwapBuffers(handle_);
 }

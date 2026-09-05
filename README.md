@@ -13,9 +13,11 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 当前第一套图形 API 是 **OpenGL 4.1 Core Profile + GLFW + macOS OpenGL.framework**。完成桌面渲染器后，目标岗位路线依次进入 Android/OpenGL ES 和 Vulkan；Metal 放在专家能力进阶阶段验证。第一套渲染器完成前不并行学习多套 API。
 
+当前里程碑版本为 **v0.1.0**。
+
 ## 当前进度
 
-项目已经完成前 2 周和第 3 周第 9 课。当前已经建立最小应用与窗口模块边界，下一步进入独立 `ShaderProgram` 模块和第一条 GPU 绘制链路。
+项目已经完成前 4 周和第 16 课，v0.1.0 的代码、回归和文档均已通过验收并合并。当前已经建立最小应用、窗口与 `Renderer` 边界，让渲染资源具备明确的 move-only RAII 语义，并能在 Debug 构建中定位 OpenGL 错误；下一步进入第 17 课的 EBO 索引绘制。
 
 已经完成：
 
@@ -32,37 +34,69 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第七课的事件循环与键盘输入实验，理解事件轮询、按键状态、关闭标志和统一清理流程。
 - 完成第八课的窗口尺寸与 framebuffer 尺寸实验，使用实际 framebuffer 像素设置 viewport，并在尺寸变化时通过回调同步更新。
 - 完成第九课的项目骨架整理，将启动、应用流程和 GLFW 窗口资源拆分为单向依赖的 `main`、`Application` 与 `GlfwWindow`。
+- 完成第十课的 `ShaderProgram` 模块，能够编译顶点/片元 Shader、链接 Program、输出完整错误日志，并按 Context 生命周期释放 OpenGL 资源。
+- 完成第十一课的 `VertexArray` 模块，将交错排列的位置/颜色数据上传到 VBO，以 VAO 记录 attribute 布局，并按 Context 生命周期释放顶点资源。
+- 完成第十二课的彩色三角形绘制：每帧依次清屏、绑定 Program 和 VAO、发出 draw call，再交换双缓冲呈现；实际验证了 RGB 插值、窗口缩放和 Esc 退出。
+- 完成第十三课的最小 `Renderer` 边界，将 Shader 源码、顶点数据、资源所有权和绘制流程移出 `Application`，同时保持窗口呈现职责独立；窗口初始化可选在副屏独占全屏，并在副屏不可用时安全退回普通窗口。
+- 完成第十四课的 RAII 与移动语义审查：`ShaderProgram`、`VertexArray` 和 `Renderer` 禁止复制并支持 `noexcept` 移动，资源句柄在所有权转移后清空源对象；实际验证了 move 构造、self-move、move 赋值以及单次释放。
+- 完成第十五课的 OpenGL 错误诊断：新增无状态 `OpenGLDebug` 模块，Debug 构建在每帧 OpenGL 调用前排空旧错误并在绘制后报告本帧错误；通过一次受控的负数顶点数量注入定位到 `GL_INVALID_VALUE`，Release 构建则通过 `NDEBUG` 移除每帧检查。
+- 完成第十六课的 v0.1.0 收尾：补齐生命周期说明、依赖与三种构建配置，并从全新构建目录完成 Debug、Release、Sanitizer 回归；实际验证彩色三角形、窗口缩放、Esc 正常退出和无 Sanitizer/OpenGL 错误。
 
-前九课均已完成并合并回 `main`。第九课的课程分支为 `codex/lesson-09-project-architecture`；当前等待开始第 10 课，尚未进入 Shader 或三角形绘制。
+前十六课均已完成并合并回 `main`。第十六课的课程分支为 `codex/lesson-16-v0-1-release`，该分支已推送并继续保留；当前稳定的 `main` 是完成首月回归和文档收尾的 v0.1.0 基线。
 
-仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。九个已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
+仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
 ## 构建与运行
 
-当前已在 macOS arm64、Apple Clang 和 CMake 环境下验证。终端使用 Unix Makefiles：
+当前已在 macOS arm64、Apple Clang、CMake 3.25 以上和 Homebrew GLFW 3.4 环境下验证。首次构建前需要安装 CMake 和 GLFW：
 
 ```bash
-cmake -S . -B build \
+brew install cmake glfw
+```
+
+Debug 构建保留 OpenGL 错误检查：
+
+```bash
+cmake -S . -B build/debug \
   -G "Unix Makefiles" \
   -DCMAKE_BUILD_TYPE=Debug
 
-cmake --build build --parallel
-./build/ministudio
+cmake --build build/debug --parallel
+./build/debug/ministudio
 ```
 
-CLion 可以使用自身提供的 Ninja，并将构建产物放在独立的 `cmake-build-*` 目录中。
+Release 构建启用优化，并通过 `NDEBUG` 移除每帧 OpenGL 错误检查：
+
+```bash
+cmake -S . -B build/release \
+  -G "Unix Makefiles" \
+  -DCMAKE_BUILD_TYPE=Release
+
+cmake --build build/release --parallel
+./build/release/ministudio
+```
 
 需要 AddressSanitizer 和 UndefinedBehaviorSanitizer 时，使用独立构建目录：
 
 ```bash
-cmake -S . -B cmake-build-sanitize \
+cmake -S . -B build/sanitize \
   -G "Unix Makefiles" \
   -DCMAKE_BUILD_TYPE=Debug \
   -DMINISTUDIO_ENABLE_SANITIZERS=ON
 
-cmake --build cmake-build-sanitize --parallel
-./cmake-build-sanitize/ministudio
+cmake --build build/sanitize --parallel
+./build/sanitize/ministudio
 ```
+
+CLion 可以使用自身提供的 Ninja，并将构建产物放在独立的 `cmake-build-*` 目录中。
+
+## v0.1 运行验收
+
+程序启动后应显示一个带 RGB 插值颜色的三角形和蓝灰色背景。拖动窗口边缘时，viewport 应跟随实际 framebuffer 尺寸更新；按下 Esc 后程序应通过统一退出路径关闭。
+
+Debug 和 Sanitizer 版本在正常路径下不应输出 OpenGL 错误、AddressSanitizer 错误或 UndefinedBehaviorSanitizer 错误。Release 版本应保持相同画面，但不执行每帧 `glGetError()` 检查。
+
+对象所有权、Context、逐帧顺序和逆序析构说明见 [`docs/MiniStudio-v0.1-lifecycle.md`](docs/MiniStudio-v0.1-lifecycle.md)。
 
 ## 版本路线
 
@@ -96,15 +130,27 @@ MiniStudio/
 ├── README.md
 ├── docs/
 │   ├── MiniStudio-curriculum-24-36-months.md
-│   └── MiniStudio-learning-handoff-2026-09-03.md
+│   ├── MiniStudio-learning-handoff-2026-09-03.md
+│   └── MiniStudio-v0.1-lifecycle.md
 └── src/
     ├── main.cpp
     ├── app/
     │   ├── Application.h
     │   └── Application.cpp
-    └── platform/
-        ├── GlfwWindow.h
-        └── GlfwWindow.cpp
+    ├── platform/
+    │   ├── GlfwWindow.h
+    │   └── GlfwWindow.cpp
+    └── render/
+        ├── ShaderProgram.h
+        ├── ShaderProgram.cpp
+        ├── VertexArray.h
+        ├── VertexArray.cpp
+        ├── RenderCommand.h
+        ├── RenderCommand.cpp
+        ├── OpenGLDebug.h
+        ├── OpenGLDebug.cpp
+        ├── Renderer.h
+        └── Renderer.cpp
 ```
 
-完整课程路线见 [`docs/MiniStudio-curriculum-24-36-months.md`](docs/MiniStudio-curriculum-24-36-months.md)，当前状态和下一步见 [`docs/MiniStudio-learning-handoff-2026-09-03.md`](docs/MiniStudio-learning-handoff-2026-09-03.md)。README 只提供稳定的项目入口和概览；AI 助手在本仓库中的操作和教学边界见 [`AGENTS.md`](AGENTS.md)。
+完整课程路线见 [`docs/MiniStudio-curriculum-24-36-months.md`](docs/MiniStudio-curriculum-24-36-months.md)，当前状态和下一步见 [`docs/MiniStudio-learning-handoff-2026-09-03.md`](docs/MiniStudio-learning-handoff-2026-09-03.md)，v0.1 生命周期说明见 [`docs/MiniStudio-v0.1-lifecycle.md`](docs/MiniStudio-v0.1-lifecycle.md)。README 只提供稳定的项目入口和概览；AI 助手在本仓库中的操作和教学边界见 [`AGENTS.md`](AGENTS.md)。
