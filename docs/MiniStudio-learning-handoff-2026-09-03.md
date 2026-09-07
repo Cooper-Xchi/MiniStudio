@@ -317,7 +317,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 5 周第 19 课已在课程分支完成并通过验收，等待提交、推送与合并。**
+当前处于：**第 5 周第 19 课已完成、验收并合并，等待开始第 20 课。**
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现程序生成的 2×2 RGBA 四色纹理。
 
@@ -355,7 +355,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 
 第 18 课已在 `codex/lesson-18-texture2d` 完成、验收并合并：新增 move-only `Texture2D`，由 Renderer 按值拥有；顶点布局扩展为 position、color、UV，片元 Shader 通过 `sampler2D` 从 0 号纹理单元采样，程序生成的 2×2 RGBA 像素经 `glTexImage2D` 上传。Windows Debug/Release 均完成干净重建并持续运行，学习者确认四色纹理矩形显示正确，且能够解释纹理对象、纹理单元、sampler 和局部像素数组生命周期的关系。验收时还定位到一次增量构建旧对象文件导致的类布局不一致；干净重建后问题消失。下一课计划对比 wrapping 与 filtering，继续使用程序生成纹理，暂不引入图片解码依赖。
 
-第 19 课已在 `codex/lesson-19-texture-sampling` 完成并通过验收：学习者把 UV 扩展到 `[0, 2]`，观察并解释了 `GL_REPEAT`、`GL_CLAMP_TO_EDGE` 与 `GL_MIRRORED_REPEAT` 的坐标映射，再把 UV 恢复为 `[0, 1]`，对比 `GL_NEAREST` 与 `GL_LINEAR` 的放大效果。最终状态使用 `GL_CLAMP_TO_EDGE` 和线性放大过滤，并保留最近点缩小过滤。学习者能够解释 sampler uniform 与纹理绑定中的 `0` 都指向纹理单元 0，也能区分放大过滤和缩小过滤的触发条件。课程同时移除了未使用的 Shader varying，并让 `VertexArray` 的 move 构造初始化列表与成员声明顺序一致。macOS 从全新 Debug 构建目录配置、编译成功且没有编译器警告；Shader 链接日志为空，程序成功创建 OpenGL 4.1 Core Context 并启动，未报告 OpenGL 错误。下一步在第 20 课进行纹理链路架构小复盘，再说明外部图片解码依赖的用途、替代方案、平台限制与维护成本。
+第 19 课已在 `codex/lesson-19-texture-sampling` 完成、验收并合并：学习者把 UV 扩展到 `[0, 2]`，观察并解释了 `GL_REPEAT`、`GL_CLAMP_TO_EDGE` 与 `GL_MIRRORED_REPEAT` 的坐标映射，再把 UV 恢复为 `[0, 1]`，对比 `GL_NEAREST` 与 `GL_LINEAR` 的放大效果。最终状态使用 `GL_CLAMP_TO_EDGE` 和线性放大过滤，并保留最近点缩小过滤。学习者能够解释 sampler uniform 与纹理绑定中的 `0` 都指向纹理单元 0，也能区分放大过滤和缩小过滤的触发条件。课程同时移除了未使用的 Shader varying，并让 `VertexArray` 的 move 构造初始化列表与成员声明顺序一致。macOS 从全新 Debug 构建目录配置、编译成功且没有编译器警告；Shader 链接日志为空，程序成功创建 OpenGL 4.1 Core Context 并启动，未报告 OpenGL 错误。课程提交与分支均已推送，合并结果已进入稳定 `main`。下一步在第 20 课进行纹理链路架构小复盘，再说明外部图片解码依赖的用途、替代方案、平台限制与维护成本。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -369,7 +369,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 2 周 | 链接 GLFW/OpenGL，创建 4.1 Core Context，事件循环和 Retina viewport | 已完成；四课均已验收并合并到 `main` |
 | 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 已完成；第 9～12 课均已验收并合并到 `main` |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 已完成；第 16 课及 v0.1.0 收尾已完成并合并 |
-| 第 5 周 | EBO 索引绘制与纹理起步 | 进行中；第 17～18 课已合并，第 19 课已验收，等待提交与合并 |
+| 第 5 周 | EBO 索引绘制与纹理起步 | 第 17～19 课已完成、验收并合并，等待第 20 课 |
 
 ## 12. 协作要求
 

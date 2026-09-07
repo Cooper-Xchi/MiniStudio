@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成前 4 周和第 17～18 课并合并；第 19 课已在课程分支通过验收，等待提交与合并。当前已经建立最小应用、窗口与 `Renderer` 边界，让 Shader、VAO、VBO、EBO 和 Texture2D 具备明确的 move-only RAII 语义，并能用索引矩形对比纹理 wrapping 与 filtering；下一步在第 20 课进行纹理链路的架构小复盘，再评估外部图片解码依赖。
+项目已经完成前 4 周和第 17～19 课，相关代码、回归和文档均已通过验收并合并。当前已经建立最小应用、窗口与 `Renderer` 边界，让 Shader、VAO、VBO、EBO 和 Texture2D 具备明确的 move-only RAII 语义，并能用索引矩形对比纹理 wrapping 与 filtering；下一步在第 20 课进行纹理链路的架构小复盘，再评估外部图片解码依赖。
 
 已经完成：
 
@@ -46,7 +46,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第十八课的最小 `Texture2D`：Renderer 按值拥有纹理资源，顶点布局加入 UV，片元 Shader 通过 sampler 和 0 号纹理单元采样程序生成的 2×2 RGBA 四色纹理。
 - 完成第十九课的纹理采样实验：使用超出 `[0, 1]` 的 UV 对比重复与边缘钳制，并在放大场景中对比最近点和线性过滤；同时清理 Shader varying 与 C++ 成员初始化顺序警告。
 
-前十八课均已完成并合并回 `main`。第十九课位于 `codex/lesson-19-texture-sampling`，已通过本机 macOS Debug 干净构建与启动检查，尚未提交、推送或合并。
+前十九课均已完成并合并回 `main`。第十九课的课程分支为 `codex/lesson-19-texture-sampling`，该分支已推送并继续保留；当前稳定的 `main` 已包含纹理环绕与过滤实验以及相关警告清理。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
