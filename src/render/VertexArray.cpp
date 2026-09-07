@@ -79,21 +79,21 @@ void VertexArray::Release() {
         glDeleteBuffers(1, &ebo_);
         ebo_ = 0;
     }
-    vertex_count_ = 0;
     index_count_ = 0;
+    vertex_count_ = 0;
 }
 
 VertexArray::VertexArray(VertexArray&& other) noexcept:
 vao_(other.vao_),
 vbo_(other.vbo_),
 ebo_(other.ebo_),
-vertex_count_(other.vertex_count_),
-index_count_(other.index_count_){
+index_count_(other.index_count_),
+vertex_count_(other.vertex_count_){
     other.vao_ = 0;
     other.vbo_ = 0;
     other.ebo_ = 0;
-    other.vertex_count_ = 0;
     other.index_count_ = 0;
+    other.vertex_count_ = 0;
 }
 VertexArray& VertexArray::operator=(VertexArray&& other) noexcept{
     if (this == &other) return *this;
@@ -101,8 +101,8 @@ VertexArray& VertexArray::operator=(VertexArray&& other) noexcept{
     vao_ = std::exchange(other.vao_,0);
     vbo_ = std::exchange(other.vbo_,0);
     ebo_ = std::exchange(other.ebo_,0);
-    vertex_count_ = std::exchange(other.vertex_count_,0);
     index_count_ = std::exchange(other.index_count_,0);
+    vertex_count_ = std::exchange(other.vertex_count_,0);
     return *this;
 
 }
