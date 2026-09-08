@@ -21,4 +21,12 @@ namespace RenderCommand {
             glDepthFunc(GL_LESS);
         }
     }
+
+    void SetDepthWriteEnabled(bool enabled) {
+        if (!enabled) {
+            glDepthMask(GL_FALSE);
+        }else {
+            glDepthMask(GL_TRUE);
+        }
+    }
 }

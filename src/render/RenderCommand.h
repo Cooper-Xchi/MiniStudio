@@ -7,4 +7,6 @@ namespace RenderCommand {
 
     void SetDepthTestEnabled(bool enabled);
 
+    void SetDepthWriteEnabled(bool enabled);
+
 }
