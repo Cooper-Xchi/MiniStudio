@@ -325,7 +325,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 8 周第 29 课已完成验收，课程分支等待提交、推送并合并。**
+当前处于：**第 8 周第 29 课已完成并合并，等待开始第 30 课透视投影与深度。**
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现程序生成的 2×2 RGBA 四色纹理。
 
@@ -383,7 +383,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 
 第 28 课已在 `codex/lesson-28-transform-architecture-review` 完成、验收并合并：新增变换链路架构记录，明确 Application 产生每帧累计时间、Renderer 计算 model/view 并编排上传、ShaderProgram 独占 Program handle 并负责 uniform 上传。`model` 每帧随时间更新，静态 `view` 初始化时上传一次；相机开始移动后，view 也应按数据变化重新计算和上传。学习者删除了未使用且与 Renderer 重复的 `ShaderProgram::TransformObjectToWorld()`，并能够解释 CPU 局部矩阵通过 `SetMat4()` 被临时借用、随后由 OpenGL 复制到 Program uniform 状态。当前没有多个物体、持久可编辑变换或可移动相机，因此不新增 `Transform`、`Camera` 或矩阵管理器。macOS Sanitizer 构建无警告，程序仍显示位于屏幕中心、持续旋转的半尺寸纹理矩形，没有 Shader、OpenGL、ASan 或 UBSan 错误。下一课进入 projection 矩阵。
 
-第 29 课已在 `codex/lesson-29-projection-matrix` 完成验收，等待提交、推送并合并：顶点 Shader 新增 `projection` uniform，并按 `projection × view × model × position` 输出裁剪空间坐标。Renderer 初始化时用 `glm::ortho(-0.5, 0.5, -0.5, 0.5)` 创建静态正交投影并上传一次，使原本处于相机空间 `[-0.25, 0.25]` 的矩形映射到裁剪空间 `[-0.5, 0.5]`，画面宽高各变为原来的两倍。学习者能够解释 `view` 控制观察位置、`projection` 控制可见体积映射、`gl_Position` 保存裁剪空间坐标，以及正交范围恢复为 `[-1, 1]` 后画面为何恢复原大小。macOS Sanitizer 构建无警告，程序成功显示居中旋转的放大纹理矩形，没有 Shader、OpenGL、ASan 或 UBSan 错误。
+第 29 课已在 `codex/lesson-29-projection-matrix` 完成、验收并合并：顶点 Shader 新增 `projection` uniform，并按 `projection × view × model × position` 输出裁剪空间坐标。Renderer 初始化时用 `glm::ortho(-0.5, 0.5, -0.5, 0.5)` 创建静态正交投影并上传一次，使原本处于相机空间 `[-0.25, 0.25]` 的矩形映射到裁剪空间 `[-0.5, 0.5]`，画面宽高各变为原来的两倍。学习者能够解释 `view` 控制观察位置、`projection` 控制可见体积映射、`gl_Position` 保存裁剪空间坐标，以及正交范围恢复为 `[-1, 1]` 后画面为何恢复原大小。macOS Sanitizer 构建无警告，程序成功显示居中旋转的放大纹理矩形，没有 Shader、OpenGL、ASan 或 UBSan 错误。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -400,7 +400,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 5 周 | EBO 索引绘制与纹理起步 | 第 17～20 课已完成、验收并合并 |
 | 第 6 周 | 外部图片数据链路 | 第 21～24 课已完成、验收并合并 |
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
-| 第 8 周 | 投影与裁剪空间 | 第 29 课已验收、等待合并 |
+| 第 8 周 | 投影与裁剪空间 | 第 29 课已完成、验收并合并；下一步第 30 课透视投影与深度 |
 
 ## 12. 协作要求
 

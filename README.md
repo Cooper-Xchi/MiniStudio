@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成并合并第 1～28 课。第 29 课已在课程分支通过验收：顶点 Shader 增加正交 projection 矩阵，补全模型空间到裁剪空间的变换链路；当前等待提交并合并。
+项目已经完成第 1～29 课，相关成果均已通过验收并合并。第 29 课为顶点 Shader 增加正交 projection 矩阵，补全了模型空间到裁剪空间的变换链路；下一课进入透视投影与深度。
 
 已经完成：
 
@@ -56,7 +56,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第二十八课的变换链路架构复盘：记录时间、model、view 和 Shader Program 的职责、更新频率、所有权与主线程约束，并删除重复且职责错位的 `TransformObjectToWorld()`。
 - 完成第二十九课的正交投影矩阵：顶点 Shader 使用 `projection × view × model × position` 输出裁剪空间坐标，并用更小的正交可见范围验证投影产生的放大效果。
 
-前二十八课均已完成并合并回 `main`。第二十九课已在 `codex/lesson-29-projection-matrix` 完成验收，等待提交、推送并合并；当前稳定的 `main` 仍停留在第二十八课。
+前二十九课均已完成并合并回 `main`。第二十九课课程分支 `codex/lesson-29-projection-matrix` 已推送，稳定的 `main` 已包含正交 projection 数据链路。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
