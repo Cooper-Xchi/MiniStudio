@@ -321,11 +321,11 @@ int main() {
 }
 ```
 
-当前依赖为 `main → Application → GlfwWindow/Renderer`，Renderer 再单向依赖无状态 `ImageLoader` 和 `ShaderProgram/VertexArray/Texture2D/RenderCommand`；图片模块只依赖标准库与 `stb_image`，平台与渲染实现最终依赖 GLFW/OpenGL。`Application` 按值拥有窗口和 Renderer，并在主循环中用 `steady_clock` 计算累计秒数；Renderer 按值拥有 Shader Program、顶点输入资源和二维纹理，每帧根据传入时间构造并上传 model，静态 view 与当前透视 projection 则在初始化时上传一次。`SetMat4()` 临时借用 CPU 矩阵，OpenGL 把数值复制到 Program uniform 状态。临时 `ImageData` 在 Renderer 初始化期间拥有 CPU RGBA 字节，`Texture2D` 在上传复制后独占 OpenGL texture handle。成员声明顺序保证 Renderer 及其 GPU 资源先析构、窗口和 Context 后析构。`Application` 只编排窗口初始化、事件、时间、绘制和呈现，具体渲染数据与命令留在 Renderer 内。macOS 继续使用 `OpenGL/gl3.h` 与系统 framework，Windows 通过 GLAD 加载 OpenGL 4.1 函数；平台条件集中在共享头文件与 CMake 中。第 30 课已在 macOS Sanitizer 配置下完成编译和运行回归，编译器与 Shader 日志均无警告，运行时没有 OpenGL、ASan 或 UBSan 错误。
+当前依赖为 `main → Application → GlfwWindow/Renderer`，Renderer 再单向依赖无状态 `ImageLoader` 和 `ShaderProgram/VertexArray/Texture2D/RenderCommand`；图片模块只依赖标准库与 `stb_image`，平台与渲染实现最终依赖 GLFW/OpenGL。`Application` 按值拥有窗口和 Renderer，并在主循环中用 `steady_clock` 计算累计秒数；每帧处理事件后从 GlfwWindow 查询实际 framebuffer 宽高，再把时间和两个普通整数传给 Renderer。Renderer 按值拥有 Shader Program、顶点输入资源和二维纹理，每帧根据时间上传 model，并根据 framebuffer 宽高比上传 perspective projection；静态 view 仍在初始化时上传一次。`SetMat4()` 临时借用 CPU 矩阵，OpenGL 把数值复制到 Program uniform 状态。临时 `ImageData` 在 Renderer 初始化期间拥有 CPU RGBA 字节，`Texture2D` 在上传复制后独占 OpenGL texture handle。成员声明顺序保证 Renderer 及其 GPU 资源先析构、窗口和 Context 后析构。`Application` 只编排窗口初始化、事件、时间、尺寸查询、绘制和呈现，具体渲染数据与命令留在 Renderer 内。macOS 继续使用 `OpenGL/gl3.h` 与系统 framework，Windows 通过 GLAD 加载 OpenGL 4.1 函数；平台条件集中在共享头文件与 CMake 中。第 31 课已在 macOS Sanitizer 配置下完成编译和 resize 运行回归，编译器与 Shader 日志均无警告，运行时没有 OpenGL、ASan 或 UBSan 错误。
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 8 周第 30 课已完成并合并，等待开始第 31 课动态 framebuffer 宽高比。**
+当前处于：**第 8 周第 31 课已完成验收，课程分支等待提交、推送并合并。**
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现程序生成的 2×2 RGBA 四色纹理。
 
@@ -387,6 +387,8 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 
 第 30 课已在 `codex/lesson-30-perspective-projection` 完成、验收并合并：Renderer 用 `glm::perspective` 创建垂直视野角 45 度、初始宽高比 `1280 / 960`、near `0.1`、far `100` 的透视 projection，并把物体从 `z = 0` 移到相机前方的 `z = -2`。受控实验把物体临时移到 `z = -4`，学习者先预测并实际确认屏幕宽高约减半，随后代码恢复为 `z = -2`。学习者能够解释视野角增大后物体变小，near/far 是沿相机观察方向的正距离，在当前约定中对应相机空间 `z = -0.1` 与 `z = -100`；也能判断处在裁剪体积之外的 `z = 0` 和 `z = -101` 不可见。macOS Sanitizer 构建无警告，最终版本成功显示居中旋转的透视纹理矩形，没有 Shader、OpenGL、ASan 或 UBSan 错误。一次运行观察到实际 framebuffer 宽高比与硬编码值不同，下一课将用真实 framebuffer 尺寸更新 projection。
 
+第 31 课已在 `codex/lesson-31-framebuffer-aspect` 完成验收，等待提交、推送并合并：GlfwWindow 新增只读的 `GetFramebufferSize(int&, int&)`，通过引用输出当前物理像素尺寸，不暴露 GLFW handle 或保存重复状态。Application 在 `PollEvents()` 后查询尺寸，把当前循环内的宽高值传给扩展后的 `Renderer::DrawFrame()`；Renderer 对零尺寸帧返回成功并跳过绘制，随后用浮点宽高比逐帧构造和上传 perspective projection。实际把窗口明显拉宽和拉高后，viewport 与 projection 始终使用一致的 framebuffer 比例，旋转纹理没有额外拉伸或压扁。验收还删除了 resize callback 中会产生大量输出的旧尺寸日志，保留 viewport 更新。学习者能够解释 OpenGL 渲染目标使用 framebuffer 物理像素，以及查询放在事件处理之后可避免 projection 使用旧尺寸而 viewport 已更新到新尺寸。macOS Sanitizer 构建无警告，resize 期间没有 Shader、OpenGL、ASan 或 UBSan 错误。
+
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
 ## 11. 课程路线入口与前四周计划
@@ -402,7 +404,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 5 周 | EBO 索引绘制与纹理起步 | 第 17～20 课已完成、验收并合并 |
 | 第 6 周 | 外部图片数据链路 | 第 21～24 课已完成、验收并合并 |
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
-| 第 8 周 | 投影与裁剪空间 | 第 29～30 课已完成、验收并合并；下一步第 31 课动态宽高比 |
+| 第 8 周 | 投影与裁剪空间 | 第 29～30 课已合并；第 31 课已验收、等待合并；下一步第 32 课架构复盘 |
 
 ## 12. 协作要求
 

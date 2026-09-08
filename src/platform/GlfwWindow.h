@@ -24,6 +24,8 @@ public:
     void RequestClose();
     void Present();
 
+    void GetFramebufferSize(int& width, int& height) const;
+
 
 private:
     static void OnFramebufferSizeChanged(
