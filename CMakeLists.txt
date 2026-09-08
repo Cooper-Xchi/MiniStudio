@@ -14,13 +14,21 @@ add_executable(ministudio
         src/render/OpenGLDebug.cpp
         src/render/Texture2D.cpp
         src/render/Texture2D.h
+        src/image/ImageLoader.cpp
 )
 
 option(MINISTUDIO_ENABLE_SANITIZERS
         "Enable AddressSanitizer and UndefinedBehaviorSanitizer"
         OFF)
 target_include_directories(ministudio PRIVATE src)
+target_include_directories(ministudio SYSTEM PRIVATE third_party/stb)
 target_compile_features(ministudio PRIVATE cxx_std_20)
+
+add_custom_command(TARGET ministudio POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:ministudio>/assets
+)
 
 set_target_properties(ministudio PROPERTIES
         CXX_EXTENSIONS OFF

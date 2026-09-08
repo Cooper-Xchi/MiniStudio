@@ -3,7 +3,7 @@
 //
 
 #include "Renderer.h"
-
+#include "image/ImageLoader.h"
 #include <iterator>
 
 #include "OpenGLDebug.h"
@@ -45,16 +45,14 @@ void main() {
         2,3,0
     };
 
-    const unsigned char rgba_array[] = {
-            255 ,0   ,0   ,255,
-            0   ,255 ,0   ,255,
-            0   ,0   ,255 ,255,
-            255 ,255 ,0   ,255,
-    };
+    ImageData image;
+    if (!LoadImageRgba("assets/textures/lesson21-quadrants.png",image)) {
+        return false;
+    }
 
     if (!shader_program_.Initialize(vertex_source, fragment_source)) return false;
     if (!vertex_array_.Initialize(triangle_vertices,std::size(triangle_vertices),indexes,std::size(indexes))) return false;
-    if (!texture_.Initialize(2, 2,rgba_array)) return false;
+    if (!texture_.Initialize(image.width, image.height,image.rgba_pixels.data())) return false;
 
 
     shader_program_.Use();
