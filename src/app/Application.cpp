@@ -1,4 +1,5 @@
 #include "Application.h"
+#include <chrono>
 
 int Application::Run() {
     constexpr bool fullscreen_on_secondary_monitor = false;
@@ -11,12 +12,17 @@ int Application::Run() {
         return 1;
     }
     if (!renderer_.Initialize()) return 1;
+    auto start_time = std::chrono::steady_clock::now();
     while (!window_.ShouldClose()) {
         window_.PollEvents();
         if (window_.IsEscapePressed()) {
             window_.RequestClose();
         }
-        renderer_.DrawFrame();
+        auto current_time = std::chrono::steady_clock::now();
+        const float elapsed_seconds = std::chrono::duration<float>(current_time - start_time ).count();
+        if (!renderer_.DrawFrame(elapsed_seconds)) {
+            return 1;
+        }
         window_.Present();
 
     }
