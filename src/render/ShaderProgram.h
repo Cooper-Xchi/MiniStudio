@@ -22,7 +22,6 @@ public:
 
     bool SetMat4(const char* name, const glm::mat4& value);
 
-    glm::mat4 TransformObjectToWorld();
 
 
 
