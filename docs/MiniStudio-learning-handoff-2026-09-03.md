@@ -324,7 +324,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 7 周第 26 课已完成验收，课程分支等待提交、推送并合并。**
+当前处于：**第 7 周第 26 课已完成、验收并合并，等待开始第 27 课。**
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现程序生成的 2×2 RGBA 四色纹理。
 
@@ -376,7 +376,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 
 第 25 课已在 `codex/lesson-25-model-matrix` 完成、验收并合并：经依赖评估和学习者确认后，CMake 接入 Homebrew GLM，Windows vcpkg manifest 同步加入 GLM；`ShaderProgram` 新增 `SetMat4`，通过 `glm::value_ptr` 把矩阵上传到当前 Program。顶点 Shader 新增 `model` uniform，Renderer 构造 `T × S` 模型矩阵，将四色矩形缩小一半并把中心移动到 `x = 0.25`。macOS Sanitizer 构建无警告，程序持续运行且没有 Shader、OpenGL、ASan 或 UBSan 错误，实际画面与预期一致。学习者能够解释列向量、齐次坐标、GLM 右乘组合、矩阵从右向左作用，以及交换平移和缩放顺序后平移量为何从 `0.25` 变成 `0.125`。下一步在第 26 课把累计帧时间传给 Renderer，并逐帧更新旋转矩阵。
 
-第 26 课已在 `codex/lesson-26-frame-time-rotation` 完成验收，等待提交、推送并合并：Application 使用 `steady_clock` 记录起点并在每帧把时间差转换为浮点秒数，Renderer 的 `DrawFrame(float)` 每帧构造 `T × R × S` 模型矩阵，以每秒 90 度绕 Z 轴旋转，并在 uniform 或 Debug OpenGL 检查失败时把 `false` 传播给顶层。macOS Sanitizer 构建无警告，矩形保持一半尺寸、中心固定在 `x = 0.25` 并约每 4 秒旋转一圈，持续运行没有 Shader、OpenGL、ASan 或 UBSan 错误。学习者能够解释相同累计时间产生相同角度，以及每帧固定增加角度为何会随帧率改变速度。
+第 26 课已在 `codex/lesson-26-frame-time-rotation` 完成、验收并合并：Application 使用 `steady_clock` 记录起点并在每帧把时间差转换为浮点秒数，Renderer 的 `DrawFrame(float)` 每帧构造 `T × R × S` 模型矩阵，以每秒 90 度绕 Z 轴旋转，并在 uniform 或 Debug OpenGL 检查失败时把 `false` 传播给顶层。macOS Sanitizer 构建无警告，矩形保持一半尺寸、中心固定在 `x = 0.25` 并约每 4 秒旋转一圈，持续运行没有 Shader、OpenGL、ASan 或 UBSan 错误。学习者能够解释相同累计时间产生相同角度，以及每帧固定增加角度为何会随帧率改变速度。下一步在第 27 课增加 view 矩阵并验证相机的逆变换。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -392,7 +392,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 已完成；第 16 课及 v0.1.0 收尾已完成并合并 |
 | 第 5 周 | EBO 索引绘制与纹理起步 | 第 17～20 课已完成、验收并合并 |
 | 第 6 周 | 外部图片数据链路 | 第 21～24 课已完成、验收并合并 |
-| 第 7 周 | 模型矩阵与坐标变换 | 第 25 课已合并；第 26 课已验收、等待合并；下一步第 27 课 |
+| 第 7 周 | 模型矩阵与坐标变换 | 第 25～26 课已完成并合并；下一步第 27 课 |
 
 ## 12. 协作要求
 
