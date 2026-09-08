@@ -325,7 +325,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 7 周第 27 课已完成验收，课程分支等待提交、推送并合并。**
+当前处于：**第 7 周第 27 课已完成并合并，等待开始第 28 课架构复盘。**
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现程序生成的 2×2 RGBA 四色纹理。
 
@@ -379,7 +379,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 
 第 26 课已在 `codex/lesson-26-frame-time-rotation` 完成、验收并合并：Application 使用 `steady_clock` 记录起点并在每帧把时间差转换为浮点秒数，Renderer 的 `DrawFrame(float)` 每帧构造 `T × R × S` 模型矩阵，以每秒 90 度绕 Z 轴旋转，并在 uniform 或 Debug OpenGL 检查失败时把 `false` 传播给顶层。macOS Sanitizer 构建无警告，矩形保持一半尺寸、中心固定在 `x = 0.25` 并约每 4 秒旋转一圈，持续运行没有 Shader、OpenGL、ASan 或 UBSan 错误。学习者能够解释相同累计时间产生相同角度，以及每帧固定增加角度为何会随帧率改变速度。下一步在第 27 课增加 view 矩阵并验证相机的逆变换。
 
-第 27 课已在 `codex/lesson-27-view-matrix` 完成验收，等待提交、推送并合并：顶点 Shader 新增独立 `view` uniform，并按 `view × model × position` 把局部坐标依次转换到世界和相机空间。Renderer 初始化时把世界位置 `(0.25, 0, 0)` 的静态相机转换为 `(-0.25, 0, 0)` 的 view 平移并上传一次；每帧 model 仍保持 `T × R × S` 动画，因此物体中心从世界 `x = 0.25` 转换到相机空间 `x = 0`，并在屏幕中心持续旋转。macOS Sanitizer 构建无警告，持续运行没有 Shader、OpenGL、ASan 或 UBSan 错误。学习者要求暂时保留新增但未使用的 `ShaderProgram::TransformObjectToWorld()`；该接口把场景变换参数放进了 Shader 资源模块，将在第 28 课架构复盘时重新评估。学习者能够解释 view 使用相机世界变换的逆。
+第 27 课已在 `codex/lesson-27-view-matrix` 完成、验收并合并：顶点 Shader 新增独立 `view` uniform，并按 `view × model × position` 把局部坐标依次转换到世界和相机空间。Renderer 初始化时把世界位置 `(0.25, 0, 0)` 的静态相机转换为 `(-0.25, 0, 0)` 的 view 平移并上传一次；每帧 model 仍保持 `T × R × S` 动画，因此物体中心从世界 `x = 0.25` 转换到相机空间 `x = 0`，并在屏幕中心持续旋转。macOS Sanitizer 构建无警告，持续运行没有 Shader、OpenGL、ASan 或 UBSan 错误。学习者要求暂时保留新增但未使用的 `ShaderProgram::TransformObjectToWorld()`；该接口把场景变换参数放进了 Shader 资源模块，将在第 28 课架构复盘时重新评估。学习者能够解释 view 使用相机世界变换的逆。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -395,7 +395,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 已完成；第 16 课及 v0.1.0 收尾已完成并合并 |
 | 第 5 周 | EBO 索引绘制与纹理起步 | 第 17～20 课已完成、验收并合并 |
 | 第 6 周 | 外部图片数据链路 | 第 21～24 课已完成、验收并合并 |
-| 第 7 周 | 模型矩阵与坐标变换 | 第 25～26 课已合并；第 27 课已验收、等待合并；下一步第 28 课复盘 |
+| 第 7 周 | 模型矩阵与坐标变换 | 第 25～27 课已完成、验收并合并；下一步第 28 课复盘 |
 
 ## 12. 协作要求
 
