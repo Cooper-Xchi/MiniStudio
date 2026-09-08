@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目第 1～35 课均已通过验收并合并。第 35 课把深度测试开关与比较函数分离，用相等深度和交换绘制顺序验证 `LESS` 保留先画者、`LESSEQUAL` 允许后画者覆盖；最终恢复不同深度与 `LESS` 的正常配置。
+项目第 1～36 课均已通过验收并合并。第 36 课复盘了深度清除、测试、写入和比较函数的职责与顺序，确认当前依赖继续保持 `Application → Renderer → RenderCommand → OpenGL`，暂不引入通用状态管理器或 `RenderDevice`。
 
 已经完成：
 
@@ -61,8 +61,9 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第三十三课的深度测试：区分清除值与清除命令，每帧同时清颜色和深度，并用开关测试、交换绘制顺序及 GPU 读回验证两个矩形的遮挡；理解同一帧须保留物体间深度，而下一帧须清除旧深度。
 - 完成第三十四课的深度写入控制：封装 `glDepthMask`，用三组配置验证禁止写入仍参与深度测试且可以输出颜色，并通过清屏前恢复写入避免上一帧状态影响深度清除；最终恢复两个矩形都写深度。
 - 完成第三十五课的深度比较函数实验：深度测试启用与比较规则分别设置，项目侧枚举隔离 OpenGL 常量，并用相等深度和交换绘制顺序对比严格小于与小于等于。
+- 完成第三十六课的深度管线架构复盘：记录默认 framebuffer 深度缓冲的所有权、Current Context 状态、逐帧调用顺序和受控错误，确认现有模块仍保持最小单向依赖。
 
-前三十五课均已完成并合并回 `main`。第 35 课课程分支 `codex/lesson-35-depth-compare` 已推送并继续保留，稳定的 `main` 已包含独立深度比较函数及验收记录。
+前三十六课均已完成并合并回 `main`。第 36 课课程分支 `codex/lesson-36-depth-pipeline-review` 已推送并继续保留，稳定的 `main` 已包含深度管线架构复盘及验收记录。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
@@ -169,6 +170,7 @@ MiniStudio/
 ├── docs/
 │   ├── MiniStudio-curriculum-24-36-months.md
 │   ├── MiniStudio-learning-handoff-2026-09-03.md
+│   ├── MiniStudio-depth-pipeline-review.md
 │   ├── MiniStudio-texture-pipeline-review.md
 │   ├── MiniStudio-transform-pipeline-review.md
 │   └── MiniStudio-v0.1-lifecycle.md
