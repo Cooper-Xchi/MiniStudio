@@ -105,7 +105,6 @@ bool GlfwWindow::Initialize(
 
 void GlfwWindow::OnFramebufferSizeChanged(GLFWwindow *,int width,int height) {
     glViewport(0,0,width,height);
-    std::cout<<width<<"x"<<height<<std::endl;
 }
 
 bool GlfwWindow::ShouldClose() const {
@@ -126,4 +125,8 @@ void GlfwWindow::RequestClose() {
 
 void GlfwWindow::Present() {
     glfwSwapBuffers(handle_);
+}
+
+void GlfwWindow::GetFramebufferSize(int& width, int& height) const {
+    glfwGetFramebufferSize(handle_, &width, &height);
 }

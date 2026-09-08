@@ -20,7 +20,14 @@ int Application::Run() {
         }
         auto current_time = std::chrono::steady_clock::now();
         const float elapsed_seconds = std::chrono::duration<float>(current_time - start_time ).count();
-        if (!renderer_.DrawFrame(elapsed_seconds)) {
+        int framebuffer_width = 0;
+        int framebuffer_height = 0;
+        window_.GetFramebufferSize(framebuffer_width, framebuffer_height);
+        if (!renderer_.DrawFrame(
+                elapsed_seconds,
+                framebuffer_width,
+                framebuffer_height
+            )) {
             return 1;
         }
         window_.Present();
