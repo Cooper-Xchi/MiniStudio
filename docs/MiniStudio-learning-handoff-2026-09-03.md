@@ -325,7 +325,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 8 周第 32 课已完成验收，课程分支等待提交、推送并合并。**
+当前处于：**第 8 周第 32 课已完成并合并，等待开始第 33 课深度测试。**
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现程序生成的 2×2 RGBA 四色纹理。
 
@@ -389,7 +389,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 
 第 31 课已在 `codex/lesson-31-framebuffer-aspect` 完成、验收并合并：GlfwWindow 新增只读的 `GetFramebufferSize(int&, int&)`，通过引用输出当前物理像素尺寸，不暴露 GLFW handle 或保存重复状态。Application 在 `PollEvents()` 后查询尺寸，把当前循环内的宽高值传给扩展后的 `Renderer::DrawFrame()`；Renderer 对零尺寸帧返回成功并跳过绘制，随后用浮点宽高比逐帧构造和上传 perspective projection。实际把窗口明显拉宽和拉高后，viewport 与 projection 始终使用一致的 framebuffer 比例，旋转纹理没有额外拉伸或压扁。验收还删除了 resize callback 中会产生大量输出的旧尺寸日志，保留 viewport 更新。学习者能够解释 OpenGL 渲染目标使用 framebuffer 物理像素，以及查询放在事件处理之后可避免 projection 使用旧尺寸而 viewport 已更新到新尺寸。macOS Sanitizer 构建无警告，resize 期间没有 Shader、OpenGL、ASan 或 UBSan 错误。
 
-第 32 课已在 `codex/lesson-32-projection-architecture-review` 完成验收，等待提交、推送并合并：更新变换链路架构记录，补充 framebuffer 宽高和 projection 的产生位置、更新频率、局部生命周期及完整 `projection × view × model × position` 顺序。复盘确认当前每帧执行尺寸查询、aspect 与 perspective 计算、uniform location 查询和 projection 上传；单物体、单 draw call 场景没有性能证据支持增加缓存。学习者起初选择让 resize callback 直接更新 Renderer，随后能够解释这种方案会让 GlfwWindow 保存 Renderer 指针或引用，并隐藏 Renderer 生命周期、Current Context 和激活 Program 等前置条件。当前继续由同时拥有 Window 与 Renderer 的 Application 显式传递数据，未来只有在 Profiling 证明有需要时才考虑缓存宽高、尺寸 dirty 状态或 uniform location。
+第 32 课已在 `codex/lesson-32-projection-architecture-review` 完成、验收并合并：更新变换链路架构记录，补充 framebuffer 宽高和 projection 的产生位置、更新频率、局部生命周期及完整 `projection × view × model × position` 顺序。复盘确认当前每帧执行尺寸查询、aspect 与 perspective 计算、uniform location 查询和 projection 上传；单物体、单 draw call 场景没有性能证据支持增加缓存。学习者起初选择让 resize callback 直接更新 Renderer，随后能够解释这种方案会让 GlfwWindow 保存 Renderer 指针或引用，并隐藏 Renderer 生命周期、Current Context 和激活 Program 等前置条件。当前继续由同时拥有 Window 与 Renderer 的 Application 显式传递数据，未来只有在 Profiling 证明有需要时才考虑缓存宽高、尺寸 dirty 状态或 uniform location。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -406,7 +406,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 5 周 | EBO 索引绘制与纹理起步 | 第 17～20 课已完成、验收并合并 |
 | 第 6 周 | 外部图片数据链路 | 第 21～24 课已完成、验收并合并 |
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
-| 第 8 周 | 投影与裁剪空间 | 第 29～31 课已合并；第 32 课已验收、等待合并 |
+| 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 下一步第 33 课启用深度缓冲并验证遮挡 |
 
 ## 12. 协作要求
