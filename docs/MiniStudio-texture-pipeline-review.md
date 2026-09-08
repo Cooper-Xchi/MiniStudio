@@ -1,4 +1,4 @@
-# MiniStudio 第 20 课：纹理链路架构复盘
+# MiniStudio 纹理链路架构复盘
 
 ## 1. 当前数据流
 
@@ -88,5 +88,21 @@ if (!texture_.Initialize(
 
 - 异步解码和任务队列：先让同步数据链路稳定并具备明确失败路径，再引入线程与取消。
 - 纹理缓存、热重载和通用资源 Manager：当前只有一个真实纹理使用场景，尚无重复加载或更新需求。
-- HDR、颜色空间和完整 MipMap 策略：先验证普通 RGBA8 图片的文件方向、通道和上传结果。
+- HDR、颜色空间和手工 Mipmap 策略：当前已为 RGBA8 图片自动生成完整 Mipmap，其他格式与策略留到真实素材需要时处理。
 - 跨平台 `RenderDevice`：第一套 OpenGL 渲染器尚未完成，也没有第二种真实后端可供抽象。
+
+## 6. 第 24 课实际链路与错误边界
+
+第 21～23 课实现后的初始化数据流为：
+
+```text
+文件路径
+→ stb_image 临时解码内存（unique_ptr + stbi_image_free）
+→ ImageData::rgba_pixels（交换上下行后的 CPU RGBA 数据）
+→ Texture2D 上传第 0 级并生成 Mipmap
+→ glTexImage2D 返回后释放局部 ImageData
+```
+
+依赖保持单向：`Renderer → ImageLoader → stb_image`，同时 `Renderer → Texture2D → OpenGL/OpenGLDebug`。`ImageLoader` 不依赖 Renderer、窗口或 OpenGL；`Texture2D` 不依赖文件路径、文件 I/O 或解码库。`Renderer` 编排失败传播，不负责解释图片格式或管理裸纹理句柄。
+
+`Texture2D::Initialize` 现在对自己发出的 OpenGL 初始化调用负责：输入检查通过后先清除旧错误，完成纹理创建、采样状态、0 级上传和 Mipmap 生成，再立即检查错误。如果失败，`Release()` 同时删除 GPU 资源并把 `texture_id_` 恢复为 `0`，使析构不会重复删除，也允许同一对象再次初始化。逐帧 `DrawFrame()` 的错误检查只覆盖当帧命令，不再承担初始化错误诊断。
