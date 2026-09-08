@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成第 1～24 课，相关成果均已通过验收并合并。`Texture2D` 会检查自身初始化调用产生的 OpenGL 错误，失败时回滚为可安全析构和重新初始化的空状态；下一步进入模型矩阵与坐标变换。
+项目已经完成第 1～24 课，相关成果均已通过验收并合并。第 25 课已在课程分支通过验收：项目接入 GLM，通过 `model` uniform 把 CPU 端的平移与缩放矩阵上传到顶点 Shader；当前等待提交并合并。
 
 已经完成：
 
@@ -50,17 +50,18 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第二十二课的图片方向约定：在解码结果中按完整行交换上下像素，避免 `stb_image` 全局翻转状态，并用非对称测试图验证屏幕方向恢复正确。
 - 完成第二十三课的纹理 Mipmap：用 2048×2048 单像素棋盘对比基础级最近点缩小与三线性 Mipmap 过滤，理解 0 级上传、层级生成、缩小过滤和放大过滤的不同职责。
 - 完成第二十四课的纹理链路架构与错误边界复盘：初始化阶段就检查并归因 OpenGL 错误，失败后通过 `Release()` 释放纹理并清零句柄，避免错误被首帧清除。
+- 完成第二十五课的最小模型矩阵链路：接入 GLM，新增 `ShaderProgram::SetMat4`，用 `T × S` 把四色矩形缩小一半并将中心向右移动到 `x = 0.25`。
 
-前二十四课均已完成并合并回 `main`。第二十四课的课程分支为 `codex/lesson-24-texture-error-boundary`，该分支已推送并继续保留；当前稳定的 `main` 已包含纹理初始化错误检查和失败回滚。
+前二十四课均已完成并合并回 `main`。第二十五课在 `codex/lesson-25-model-matrix` 完成验收，尚未提交或合并；当前稳定的 `main` 仍停留在第二十四课。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
 ## 构建与运行
 
-当前已在 macOS arm64、Apple Clang、CMake 3.25 以上和 Homebrew GLFW 3.4 环境下验证。首次构建前需要安装 CMake 和 GLFW：
+当前已在 macOS arm64、Apple Clang、CMake 3.25 以上、Homebrew GLFW 3.4 和 GLM 1.0.3 环境下验证。首次构建前需要安装 CMake、GLFW 和 GLM：
 
 ```bash
-brew install cmake glfw
+brew install cmake glfw glm
 ```
 
 Debug 构建保留 OpenGL 错误检查：

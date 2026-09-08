@@ -1,4 +1,5 @@
 #pragma once
+#include "glm/glm.hpp"
 
 
 class ShaderProgram {
@@ -18,6 +19,8 @@ public:
     void Use() const;
 
     bool SetInt(const char* name, int value);
+
+    bool SetMat4(const char* name, const glm::mat4& value);
 
 
 
