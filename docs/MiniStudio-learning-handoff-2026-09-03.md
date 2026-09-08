@@ -57,7 +57,9 @@
 
 最终项目需要保留源码、构建说明、架构说明、关键对象生命周期说明、性能报告和演示素材。每个版本必须保持可编译、可运行。
 
-## 5. 已检查的本机环境
+## 5. 已检查的设备环境
+
+设备必须明确区分：学习者的公司电脑是 macOS，家里电脑是 Windows。下表记录的是公司 Mac 环境；Windows 使用独立的 Visual Studio、CLion 和 vcpkg manifest 构建路径。两台设备的验证证据不能互相替代。
 
 | 项目 | 当前状态 |
 | --- | --- |
@@ -75,6 +77,8 @@
 完整 Xcode 已安装，但当前 `xcode-select` 指向 Command Line Tools。默认 `xcrun metal` 因此不可用；通过完整 Xcode 的 `DEVELOPER_DIR` 可以找到 Metal 编译器。当前阶段不需要修改系统设置。
 
 CLion 使用它自带的 Ninja，因此 CLion 内可以使用 Ninja；终端练习继续使用 `Unix Makefiles`，两个构建目录分别保持独立。
+
+家用 Windows 当前使用 Visual Studio 2026 Community 的 MSVC 工具链、CLion 自带 CMake/Ninja，以及 `D:/tools/vcpkg`。Windows CMake profile 通过仓库根目录的 `vcpkg.json` 使用 manifest 模式，依赖安装在各构建目录的 `vcpkg_installed` 中；不要把旧的全局 `D:/tools/vcpkg/installed` 当成当前项目依赖路径。
 
 ## 6. API 路线决定
 
@@ -325,7 +329,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第三个月第 9 周，第 1～34 课均已完成、验收并合并。2026-09-08 的学习到此结束，第 35 课待下次学习时安排。**
+当前处于：**第三个月第 9 周，第 1～35 课均已完成、验收并合并；等待开始第 36 课深度管线架构复盘。**
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现外部 PNG 四色纹理；model 随时间旋转，projection 使用实际 framebuffer 宽高比。
 
@@ -351,7 +355,11 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 
 第 34 课合并与当日收尾记录（2026-09-08）：学习者在验收后明确要求提交合并并结束当天学习。已提交课程成果（`11f7446`），以合并提交 `3fd8cd8` 纳入 `main`，同步课程分支、稳定分支与完成记录；保留 `codex/lesson-34-depth-write-mask`。提交前确认最终代码与已通过 GPU 对照的正常配置完全一致，`git diff --check` 通过。本次不启动第 35 课，不创建下一课程分支。
 
-下一步：等学习者下次明确开始课程时，先只读检查最新 `main`、工作区、目录职责与资源所有权，再安排第 35 课的一个 20～90 分钟核心任务。今天的课程与 Git 收尾工作已完成。
+第 35 课启动记录（2026-09-08）：从远端更新后确认 `main` 与 `origin/main` 同为 `1cd0705`，工作区干净，第 34 课已完成合并。重新读完 README、课程路线和交接文档，并只读检查 Application、Renderer、RenderCommand 与 GPU 资源所有权：深度状态继续由 Renderer 编排，无状态 RenderCommand 负责具体 OpenGL 调用，Application 不需要修改。本机从独立 `build/lesson-35-debug` 目录完成 Windows Debug 配置、编译与启动，程序持续运行，Shader 链接成功且没有 OpenGL 错误；随后从最新 `main` 创建 `codex/lesson-35-depth-compare`。
+
+第 35 课核心任务（35～60 分钟）：把深度测试的启用与比较函数分开，在 RenderCommand 中用项目自己的 `enum class` 表达 `Less` 和 `LessEqual`，再让两个矩形处于相同相机空间深度，交换绘制顺序对比“严格小于”和“小于等于”在相等深度时由先画还是后画者保留。深度写入保持开启，每帧仍只在所有 draw 前清一次颜色和深度；不新增资源类、依赖、混合或模板化状态系统。完成四组受控观察后恢复两个矩形的不同深度与 `Less` 正常配置，再进行构建、OpenGL 错误与原理验收。
+
+第 35 课最终验收记录（2026-09-08）：学习者把深度测试启用与比较函数拆开，新增项目侧 `DepthCompare` 枚举，由无状态 RenderCommand 将 `LESS`、`LESSEQUAL`、`EQUAL`、`NOTEQUAL`、`GREATER` 与 `GREATEREQUAL` 映射到对应 OpenGL 深度函数；所有 `switch` 分支均显式结束，Renderer 不依赖 GLAD 或 OpenGL 枚举。实验期间让 A、B 处于相等深度并交换绘制顺序，观察确认 `LESS` 下先画者保留、`LESSEQUAL` 下后画者覆盖；学习者能够解释相等的新深度无法通过严格小于，但能通过小于等于。最终恢复 A 位于 `z=-2`、B 位于 `z=-3`、A → B 顺序及 `LESS`，并在清屏前显式开启深度写入；每帧只清一次颜色和深度。Windows Debug 编译成功且无警告，完整程序持续运行，Shader 链接成功且未报告 OpenGL 错误。公司 Mac 尚未对本课改动回归，Windows 结果不替代 macOS 验证。第 35 课已完成、提交并合并，课程分支继续保留。下一步第 36 课进行本轮深度管线架构复盘。
 
 仓库远端和 AI 约束准备已经完成，初始基线和第 1 周的四课均已合并到 `main`。
 
@@ -431,7 +439,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 6 周 | 外部图片数据链路 | 第 21～24 课已完成、验收并合并 |
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
-| 第 9 周 | 深度测试 | 第 33～34 课已完成并合并；第 35 课待下次学习时安排 |
+| 第 9 周 | 深度测试 | 第 33～35 课已完成并合并；等待第 36 课架构复盘 |
 
 ## 12. 协作要求
 
