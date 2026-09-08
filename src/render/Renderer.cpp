@@ -99,6 +99,8 @@ bool Renderer::DrawFrame(
         OpenGLDebug::ClearErrors();
     #endif
     RenderCommand::SetDepthTestEnabled(true);
+
+    RenderCommand::SetDepthWriteEnabled(true);
     RenderCommand::Clear(0.36,0.5,0.6,1);
     shader_program_.Use();
     const float aspect =
@@ -118,6 +120,8 @@ bool Renderer::DrawFrame(
     }
     vertex_array_.Bind();
     texture_.Bind(0);
+
+    RenderCommand::SetDepthWriteEnabled(true);
     RenderCommand::DrawIndexedTriangles(vertex_array_.IndexCount());
     shader_program_.Use();
     if (!shader_program_.SetMat4("model",Model2(elapsed_seconds))) {
@@ -125,7 +129,10 @@ bool Renderer::DrawFrame(
     }
     vertex_array_.Bind();
     texture_.Bind(0);
+    RenderCommand::SetDepthWriteEnabled(true);
     RenderCommand::DrawIndexedTriangles(vertex_array_.IndexCount());
+
+    RenderCommand::SetDepthWriteEnabled(true);
     #ifndef NDEBUG
         return OpenGLDebug::CheckErrors("Renderer::DrawFrame");
     #endif
