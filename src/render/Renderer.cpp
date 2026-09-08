@@ -46,7 +46,7 @@ void main() {
     };
 
     ImageData image;
-    if (!LoadImageRgba("assets/textures/lesson21-quadrants.png",image)) {
+    if (!LoadImageRgba("assets/textures/lesson23-checkerboard.png",image)) {
         return false;
     }
 
