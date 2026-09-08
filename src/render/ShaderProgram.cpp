@@ -118,3 +118,11 @@ bool ShaderProgram::SetMat4(const char* name, const glm::mat4& value) {
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
     return true;
 }
+
+glm::mat4 ShaderProgram::TransformObjectToWorld() {
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.25f, 0.0f, 0.0f));
+    model = glm::rotate(model,glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::scale(model,glm::vec3(0.5f));
+    return model;
+}

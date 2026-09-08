@@ -17,11 +17,12 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 color;
 layout(location = 2) in vec2 uv;
 uniform mat4 model;
+uniform mat4 view;
 out vec2 uv_coord;
 
 void main() {
     uv_coord = uv;
-    gl_Position = model * vec4(position, 1.0);
+    gl_Position = view * model * vec4(position, 1.0);
 }
 )";
 
@@ -61,7 +62,14 @@ void main() {
 
     shader_program_.Use();
 
+    glm::vec3 camera_position = glm::vec3(0.25,0,0);
+    glm::mat4 view = glm::mat4(1.0f);
+    view = glm::translate(view, -camera_position);
     if (!shader_program_.SetInt("texture_sampler", 0)) {
+        return false;
+    }
+
+    if (!shader_program_.SetMat4("view",view)) {
         return false;
     }
     return true;
@@ -73,6 +81,7 @@ bool Renderer::DrawFrame(const float elapsed_seconds) {
     #endif
     RenderCommand::Clear(0.36,0.5,0.6,1);
     shader_program_.Use();
+
     glm::mat4 model = glm::mat4(1.0f);
 
     model = glm::translate(model, glm::vec3(0.25f, 0.0f, 0.0f));
