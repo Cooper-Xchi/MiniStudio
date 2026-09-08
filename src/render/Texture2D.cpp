@@ -1,6 +1,6 @@
 #include "opengl/OpenGLHeaders.h"
 #include "Texture2D.h"
-
+#include "OpenGLDebug.h"
 #include <utility>
 
 bool Texture2D::Initialize(
@@ -15,6 +15,7 @@ bool Texture2D::Initialize(
         ) {
         return false;
     }
+    OpenGLDebug::ClearErrors();
     glGenTextures(1,&texture_id_);
     if (texture_id_ == 0) {
         return false;
@@ -36,6 +37,10 @@ bool Texture2D::Initialize(
         GL_UNSIGNED_BYTE,
         rgba_pixels);
     glGenerateMipmap(GL_TEXTURE_2D);
+    if (!OpenGLDebug::CheckErrors("Texture2D::Initialize")) {
+        Release();
+        return false;
+    }
 
 
 
