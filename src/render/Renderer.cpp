@@ -67,11 +67,11 @@ void main() {
     glm::vec3 camera_position = glm::vec3(0.25,0,0);
     glm::mat4 view = glm::mat4(1.0f);
     view = glm::translate(view, -camera_position);
-    glm::mat4 projection = glm::ortho(
-        -0.5f,
-        0.5f,
-        -0.5f,
-        0.5f
+    glm::mat4 projection = glm::perspective(
+        glm::radians(45.0f),
+        1280.0f / 960.0f,
+        0.1f,
+        100.0f
     );
     if (!shader_program_.SetInt("texture_sampler", 0)) {
         return false;
@@ -95,7 +95,7 @@ bool Renderer::DrawFrame(const float elapsed_seconds) {
 
     glm::mat4 model = glm::mat4(1.0f);
 
-    model = glm::translate(model, glm::vec3(0.25f, 0.0f, 0.0f));
+    model = glm::translate(model, glm::vec3(0.25f, 0.0f, -2.0f));
     model = glm::rotate(model,glm::radians(90.0f * elapsed_seconds), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::scale(model,glm::vec3(0.5f));
     if (!shader_program_.SetMat4("model",model)) {
