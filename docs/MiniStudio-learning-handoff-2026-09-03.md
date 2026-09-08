@@ -1,6 +1,6 @@
 # MiniStudio C++ 图形渲染学习交接文档
 
-> 更新时间：2026-09-07
+> 更新时间：2026-09-08
 > 用途：作为新 Codex 任务的背景与进度附件。本文是学习上下文，不代表要求一次完成全部路线。新任务应从“当前状态”和“下一步”继续，不要重新初始化项目。
 
 ## 1. 学习者背景
@@ -299,6 +299,8 @@ GLFW Window created!
 - 已理解 EBO 保存顶点索引，VAO 记录 EBO 绑定关系，`glDrawElements` 的数量参数表示索引数量，最后一个 `nullptr` 表示从当前 EBO 的第 0 字节开始读取。
 - 已理解 `glBufferData` 会把局部 CPU 数组内容复制到驱动管理的 Buffer 存储；函数返回后局部顶点与索引数组按自动存储期销毁，不是由垃圾回收器回收。
 - 已理解 `glTexImage2D` 会复制局部 RGBA 像素数组；sampler uniform 保存的是纹理单元编号，不是纹理对象句柄，`glActiveTexture` 选择纹理单元，`glBindTexture` 再把纹理对象绑定到该单元。
+- 已理解 `stbi_load` 返回的内存必须由 `stbi_image_free` 释放；当前用带自定义 deleter 的 `std::unique_ptr` 表达临时解码内存的所有权，再把准确的 `width * height * 4` 字节复制到 `ImageData::rgba_pixels`。
+- 已理解文件通常按顶行优先返回像素，而当前 OpenGL UV 把 `T=0` 放在四边形底部；测试图显示为上方蓝黄、下方红绿，证明上传链路没有自动调整行方向。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
@@ -313,11 +315,11 @@ int main() {
 }
 ```
 
-当前依赖为 `main → Application → GlfwWindow/Renderer`，Renderer 再单向依赖 `ShaderProgram/VertexArray/Texture2D/RenderCommand`，平台与渲染实现最终依赖 GLFW/OpenGL。`Application` 按值拥有窗口和 Renderer，Renderer 按值拥有 Shader Program、顶点输入资源和二维纹理；`VertexArray` 独占 VAO、VBO 和 EBO，`Texture2D` 独占 OpenGL texture handle。成员声明顺序保证 Renderer 及其 GPU 资源先析构、窗口和 Context 后析构。`Application` 只编排窗口初始化、事件、绘制和呈现，具体渲染数据与命令留在 Renderer 内。macOS 继续使用 `OpenGL/gl3.h` 与系统 framework，Windows 通过 GLAD 加载 OpenGL 4.1 函数；平台条件集中在共享头文件与 CMake 中。第 19 课已在 macOS 上从全新 Debug 构建目录完成配置、编译和启动，编译器与 Shader 日志均无警告，运行时没有 OpenGL 错误。
+当前依赖为 `main → Application → GlfwWindow/Renderer`，Renderer 再单向依赖无状态 `ImageLoader` 和 `ShaderProgram/VertexArray/Texture2D/RenderCommand`；图片模块只依赖标准库与 `stb_image`，平台与渲染实现最终依赖 GLFW/OpenGL。`Application` 按值拥有窗口和 Renderer，Renderer 按值拥有 Shader Program、顶点输入资源和二维纹理；临时 `ImageData` 在 Renderer 初始化期间拥有 CPU RGBA 字节，`Texture2D` 在上传复制后独占 OpenGL texture handle。成员声明顺序保证 Renderer 及其 GPU 资源先析构、窗口和 Context 后析构。`Application` 只编排窗口初始化、事件、绘制和呈现，具体渲染数据与命令留在 Renderer 内。macOS 继续使用 `OpenGL/gl3.h` 与系统 framework，Windows 通过 GLAD 加载 OpenGL 4.1 函数；平台条件集中在共享头文件与 CMake 中。第 21 课已在 macOS 上从全新 Sanitizer 构建目录完成配置、编译和启动，编译器与 Shader 日志均无警告，运行时没有 OpenGL、ASan 或 UBSan 错误。
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 5 周第 20 课已完成、验收并合并，等待开始第 21 课。**
+当前处于：**第 6 周第 21 课已完成验收，课程分支等待提交、推送并合并。**
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现程序生成的 2×2 RGBA 四色纹理。
 
@@ -359,6 +361,8 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 
 第 20 课已在 `codex/lesson-20-texture-pipeline-review` 完成、验收并合并：新增纹理链路架构记录，区分一次性初始化与逐帧绘制，记录 `Renderer`、CPU `ImageData`、无状态图片解码函数和 GPU `Texture2D` 的主要职责、所有权、线程与禁止依赖。学习者能够解释 `ImageData&` 是对调用方对象的可修改借用，`vector::data()` 返回受容器生命周期约束的像素指针；也理解 CPU 解码不需要 OpenGL Context，未来可以放到后台线程，而 `glTexImage2D` 上传必须留在拥有 Current Context 的线程。依赖评估选择 `stb_image`，用于仓库内受控学习素材；暂不引入异步任务、纹理缓存、热重载、HDR、完整颜色空间/MipMap 策略或跨平台 `RenderDevice`。本课没有修改业务代码或安装依赖，开始前已从最新 `main` 完成 macOS Debug 干净构建且无警告。课程提交与分支均已推送，合并结果已进入稳定 `main`。下一步在第 21 课固定并接入 `stb_image`，实现同步文件解码、RAII CPU 像素所有权、主线程 GPU 上传和缺失文件失败路径。
 
+第 21 课已在 `codex/lesson-21-stb-image-loading` 完成验收，等待提交、推送并合并：仓库固定 `stb_image` 到提交 `2c980bb59875b0d32144a71867fbdebb2f77cd20`，并记录来源、许可证、SHA-256 与升级流程；新增 `ImageData` 和无状态 `LoadImageRgba`，用带 `stbi_image_free` deleter 的 `std::unique_ptr` 管理解码内存，强制输出 RGBA 后复制到 `std::vector<unsigned char>`。Renderer 在拥有 Current Context 的主线程解码测试 PNG 并上传到现有 `Texture2D`，构建时把资源复制到程序目录。独立测试确认 64×64 图片得到 16384 字节，缺失文件返回失败且输出保持空状态；macOS Sanitizer 构建无警告，程序成功创建 OpenGL 4.1 Core Context、链接 Shader 并显示纹理，没有 OpenGL、ASan 或 UBSan 错误。非对称测试图的文件顶行是红绿、底行是蓝黄，实际显示为上方蓝黄、下方红绿，验证了文件行顺序与当前 UV 原点的上下差异。学习者能够解释解码临时内存、`ImageData`、GPU 纹理各自的所有者，以及 `byte_count` 作为 `[begin, begin + count)` 复制范围终点的含义。下一步在第 22 课明确图片行方向与 UV 约定，并选择统一的翻转位置。
+
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
 ## 11. 课程路线入口与前四周计划
@@ -372,7 +376,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 已完成；第 9～12 课均已验收并合并到 `main` |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 已完成；第 16 课及 v0.1.0 收尾已完成并合并 |
 | 第 5 周 | EBO 索引绘制与纹理起步 | 第 17～20 课已完成、验收并合并 |
-| 第 6 周 | 外部图片数据链路 | 等待第 21 课 |
+| 第 6 周 | 外部图片数据链路 | 第 21 课已验收、等待合并；下一步第 22 课 |
 
 ## 12. 协作要求
 

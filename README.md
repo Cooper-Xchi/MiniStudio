@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成前 5 周和第 1～20 课，相关成果均已通过验收并合并。当前已经明确 CPU 图片数据、文件解码、GPU 纹理上传和 Renderer 编排之间的职责与线程边界；下一步使用 `stb_image` 建立第一条同步外部图片加载链路。
+项目已经完成前 5 周和第 1～20 课，相关成果均已通过验收并合并。第 21 课已在课程分支通过验收：项目使用固定版本的 `stb_image` 同步解码 PNG，CPU 像素由 `ImageData` 的 `std::vector` 管理，再由主线程上传到 `Texture2D`；当前等待提交并合并。
 
 已经完成：
 
@@ -46,8 +46,9 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第十八课的最小 `Texture2D`：Renderer 按值拥有纹理资源，顶点布局加入 UV，片元 Shader 通过 sampler 和 0 号纹理单元采样程序生成的 2×2 RGBA 四色纹理。
 - 完成第十九课的纹理采样实验：使用超出 `[0, 1]` 的 UV 对比重复与边缘钳制，并在放大场景中对比最近点和线性过滤；同时清理 Shader varying 与 C++ 成员初始化顺序警告。
 - 完成第二十课的纹理链路架构复盘：区分 CPU 图片数据、无状态解码函数、GPU `Texture2D` 和 Renderer 的职责、所有权、线程与依赖方向，并选择 `stb_image` 作为下一阶段的受控图片解码依赖。
+- 完成第二十一课的同步图片加载链路：固定 `stb_image` 版本，实现无状态 RGBA 解码与缺失文件失败路径，由 Renderer 在主线程上传外部 PNG，并观察图片行顺序与纹理 UV 原点造成的上下翻转。
 
-前二十课均已完成并合并回 `main`。第二十课的课程分支为 `codex/lesson-20-texture-pipeline-review`，该分支已推送并继续保留；当前稳定的 `main` 已包含纹理链路架构记录和下一阶段依赖决策。
+前二十课均已完成并合并回 `main`。第二十一课在 `codex/lesson-21-stb-image-loading` 完成验收，尚未提交或合并；当前稳定的 `main` 仍停留在第二十课。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
@@ -148,16 +149,27 @@ MiniStudio/
 ├── CMakeLists.txt
 ├── README.md
 ├── vcpkg.json
+├── assets/
+│   └── textures/
+│       └── lesson21-quadrants.png
 ├── docs/
 │   ├── MiniStudio-curriculum-24-36-months.md
 │   ├── MiniStudio-learning-handoff-2026-09-03.md
 │   ├── MiniStudio-texture-pipeline-review.md
 │   └── MiniStudio-v0.1-lifecycle.md
+├── third_party/
+│   └── stb/
+│       ├── README.md
+│       └── stb_image.h
 └── src/
     ├── main.cpp
     ├── app/
     │   ├── Application.h
     │   └── Application.cpp
+    ├── image/
+    │   ├── ImageData.h
+    │   ├── ImageLoader.h
+    │   └── ImageLoader.cpp
     ├── platform/
     │   ├── GlfwWindow.h
     │   └── GlfwWindow.cpp
