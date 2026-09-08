@@ -35,9 +35,10 @@ set_target_properties(ministudio PROPERTIES
 )
 
 find_package(glfw3 3.4 REQUIRED)
+find_package(glm CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 
-target_link_libraries(ministudio PRIVATE glfw OpenGL::GL)
+target_link_libraries(ministudio PRIVATE glfw glm::glm OpenGL::GL)
 if(WIN32)
     find_package(glad CONFIG REQUIRED)
     target_link_libraries(ministudio PRIVATE glad::glad)

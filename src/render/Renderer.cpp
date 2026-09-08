@@ -5,6 +5,7 @@
 #include "Renderer.h"
 #include "image/ImageLoader.h"
 #include <iterator>
+#include <glm/ext/matrix_transform.hpp>
 
 #include "OpenGLDebug.h"
 #include "RenderCommand.h"
@@ -15,11 +16,12 @@ bool Renderer::Initialize() {
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 color;
 layout(location = 2) in vec2 uv;
+uniform mat4 model;
 out vec2 uv_coord;
 
 void main() {
     uv_coord = uv;
-    gl_Position = vec4(position, 1.0);
+    gl_Position = model * vec4(position, 1.0);
 }
 )";
 
@@ -45,8 +47,13 @@ void main() {
         2,3,0
     };
 
+    glm::mat4 model = glm::mat4(1.0f);
+
+    model = glm::translate(model, glm::vec3(0.25f, 0.0f, 0.0f));
+    model = glm::scale(model,glm::vec3(0.5f));
+
     ImageData image;
-    if (!LoadImageRgba("assets/textures/lesson23-checkerboard.png",image)) {
+    if (!LoadImageRgba("assets/textures/lesson21-quadrants.png",image)) {
         return false;
     }
 
@@ -56,6 +63,9 @@ void main() {
 
 
     shader_program_.Use();
+    if (!shader_program_.SetMat4("model",model)) {
+        return false;
+    }
     if (!shader_program_.SetInt("texture_sampler", 0)) {
         return false;
     }

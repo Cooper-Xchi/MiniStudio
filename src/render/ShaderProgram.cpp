@@ -1,6 +1,6 @@
 #include "ShaderProgram.h"
 #include "opengl/OpenGLHeaders.h"
-
+#include "glm/gtc/type_ptr.hpp"
 #include <string>
 #include <iostream>
 #include <utility>
@@ -108,5 +108,13 @@ bool ShaderProgram::SetInt(const char* name, int value) {
     const int location = glGetUniformLocation(program_id_, name);
     if (location < 0) return false;
     glUniform1i(location, value);
+    return true;
+}
+
+bool ShaderProgram::SetMat4(const char* name, const glm::mat4& value) {
+    if (program_id_ == 0) return false;
+    const int location = glGetUniformLocation(program_id_, name);
+    if (location < 0) return false;
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
     return true;
 }

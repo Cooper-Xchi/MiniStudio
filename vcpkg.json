@@ -2,6 +2,7 @@
   "name": "ministudio",
   "version-string": "0.1.0",
   "dependencies": [
+    "glm",
     {
       "name": "glfw3",
       "platform": "windows"
