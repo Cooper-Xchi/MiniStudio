@@ -323,7 +323,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 7 周第 25 课已完成验收，课程分支等待提交、推送并合并。**
+当前处于：**第 7 周第 25 课已完成、验收并合并，等待开始第 26 课。**
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现程序生成的 2×2 RGBA 四色纹理。
 
@@ -373,7 +373,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 
 第 24 课已在 `codex/lesson-24-texture-error-boundary` 完成、验收并合并：`Texture2D::Initialize` 在自身 OpenGL 调用前清除旧错误，上传和生成 Mipmap 后立即检查并标记错误；失败时复用 `Release()` 删除纹理并把句柄清零，再向 Renderer 传播 `false`。受控测试第一次用非法放大过滤稳定得到 `Texture2D::Initialize : 0x500` 和失败返回，同一对象在回滚后第二次合法初始化成功，且没有残留 OpenGL 错误。最终 macOS Sanitizer 构建无警告，完整程序持续运行且没有 Shader、OpenGL、ASan 或 UBSan 错误。学习者能够解释初始化错误不能留给首帧检查，以及空句柄对析构和重试的意义。下一步在第 25 课评估并接入矩阵工具，建立最小模型矩阵 uniform 数据链路。
 
-第 25 课已在 `codex/lesson-25-model-matrix` 完成验收，等待提交、推送并合并：经依赖评估和学习者确认后，CMake 接入 Homebrew GLM，Windows vcpkg manifest 同步加入 GLM；`ShaderProgram` 新增 `SetMat4`，通过 `glm::value_ptr` 把矩阵上传到当前 Program。顶点 Shader 新增 `model` uniform，Renderer 构造 `T × S` 模型矩阵，将四色矩形缩小一半并把中心移动到 `x = 0.25`。macOS Sanitizer 构建无警告，程序持续运行且没有 Shader、OpenGL、ASan 或 UBSan 错误，实际画面与预期一致。学习者能够解释列向量、齐次坐标、GLM 右乘组合、矩阵从右向左作用，以及交换平移和缩放顺序后平移量为何从 `0.25` 变成 `0.125`。
+第 25 课已在 `codex/lesson-25-model-matrix` 完成、验收并合并：经依赖评估和学习者确认后，CMake 接入 Homebrew GLM，Windows vcpkg manifest 同步加入 GLM；`ShaderProgram` 新增 `SetMat4`，通过 `glm::value_ptr` 把矩阵上传到当前 Program。顶点 Shader 新增 `model` uniform，Renderer 构造 `T × S` 模型矩阵，将四色矩形缩小一半并把中心移动到 `x = 0.25`。macOS Sanitizer 构建无警告，程序持续运行且没有 Shader、OpenGL、ASan 或 UBSan 错误，实际画面与预期一致。学习者能够解释列向量、齐次坐标、GLM 右乘组合、矩阵从右向左作用，以及交换平移和缩放顺序后平移量为何从 `0.25` 变成 `0.125`。下一步在第 26 课把累计帧时间传给 Renderer，并逐帧更新旋转矩阵。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -389,7 +389,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 已完成；第 16 课及 v0.1.0 收尾已完成并合并 |
 | 第 5 周 | EBO 索引绘制与纹理起步 | 第 17～20 课已完成、验收并合并 |
 | 第 6 周 | 外部图片数据链路 | 第 21～24 课已完成、验收并合并 |
-| 第 7 周 | 模型矩阵与坐标变换 | 第 25 课已验收、等待合并；下一步第 26 课 |
+| 第 7 周 | 模型矩阵与坐标变换 | 第 25 课已完成并合并；下一步第 26 课 |
 
 ## 12. 协作要求
 
