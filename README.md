@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成并合并第 1～27 课。第 28 课已在课程分支通过验收：复盘模型矩阵、view、帧时间与 uniform 的职责和生命周期，删除了放置在 ShaderProgram 中的重复变换函数；当前等待提交并合并。
+项目已经完成第 1～28 课，相关成果均已通过验收并合并。第 28 课复盘了模型矩阵、view、帧时间与 uniform 的职责和生命周期，并删除了放置在 ShaderProgram 中的重复变换函数；下一课进入 projection 矩阵。
 
 已经完成：
 
@@ -55,7 +55,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第二十七课的静态 view 矩阵：用 `view × model × position` 建立局部、世界和相机空间顺序，验证相机位于 `x = 0.25` 时世界需要反向平移 `-0.25`。
 - 完成第二十八课的变换链路架构复盘：记录时间、model、view 和 Shader Program 的职责、更新频率、所有权与主线程约束，并删除重复且职责错位的 `TransformObjectToWorld()`。
 
-前二十七课均已完成并合并回 `main`。第二十八课已在 `codex/lesson-28-transform-architecture-review` 完成验收，等待提交、推送并合并；当前稳定的 `main` 仍停留在第二十七课。
+前二十八课均已完成并合并回 `main`。第二十八课课程分支 `codex/lesson-28-transform-architecture-review` 已推送，稳定的 `main` 已包含变换链路架构记录与 ShaderProgram 职责整理。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 

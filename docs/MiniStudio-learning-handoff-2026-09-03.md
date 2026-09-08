@@ -325,7 +325,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 7 周第 28 课已完成验收，课程分支等待提交、推送并合并。**
+当前处于：**第 7 周第 28 课已完成并合并，等待开始第 29 课 projection 矩阵。**
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现程序生成的 2×2 RGBA 四色纹理。
 
@@ -381,7 +381,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 
 第 27 课已在 `codex/lesson-27-view-matrix` 完成、验收并合并：顶点 Shader 新增独立 `view` uniform，并按 `view × model × position` 把局部坐标依次转换到世界和相机空间。Renderer 初始化时把世界位置 `(0.25, 0, 0)` 的静态相机转换为 `(-0.25, 0, 0)` 的 view 平移并上传一次；每帧 model 仍保持 `T × R × S` 动画，因此物体中心从世界 `x = 0.25` 转换到相机空间 `x = 0`，并在屏幕中心持续旋转。macOS Sanitizer 构建无警告，持续运行没有 Shader、OpenGL、ASan 或 UBSan 错误。学习者要求暂时保留新增但未使用的 `ShaderProgram::TransformObjectToWorld()`；该接口把场景变换参数放进了 Shader 资源模块，将在第 28 课架构复盘时重新评估。学习者能够解释 view 使用相机世界变换的逆。
 
-第 28 课已在 `codex/lesson-28-transform-architecture-review` 完成验收，等待提交、推送并合并：新增变换链路架构记录，明确 Application 产生每帧累计时间、Renderer 计算 model/view 并编排上传、ShaderProgram 独占 Program handle 并负责 uniform 上传。`model` 每帧随时间更新，静态 `view` 初始化时上传一次；相机开始移动后，view 也应按数据变化重新计算和上传。学习者删除了未使用且与 Renderer 重复的 `ShaderProgram::TransformObjectToWorld()`，并能够解释 CPU 局部矩阵通过 `SetMat4()` 被临时借用、随后由 OpenGL 复制到 Program uniform 状态。当前没有多个物体、持久可编辑变换或可移动相机，因此不新增 `Transform`、`Camera` 或矩阵管理器。macOS Sanitizer 构建无警告，程序仍显示位于屏幕中心、持续旋转的半尺寸纹理矩形，没有 Shader、OpenGL、ASan 或 UBSan 错误。下一课进入 projection 矩阵。
+第 28 课已在 `codex/lesson-28-transform-architecture-review` 完成、验收并合并：新增变换链路架构记录，明确 Application 产生每帧累计时间、Renderer 计算 model/view 并编排上传、ShaderProgram 独占 Program handle 并负责 uniform 上传。`model` 每帧随时间更新，静态 `view` 初始化时上传一次；相机开始移动后，view 也应按数据变化重新计算和上传。学习者删除了未使用且与 Renderer 重复的 `ShaderProgram::TransformObjectToWorld()`，并能够解释 CPU 局部矩阵通过 `SetMat4()` 被临时借用、随后由 OpenGL 复制到 Program uniform 状态。当前没有多个物体、持久可编辑变换或可移动相机，因此不新增 `Transform`、`Camera` 或矩阵管理器。macOS Sanitizer 构建无警告，程序仍显示位于屏幕中心、持续旋转的半尺寸纹理矩形，没有 Shader、OpenGL、ASan 或 UBSan 错误。下一课进入 projection 矩阵。
 
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
@@ -397,7 +397,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 已完成；第 16 课及 v0.1.0 收尾已完成并合并 |
 | 第 5 周 | EBO 索引绘制与纹理起步 | 第 17～20 课已完成、验收并合并 |
 | 第 6 周 | 外部图片数据链路 | 第 21～24 课已完成、验收并合并 |
-| 第 7 周 | 模型矩阵与坐标变换 | 第 25～27 课已合并；第 28 课已验收、等待合并；下一课进入 projection |
+| 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并；下一课进入 projection |
 
 ## 12. 协作要求
 
