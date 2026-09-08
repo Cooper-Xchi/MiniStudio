@@ -1,3 +1,5 @@
+#include "RenderCommand.h"
+
 #include "opengl/OpenGLHeaders.h"
 
 namespace RenderCommand {
@@ -18,7 +20,6 @@ namespace RenderCommand {
             glDisable(GL_DEPTH_TEST);
         }else {
             glEnable(GL_DEPTH_TEST);
-            glDepthFunc(GL_LESS);
         }
     }
 
@@ -27,6 +28,29 @@ namespace RenderCommand {
             glDepthMask(GL_FALSE);
         }else {
             glDepthMask(GL_TRUE);
+        }
+    }
+
+    void SetDepthCompare(DepthCompare compare) {
+        switch (compare) {
+            case DepthCompare::LESS:
+                glDepthFunc(GL_LESS);
+                break;
+            case DepthCompare::GREATER:
+                glDepthFunc(GL_GREATER);
+                break;
+            case DepthCompare::LESSEQUAL:
+                glDepthFunc(GL_LEQUAL);
+                break;
+            case DepthCompare::GREATEREQUAL:
+                glDepthFunc(GL_GEQUAL);
+                break;
+            case DepthCompare::EQUAL:
+                glDepthFunc(GL_EQUAL);
+                break;
+            case DepthCompare::NOTEQUAL:
+                glDepthFunc(GL_NOTEQUAL);
+                break;
         }
     }
 }
