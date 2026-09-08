@@ -47,10 +47,7 @@ void main() {
         2,3,0
     };
 
-    glm::mat4 model = glm::mat4(1.0f);
 
-    model = glm::translate(model, glm::vec3(0.25f, 0.0f, 0.0f));
-    model = glm::scale(model,glm::vec3(0.5f));
 
     ImageData image;
     if (!LoadImageRgba("assets/textures/lesson21-quadrants.png",image)) {
@@ -63,25 +60,32 @@ void main() {
 
 
     shader_program_.Use();
-    if (!shader_program_.SetMat4("model",model)) {
-        return false;
-    }
+
     if (!shader_program_.SetInt("texture_sampler", 0)) {
         return false;
     }
     return true;
 }
 
-void Renderer::DrawFrame() {
+bool Renderer::DrawFrame(const float elapsed_seconds) {
     #ifndef NDEBUG
         OpenGLDebug::ClearErrors();
     #endif
     RenderCommand::Clear(0.36,0.5,0.6,1);
     shader_program_.Use();
+    glm::mat4 model = glm::mat4(1.0f);
+
+    model = glm::translate(model, glm::vec3(0.25f, 0.0f, 0.0f));
+    model = glm::rotate(model,glm::radians(90.0f * elapsed_seconds), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::scale(model,glm::vec3(0.5f));
+    if (!shader_program_.SetMat4("model",model)) {
+        return false;
+    }
     vertex_array_.Bind();
     texture_.Bind(0);
     RenderCommand::DrawIndexedTriangles(vertex_array_.IndexCount());
     #ifndef NDEBUG
-        OpenGLDebug::CheckErrors("Renderer::DrawFrame");
+        return OpenGLDebug::CheckErrors("Renderer::DrawFrame");
     #endif
+    return true;
 }

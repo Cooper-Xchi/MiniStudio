@@ -12,7 +12,7 @@ public:
     Renderer(Renderer&&) noexcept = default;
     Renderer& operator=(Renderer&&) noexcept = default;
     bool Initialize();
-    void DrawFrame();
+    bool DrawFrame(float elapsed_seconds);
 
 private:
     ShaderProgram shader_program_;
