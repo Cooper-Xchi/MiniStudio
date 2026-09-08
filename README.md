@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成第 1～31 课，相关成果均已通过验收并合并。第 31 课让 Application 在事件处理后查询实际 framebuffer 尺寸，Renderer 据此逐帧更新 perspective projection，窗口改变比例后画面不再拉伸；下一课进行本轮架构复盘。
+项目已经完成并合并第 1～31 课。第 32 课已在课程分支通过验收：复盘 framebuffer 查询、projection 计算与 uniform 上传的职责和逐帧成本，保留当前简单的数据流；当前等待提交并合并。
 
 已经完成：
 
@@ -57,8 +57,9 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第二十九课的正交投影矩阵：顶点 Shader 使用 `projection × view × model × position` 输出裁剪空间坐标，并用更小的正交可见范围验证投影产生的放大效果。
 - 完成第三十课的透视投影与深度：使用 45 度视野角和 near/far 裁剪距离，把物体放到 `z = -2`，并用 `z = -4` 的受控实验验证屏幕尺寸约减半。
 - 完成第三十一课的动态 framebuffer 宽高比：窗口模块查询物理像素尺寸，Application 传递普通整数，Renderer 更新 projection，并安全跳过 framebuffer 为零的帧。
+- 完成第三十二课的 projection 与 resize 架构复盘：记录逐帧查询、矩阵计算和 uniform 上传的成本，保持 Window、Application 与 Renderer 的单向依赖，暂不增加无性能证据的缓存状态。
 
-前三十一课均已完成并合并回 `main`。第三十一课课程分支 `codex/lesson-31-framebuffer-aspect` 已推送，稳定的 `main` 已包含动态 framebuffer 宽高比链路。
+前三十一课均已完成并合并回 `main`。第三十二课已在 `codex/lesson-32-projection-architecture-review` 完成验收，等待提交、推送并合并；当前稳定的 `main` 仍停留在第三十一课。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
