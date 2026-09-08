@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目已经完成第 1～27 课，相关成果均已通过验收并合并。第 27 课让顶点 Shader 使用独立 view 矩阵，把相机世界位置转换为反向的世界位移；下一步是第 28 课架构复盘。
+项目已经完成并合并第 1～27 课。第 28 课已在课程分支通过验收：复盘模型矩阵、view、帧时间与 uniform 的职责和生命周期，删除了放置在 ShaderProgram 中的重复变换函数；当前等待提交并合并。
 
 已经完成：
 
@@ -53,8 +53,9 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第二十五课的最小模型矩阵链路：接入 GLM，新增 `ShaderProgram::SetMat4`，用 `T × S` 把四色矩形缩小一半并将中心向右移动到 `x = 0.25`。
 - 完成第二十六课的累计帧时间与旋转：Application 把 `steady_clock` 累计秒数传给 Renderer，Renderer 每帧上传 `T × R × S` 模型矩阵，并将绘制失败传播到顶层退出码。
 - 完成第二十七课的静态 view 矩阵：用 `view × model × position` 建立局部、世界和相机空间顺序，验证相机位于 `x = 0.25` 时世界需要反向平移 `-0.25`。
+- 完成第二十八课的变换链路架构复盘：记录时间、model、view 和 Shader Program 的职责、更新频率、所有权与主线程约束，并删除重复且职责错位的 `TransformObjectToWorld()`。
 
-前二十七课均已完成并合并回 `main`。第二十七课课程分支 `codex/lesson-27-view-matrix` 已推送，稳定的 `main` 已包含独立 view 矩阵的数据链路。
+前二十七课均已完成并合并回 `main`。第二十八课已在 `codex/lesson-28-transform-architecture-review` 完成验收，等待提交、推送并合并；当前稳定的 `main` 仍停留在第二十七课。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
@@ -162,6 +163,7 @@ MiniStudio/
 │   ├── MiniStudio-curriculum-24-36-months.md
 │   ├── MiniStudio-learning-handoff-2026-09-03.md
 │   ├── MiniStudio-texture-pipeline-review.md
+│   ├── MiniStudio-transform-pipeline-review.md
 │   └── MiniStudio-v0.1-lifecycle.md
 ├── third_party/
 │   └── stb/
