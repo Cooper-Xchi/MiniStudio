@@ -5,6 +5,7 @@
 #include "Renderer.h"
 #include "image/ImageLoader.h"
 #include <iterator>
+#include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
 #include "OpenGLDebug.h"
@@ -18,11 +19,12 @@ layout(location = 1) in vec3 color;
 layout(location = 2) in vec2 uv;
 uniform mat4 model;
 uniform mat4 view;
+uniform mat4 projection;
 out vec2 uv_coord;
 
 void main() {
     uv_coord = uv;
-    gl_Position = view * model * vec4(position, 1.0);
+    gl_Position = projection * view * model * vec4(position, 1.0);
 }
 )";
 
@@ -65,11 +67,20 @@ void main() {
     glm::vec3 camera_position = glm::vec3(0.25,0,0);
     glm::mat4 view = glm::mat4(1.0f);
     view = glm::translate(view, -camera_position);
+    glm::mat4 projection = glm::ortho(
+        -0.5f,
+        0.5f,
+        -0.5f,
+        0.5f
+    );
     if (!shader_program_.SetInt("texture_sampler", 0)) {
         return false;
     }
 
     if (!shader_program_.SetMat4("view",view)) {
+        return false;
+    }
+    if (!shader_program_.SetMat4("projection",projection)) {
         return false;
     }
     return true;
