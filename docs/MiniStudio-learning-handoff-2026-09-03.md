@@ -301,6 +301,7 @@ GLFW Window created!
 - 已理解 `glTexImage2D` 会复制局部 RGBA 像素数组；sampler uniform 保存的是纹理单元编号，不是纹理对象句柄，`glActiveTexture` 选择纹理单元，`glBindTexture` 再把纹理对象绑定到该单元。
 - 已理解 `stbi_load` 返回的内存必须由 `stbi_image_free` 释放；当前用带自定义 deleter 的 `std::unique_ptr` 表达临时解码内存的所有权，再把准确的 `width * height * 4` 字节复制到 `ImageData::rgba_pixels`。
 - 已理解文件通常按顶行优先返回像素，而当前 OpenGL UV 把 `T=0` 放在四边形底部；测试图显示为上方蓝黄、下方红绿，证明上传链路没有自动调整行方向。
+- 已理解连续 RGBA 数组中一行占 `width * 4` 字节，因此第 `row` 行从 `row * row_bytes` 开始；每次同时交换一对上下行，所以只遍历 `row_count / 2`，否则会把已经翻转的数据再次交换回去。
 
 当前仍处于“刚接触并建立直觉”的阶段，不应假定已经熟练掌握智能指针、移动语义或运算符重载。
 
@@ -319,7 +320,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 6 周第 21 课已完成、验收并合并，等待开始第 22 课。**
+当前处于：**第 6 周第 22 课已完成验收，课程分支等待提交、推送并合并。**
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现程序生成的 2×2 RGBA 四色纹理。
 
@@ -363,6 +364,8 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 
 第 21 课已在 `codex/lesson-21-stb-image-loading` 完成、验收并合并：仓库固定 `stb_image` 到提交 `2c980bb59875b0d32144a71867fbdebb2f77cd20`，并记录来源、许可证、SHA-256 与升级流程；新增 `ImageData` 和无状态 `LoadImageRgba`，用带 `stbi_image_free` deleter 的 `std::unique_ptr` 管理解码内存，强制输出 RGBA 后复制到 `std::vector<unsigned char>`。Renderer 在拥有 Current Context 的主线程解码测试 PNG 并上传到现有 `Texture2D`，构建时把资源复制到程序目录。独立测试确认 64×64 图片得到 16384 字节，缺失文件返回失败且输出保持空状态；macOS Sanitizer 构建无警告，程序成功创建 OpenGL 4.1 Core Context、链接 Shader 并显示纹理，没有 OpenGL、ASan 或 UBSan 错误。非对称测试图的文件顶行是红绿、底行是蓝黄，实际显示为上方蓝黄、下方红绿，验证了文件行顺序与当前 UV 原点的上下差异。学习者能够解释解码临时内存、`ImageData`、GPU 纹理各自的所有者，以及 `byte_count` 作为 `[begin, begin + count)` 复制范围终点的含义。下一步在第 22 课明确图片行方向与 UV 约定，并选择统一的翻转位置。
 
+第 22 课已在 `codex/lesson-22-texture-orientation` 完成验收，等待提交、推送并合并：`LoadImageRgba` 在复制解码结果后显式交换上下像素行，把 CPU RGBA 数据统一为底行优先，不修改 Renderer 的 UV，也不使用 `stb_image` 的全局翻转状态。实现使用 `row * row_bytes` 定位行首，只遍历一半高度并交换完整行。独立 ASan/UBSan 测试确认 64×64、16384 字节、四角顺序和缺失文件失败路径均正确；macOS Sanitizer 构建无警告，程序成功显示上方红绿、下方蓝黄，未报告 OpenGL 或 Sanitizer 错误。学习者能够解释行偏移和只遍历一半高度的原因。
+
 课程已按目标岗位职责扩展为 24 个月核心路线和第 25～36 个月专家能力进阶，新增 Android/OpenGL ES、Vulkan、移动端 Profiling、图片/动画/视频/3D 素材引擎、AI Tool Calling、Metal 验证和规模化架构演进。当前仅更新规划，不代表这些未来模块已经开始。
 
 ## 11. 课程路线入口与前四周计划
@@ -376,7 +379,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 3 周 | 项目骨架、职责解耦、Shader、VAO/VBO、彩色三角形与错误日志 | 已完成；第 9～12 课均已验收并合并到 `main` |
 | 第 4 周 | 最小 RAII 封装、Debug/Release、故障定位、README 与生命周期说明 | 已完成；第 16 课及 v0.1.0 收尾已完成并合并 |
 | 第 5 周 | EBO 索引绘制与纹理起步 | 第 17～20 课已完成、验收并合并 |
-| 第 6 周 | 外部图片数据链路 | 第 21 课已完成、验收并合并；下一步第 22 课 |
+| 第 6 周 | 外部图片数据链路 | 第 21 课已合并；第 22 课已验收、等待合并 |
 
 ## 12. 协作要求
 

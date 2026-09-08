@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <memory>
 #include <utility>
+#include <algorithm>
 #define STB_IMAGE_IMPLEMENTATION
 #include <iostream>
 #include <stb_image.h>
@@ -38,9 +39,25 @@ bool LoadImageRgba(const char* path, ImageData& output) {
     decode.width = width;
     decode.height = height;
     decode.rgba_pixels.assign(
-    imagePt.get(),
-    imagePt.get() + byte_count
-);
+        imagePt.get(),
+        imagePt.get() + byte_count
+    );
+    std::size_t row_bytes = static_cast<std::size_t>(width)* STBI_rgb_alpha;
+    std::size_t row_count = static_cast<std::size_t>(height);
+    for (std::size_t row = 0; row < row_count/2; ++row) {
+        std::size_t mirror_row = row_count - row - 1;
+        auto top_begin =
+            decode.rgba_pixels.begin() + row * row_bytes;
+        auto bottom_begin =
+            decode.rgba_pixels.begin() + mirror_row * row_bytes;
+
+        std::swap_ranges(
+            top_begin,
+            top_begin + row_bytes,
+            bottom_begin
+        );
+    }
+
     output = std::move(decode);
 
     return true;
