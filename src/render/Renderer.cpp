@@ -71,6 +71,22 @@ void main() {
     return true;
 }
 
+glm::mat4 Model1(float elapsed_seconds) {
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.1f, 0.0f, -2.0f));
+    model = glm::rotate(model,glm::radians(90.0f * elapsed_seconds), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::scale(model,glm::vec3(0.5f));
+    return model;
+}
+
+glm::mat4 Model2(float elapsed_seconds) {
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.4f, 0.0f, -3.0f));
+    model = glm::rotate(model,glm::radians(45.0f * elapsed_seconds), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::scale(model,glm::vec3(0.5f));
+    return model;
+}
+
 bool Renderer::DrawFrame(
     const float elapsed_seconds,
     const int framebuffer_width,
@@ -82,15 +98,9 @@ bool Renderer::DrawFrame(
     #ifndef NDEBUG
         OpenGLDebug::ClearErrors();
     #endif
+    RenderCommand::SetDepthTestEnabled(true);
     RenderCommand::Clear(0.36,0.5,0.6,1);
     shader_program_.Use();
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.25f, 0.0f, -2.0f));
-    model = glm::rotate(model,glm::radians(90.0f * elapsed_seconds), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::scale(model,glm::vec3(0.5f));
-    if (!shader_program_.SetMat4("model",model)) {
-        return false;
-    }
     const float aspect =
         static_cast<float>(framebuffer_width) /
         static_cast<float>(framebuffer_height);
@@ -101,6 +111,16 @@ bool Renderer::DrawFrame(
         100.0f
     );
     if (!shader_program_.SetMat4("projection", projection)) {
+        return false;
+    }
+    if (!shader_program_.SetMat4("model",Model1(elapsed_seconds))) {
+        return false;
+    }
+    vertex_array_.Bind();
+    texture_.Bind(0);
+    RenderCommand::DrawIndexedTriangles(vertex_array_.IndexCount());
+    shader_program_.Use();
+    if (!shader_program_.SetMat4("model",Model2(elapsed_seconds))) {
         return false;
     }
     vertex_array_.Bind();
