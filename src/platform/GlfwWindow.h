@@ -4,6 +4,12 @@ struct GLFWwindow;
 
 class GlfwWindow {
 public:
+    struct MovementKeyState {
+        bool w_pressed = false;
+        bool a_pressed = false;
+        bool s_pressed = false;
+        bool d_pressed = false;
+    };
     GlfwWindow() = default;
     ~GlfwWindow();
 
@@ -23,7 +29,7 @@ public:
     bool IsEscapePressed() const;
     void RequestClose();
     void Present();
-
+    [[nodiscard]] MovementKeyState GetMovementKeyState() const;
     void GetFramebufferSize(int& width, int& height) const;
 
 
