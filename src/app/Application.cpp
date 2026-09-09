@@ -13,6 +13,7 @@ int Application::Run() {
     }
     if (!renderer_.Initialize()) return 1;
     auto start_time = std::chrono::steady_clock::now();
+    camera_.SetPosition(glm::vec3(0.25f,0.0f,0.0f));
     while (!window_.ShouldClose()) {
         window_.PollEvents();
         if (window_.IsEscapePressed()) {
@@ -23,10 +24,12 @@ int Application::Run() {
         int framebuffer_width = 0;
         int framebuffer_height = 0;
         window_.GetFramebufferSize(framebuffer_width, framebuffer_height);
+        const glm::mat4 view = camera_.ViewMatrix();
         if (!renderer_.DrawFrame(
                 elapsed_seconds,
                 framebuffer_width,
-                framebuffer_height
+                framebuffer_height,
+                view
             )) {
             return 1;
         }

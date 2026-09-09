@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/mat4x4.hpp>
+
 #include "Texture2D.h"
 #include "render/ShaderProgram.h"
 #include "render/VertexArray.h"
@@ -15,7 +17,8 @@ public:
     bool DrawFrame(
         float elapsed_seconds,
         int framebuffer_width,
-        int framebuffer_height
+        int framebuffer_height,
+        const glm::mat4& view
     );
 
 private:
