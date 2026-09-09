@@ -15,6 +15,7 @@ add_executable(ministudio
         src/render/Texture2D.cpp
         src/render/Texture2D.h
         src/image/ImageLoader.cpp
+        src/camera/Camera.cpp
 )
 
 option(MINISTUDIO_ENABLE_SANITIZERS

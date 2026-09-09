@@ -329,9 +329,9 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～40 课均已完成、验收并合并；第 41 课尚未开始。**
+当前处于：**第 1～40 课均已完成、验收并合并；第 41 课「Camera 的最小职责与静态 view」已完成并验收，待提交、推送与合并；第 42 课尚未开始。**
 
-逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～40 课已合并，对应课程分支继续保留；第 40 课成果记录在[几何、状态与资源架构复盘](MiniStudio-geometry-state-resource-review.md)。第 41 课尚未启动；每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
+逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～40 课已合并，对应课程分支继续保留；第 41 课已在 `codex/lesson-41-camera-view` 完成并验收，尚未提交、推送或合并。第 42 课尚未启动；每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
 第 37 课启动记录（2026-09-09）：只读检查实际目录、Application、GlfwWindow、Renderer、RenderCommand、ShaderProgram 与 VertexArray，确认依赖和资源所有权保持单向。第 36 课成果 `635c891` 已在 `main` 历史中；开课前工作区干净，本地 `main`、`origin/main` 与实时查询的远端 `main` 均为 `69c98d1`。公司 macOS arm64 使用 Apple Clang 21，在独立的 `build/lesson-37-macos-debug` 目录执行 Debug 配置与编译，成功且无编译器警告；从该构建目录启动完整程序，成功创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，运行期间未报告 OpenGL 错误，最终退出码为 0。退出期间有一条 macOS TSM 键盘系统诊断；本轮未通过自动化核实画面、resize 或具体 Esc 按键，不把启动运行检查写成完整交互验收，也未执行 Sanitizer 或 Windows 回归。随后从稳定 `main` 创建 `codex/lesson-37-triangle-winding`；仅更新本启动记录，核心业务代码由学习者实现。
 
@@ -372,6 +372,12 @@ int main() {
 第 40 课最终验收（2026-09-09）：学习者明确表示已掌握复盘内容，并要求助手直接整理以避免重复书写。助手新增 `docs/MiniStudio-geometry-state-resource-review.md`，按照实际源码记录模块依赖、CPU 数据与 GPU 资源的复制边界、Current Context 状态、更新频率、结束时机、`Application`／`Renderer` 成员逆序析构，以及“立方体某一面消失”的排查顺序。文档明确区分：VBO 不拥有原 CPU 数组，`glBufferData` 会把数据复制到独立的 OpenGL Buffer；VAO 记录布局与绑定，不自动删除 VBO/EBO，当前 C++ `VertexArray` 包装类统一拥有并删除三个句柄。复盘确认依赖方向单向、GPU 资源先于 Context 销毁，当前无需新增通用 Mesh、状态管理器或 `RenderDevice`。本课未修改业务源码；第 39 课合并后的稳定程序已在开课时于公司 macOS arm64 独立完成配置、编译和运行检查，因此文档整理后不重复运行。文档内容与源码一致，格式检查通过后第 40 课验收完成；尚未提交、推送或合并，第 41 课尚未开始。
 
 第 40 课合并记录（2026-09-09）：学习者明确要求提交并合并。已提交课程成果 `c4af79e`，推送 `codex/lesson-40-geometry-state-review`，并以合并提交 `efffe63` 纳入 `main`；课程分支继续保留。上方验收记录中的“尚未提交、推送或合并”是历史状态，当前 Git 操作已完成。第 41 课尚未启动。
+
+第 41 课启动记录（2026-09-09）：第 40 课完成记录 `27ed47f` 已同步到本地与远端 `main`、`codex/lesson-40-geometry-state-review`，开课前工作区干净且目标课程分支不存在。只读检查确认静态 `camera_position` 与 view 计算、上传仍集中在 `Renderer::Initialize`；`Application` 当前只拥有窗口和 Renderer，尚无纯 CPU 场景相机。公司 macOS arm64 使用 Apple Clang 21，在全新的 `build/lesson-41-macos-debug` 完成 Debug 配置和编译，成功且无编译器警告；完整程序成功创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空，启动观察期间未报告 OpenGL 错误。尝试通过 macOS `System Events` 自动发送 Esc 时因系统辅助功能权限被拒绝，随后以 Ctrl-C 结束进程；因此本轮不记录自然退出、具体 Esc、resize、画面读回、Sanitizer 或 Windows 验证。随后从稳定 `main` 创建 `codex/lesson-41-camera-view`，启动记录以外尚未修改业务代码。
+
+第 41 课核心任务（45～75 分钟）：新增纯 CPU `Camera` 模块，由 `Application` 按值拥有。Camera 保存 position、固定 forward `-Z` 和 up `+Y`，公开设置位置与读取 view 矩阵的最小接口；view 可用 `glm::lookAt(position, position + forward, up)` 计算。`Application` 把相机位置设为现有 `(0.25, 0, 0)`，逐帧取得 view 并作为 `const glm::mat4&` 传给 `Renderer::DrawFrame`；Renderer 每帧把该值上传到现有 `view` uniform，并删除 `Renderer::Initialize` 中的相机位置、view 计算和一次性上传。将新增 `.cpp` 加入 CMake。Camera 不依赖 GLFW、OpenGL、Renderer 或输入系统，不拥有 GPU 句柄，也暂不实现移动和鼠标旋转；`main.cpp` 保持不变。验收要求静态画面与迁移前一致，构建无警告、Shader/OpenGL 无错误，并能说明 Camera 保存 CPU 相机状态，Renderer 只保存 GPU 渲染资源并负责 uniform 上传，以及为何“改变相机”与“上传 Shader”属于不同职责。本课尚未提交、推送或合并。
+
+第 41 课最终验收（2026-09-09）：学习者新增 `src/camera/Camera.h/.cpp` 并加入 CMake，由 `Application` 按值拥有 Camera；Camera 保存 position、固定 forward／up，以 `glm::lookAt` 计算 view，未依赖 GLFW、OpenGL、Renderer 或输入系统，也不拥有 GPU 资源。学习者将静态位置设置移到循环前，逐帧计算 view，并通过常量引用传给 Renderer；Renderer 删除初始化阶段的旧相机常量和一次性 view 上传，改为每帧上传传入的 view。首次检查指出逐帧重置位置、矩阵按值传参和头文件间接依赖，学习者自行修正前两项并表示已经掌握；助手按其此前对已掌握内容直接收尾的偏好，补齐 GLM 直接包含、参数命名与格式。旧 `translate(identity, -position)` 与新 Camera 在 position `(0.25, 0, 0)`、forward `-Z`、up `+Y` 下产生等价 view；`main.cpp` 与 GPU 资源所有权不变，所有计算和 uniform 上传仍在主线程。公司 macOS arm64 Debug 增量编译成功且无警告，完整程序创建 OpenGL 4.1 Core Context、Shader 链接成功、日志为空，启动观察期间未报告 OpenGL 错误；因自动发送 Esc 缺少系统权限，本轮以 Ctrl-C 结束，不记录自然退出、画面读回、resize、Sanitizer 或 Windows 验证。源码边界、构建结果和原理掌握通过验收；尚未提交、推送或合并，第 42 课尚未启动。
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements` 呈现 24 顶点、36 索引的纹理立方体；model 随时间绕 X、Y 两轴旋转，projection 使用实际 framebuffer 宽高比。
 
@@ -488,7 +494,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～40 课已完成、验收并合并；第 41～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～40 课已完成、验收并合并；第 41 课已验收，待提交、推送与合并；第 42～52 课待执行 |
 
 ## 12. 协作要求
 

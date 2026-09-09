@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目第 1～40 课均已通过验收并合并。当前依赖继续保持 `Application → Renderer → RenderCommand → OpenGL`；正面约定和面剔除由无状态 RenderCommand 设置，Renderer 编排。
+项目第 1～40 课均已通过验收并合并，第 41 课「Camera 的最小职责与静态 view」已完成并验收、待提交合并。当前依赖形成 `Application → Camera/Renderer → RenderCommand → OpenGL`；Camera 保持纯 CPU 职责，底层渲染与窗口模块仍为单向依赖。
 
 已经完成：
 
@@ -66,8 +66,9 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第三十八课的背面剔除实验：分别封装剔除开关与被剔除面选择，让两个矩形绕 Y 轴翻面，并对比关闭剔除、剔除背面和剔除正面；最终保存逆时针正面与背面剔除配置。macOS Debug 构建与运行检查通过，Windows 尚未验证本课。
 - 完成第三十九课的索引立方体：使用 24 条完整属性记录和 36 个索引表达六个独立 UV 面，只绘制一个绕 X、Y 轴旋转的纹理立方体，并保持深度测试和背面剔除。macOS Debug 构建与运行检查通过，Windows 尚未验证本课。
 - 完成第四十课的几何、状态与资源架构复盘：记录 CPU 数据复制边界、GPU 句柄所有权、Current Context 状态、成员析构顺序及面消失排查流程，确认当前无需新增通用 Mesh、状态管理器或 `RenderDevice`。
+- 完成第四十一课的最小 Camera：由 Application 按值拥有纯 CPU 相机状态，以固定 forward/up 计算静态 view；Renderer 只借用矩阵并逐帧上传 uniform，静态画面保持等价。
 
-前 40 课均已完成并合并回 `main`。第 40 课课程成果 `c4af79e` 已通过 `efffe63` 合并，课程分支 `codex/lesson-40-geometry-state-review` 已推送并继续保留；第 41 课尚未启动。
+前 40 课均已完成并合并回 `main`。第 40 课课程成果 `c4af79e` 已通过 `efffe63` 合并，课程分支 `codex/lesson-40-geometry-state-review` 已推送并继续保留。第 41 课已在 `codex/lesson-41-camera-view` 完成并验收，尚未提交、推送或合并；第 42 课尚未启动。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
@@ -158,7 +159,7 @@ Debug 和 Sanitizer 版本在正常路径下不应输出 OpenGL 错误、Address
 | 第 25～30 月 | 2D 动画、视频素材和 Metal | 扩展多媒体与第三平台能力 |
 | 第 31～36 月 | 大场景、性能架构、AI 工作流和真实协作 | 建立高级/专家方向的能力证据 |
 
-完整的阶段目标、验收标准和求职时间线见[课程路线](docs/MiniStudio-curriculum-24-36-months.md)。每节课的讲解内容、核心练习、边界和验收标准见[逐课教案索引](docs/lessons/README.md)，第 37～52 课另有详细步骤、易错点和追问，其中第 37～40 课已合并、第 41～52 课待执行。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
+完整的阶段目标、验收标准和求职时间线见[课程路线](docs/MiniStudio-curriculum-24-36-months.md)。每节课的讲解内容、核心练习、边界和验收标准见[逐课教案索引](docs/lessons/README.md)，第 37～52 课另有详细步骤、易错点和追问，其中第 37～40 课已合并、第 41 课已验收、第 42～52 课待执行。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
 
 ## 仓库结构
 

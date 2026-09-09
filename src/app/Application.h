@@ -1,4 +1,5 @@
 #pragma once
+#include "camera/Camera.h"
 #include "platform/GlfwWindow.h"
 #include "render/Renderer.h"
 
@@ -9,4 +10,5 @@ public:
 private:
     GlfwWindow window_;
     Renderer renderer_;
+    Camera camera_;
 };
