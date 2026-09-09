@@ -130,3 +130,20 @@ void GlfwWindow::Present() {
 void GlfwWindow::GetFramebufferSize(int& width, int& height) const {
     glfwGetFramebufferSize(handle_, &width, &height);
 }
+
+GlfwWindow::MovementKeyState GlfwWindow::GetMovementKeyState() const {
+    MovementKeyState movement_key_state;
+    if (glfwGetKey(handle_, GLFW_KEY_W) == GLFW_PRESS) {
+        movement_key_state.w_pressed = true;
+    }
+    if (glfwGetKey(handle_, GLFW_KEY_S) == GLFW_PRESS) {
+        movement_key_state.s_pressed = true;
+    }
+    if (glfwGetKey(handle_, GLFW_KEY_A) == GLFW_PRESS) {
+        movement_key_state.a_pressed = true;
+    }
+    if (glfwGetKey(handle_, GLFW_KEY_D) == GLFW_PRESS) {
+        movement_key_state.d_pressed = true;
+    }
+    return movement_key_state;
+}
