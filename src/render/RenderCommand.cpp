@@ -63,4 +63,35 @@ namespace RenderCommand {
                 break;
         }
     }
+
+    void SetFaceCullingEnabled(bool enabled) {
+        if (!enabled) {
+            glDisable(GL_CULL_FACE);
+        }else {
+            glEnable(GL_CULL_FACE);
+        }
+    }
+
+    void SetCullFace(CullFace face) {
+        switch (face) {
+            case CullFace::Back:
+                glCullFace(GL_BACK);
+                break;
+            case CullFace::Front:
+                glCullFace(GL_FRONT);
+                break;
+        }
+    }
+
+    void SetGlobalDepth(bool enableDepth,bool writeDepth,DepthCompare mode) {
+        RenderCommand::SetDepthTestEnabled(enableDepth);
+        RenderCommand::SetDepthWriteEnabled(writeDepth);
+        RenderCommand::SetDepthCompare(mode);
+    }
+
+    void SetGlobalCullFace(bool enable,CullFace face,FrontFaceWinding winding) {
+        RenderCommand::SetFaceCullingEnabled(enable);
+        RenderCommand::SetCullFace(face);
+        RenderCommand::SetFrontFaceWinding(winding);
+    }
 }

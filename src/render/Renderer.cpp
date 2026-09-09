@@ -80,7 +80,7 @@ void main() {
 glm::mat4 Model1(float elapsed_seconds) {
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.1f, 0.0f, -2.0f));
-    model = glm::rotate(model,glm::radians(90.0f * elapsed_seconds), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model,glm::radians(90.0f * elapsed_seconds), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::scale(model,glm::vec3(0.5f));
     return model;
 }
@@ -88,7 +88,7 @@ glm::mat4 Model1(float elapsed_seconds) {
 glm::mat4 Model2(float elapsed_seconds) {
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.4f, 0.0f, -3.0f));
-    model = glm::rotate(model,glm::radians(45.0f * elapsed_seconds), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model,glm::radians(45.0f * elapsed_seconds), glm::vec3(0.0f,  1.0f, 0.0f));
     model = glm::scale(model,glm::vec3(0.5f));
     return model;
 }
@@ -104,10 +104,8 @@ bool Renderer::DrawFrame(
     #ifndef NDEBUG
         OpenGLDebug::ClearErrors();
     #endif
-    RenderCommand::SetDepthTestEnabled(true);
-    RenderCommand::SetDepthWriteEnabled(true);
-    RenderCommand::SetDepthCompare(RenderCommand::DepthCompare::LESS);
-    RenderCommand::SetFrontFaceWinding(RenderCommand::FrontFaceWinding::CounterClockwise);
+    RenderCommand::SetGlobalDepth(true,true,RenderCommand::DepthCompare::LESS);
+    RenderCommand::SetGlobalCullFace(true,RenderCommand::CullFace::Back,RenderCommand::FrontFaceWinding::CounterClockwise);
     RenderCommand::Clear(0.36,0.5,0.6,1);
     shader_program_.Use();
     const float aspect =
