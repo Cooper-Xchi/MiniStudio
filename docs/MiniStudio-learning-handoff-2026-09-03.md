@@ -329,9 +329,9 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～36 课均已完成、验收并合并；第 10 周第 37 课「三角形绕序与正面判定」已完成并通过验收，等待学习者确认提交、推送并合并。下一课为第 38 课「背面剔除与双面表面」，尚未启动。**
+当前处于：**第 1～37 课均已完成、验收并合并；下一课为第 38 课「背面剔除与双面表面」，尚未启动。**
 
-逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37 课成果保留在 `codex/lesson-37-triangle-winding`；完成本课提交与合并后，再按 [A 阶段第 38 课教案](lessons/A-foundations.md) 和课程分支规则开课。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
+逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37 课已合并，课程分支 `codex/lesson-37-triangle-winding` 继续保留；后续按 [A 阶段第 38 课教案](lessons/A-foundations.md) 和课程分支规则开课。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
 第 37 课启动记录（2026-09-09）：只读检查实际目录、Application、GlfwWindow、Renderer、RenderCommand、ShaderProgram 与 VertexArray，确认依赖和资源所有权保持单向。第 36 课成果 `635c891` 已在 `main` 历史中；开课前工作区干净，本地 `main`、`origin/main` 与实时查询的远端 `main` 均为 `69c98d1`。公司 macOS arm64 使用 Apple Clang 21，在独立的 `build/lesson-37-macos-debug` 目录执行 Debug 配置与编译，成功且无编译器警告；从该构建目录启动完整程序，成功创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，运行期间未报告 OpenGL 错误，最终退出码为 0。退出期间有一条 macOS TSM 键盘系统诊断；本轮未通过自动化核实画面、resize 或具体 Esc 按键，不把启动运行检查写成完整交互验收，也未执行 Sanitizer 或 Windows 回归。随后从稳定 `main` 创建 `codex/lesson-37-triangle-winding`；仅更新本启动记录，核心业务代码由学习者实现。
 
@@ -340,6 +340,8 @@ int main() {
 第 37 课首次代码检查（2026-09-09）：学习者报告三组验证符合预期。实际读取改动确认 `FrontFaceWinding` 的两个分支分别正确映射到 `GL_CW`／`GL_CCW`，Renderer 在 draw 前设置规则，片元 Shader 读取 `gl_FrontFacing` 并以正面红、背面绿与纹理各占 50% 混合；该配色与混合比例有效。macOS Debug 增量构建成功且无警告，完整程序启动成功，Shader 链接成功、日志为空，启动运行检查未报告 OpenGL 错误；本轮画面观察依据学习者报告，未独立读回 GPU 颜色。当前源码仍保留实验状态：索引为 `0,1,2` 与 `0,3,2`，正面约定为 `Clockwise`，两份 model 的旋转速度均为零。下一步由学习者恢复第二组索引为 `2,3,0`、正面约定为 `CounterClockwise`、两份旋转速度为 90／45 度每秒，并删除 RenderCommand.cpp 中未使用的 `ShaderProgram.h` 引用；保留标记色供最终检查。同时需解释仅交换同一三角形的索引顺序为何不必改变其几何位置和深度。当前不判最终验收通过，未提交、推送或合并。
 
 第 37 课最终验收（2026-09-09）：实际再次读取改动，确认学习者已恢复索引 `0,1,2` 与 `2,3,0`、`CounterClockwise` 正面约定、Model1／Model2 每秒 90／45 度的旋转，并删除 RenderCommand.cpp 中未使用的 ShaderProgram 头文件引用。保留正面红、背面绿的标记色，与纹理各占 50%；剔除保持关闭，原有深度清除、测试、写入和 `LESS` 顺序保持不变。学习者已报告三组实验符合预期，并解释交换索引后坐标不变，所以深度不变；教学中进一步澄清改变的是同一三角形的顶点绕序，而非物体之间的 draw 提交顺序。最终源码在公司 macOS arm64 的 `build/lesson-37-macos-debug` 重新编译成功且无警告，完整程序创建 OpenGL 4.1 Core Context、Shader 链接成功、链接日志为空，运行未报告 OpenGL 错误，最终退出码为 0；有一条 macOS TSM 键盘系统诊断。画面对照依据学习者报告，本轮未独立读回 GPU 颜色，也未重新验证 resize、具体 Esc 按键、Sanitizer 或 Windows。核心实现、实验复原和原理验收均通过，助手仅更新学习记录，未代写核心业务代码。下一步等待学习者明确确认提交、推送课程分支并合并到 `main`；分支继续保留，第 38 课尚未启动。
+
+第 37 课合并记录（2026-09-09）：学习者明确要求“提交推送合并，然后开始下一课”。已提交课程成果 `0fc5f91`，推送 `codex/lesson-37-triangle-winding`，以合并提交 `45ec882` 纳入 `main` 并推送远端；课程分支继续保留。上方验收记录中的“等待确认”是当时状态，当前 Git 操作已完成。随后同步本完成记录，再从干净、稳定的最新 `main` 开始第 38 课。
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现外部 PNG 四色纹理与正反面标记色；model 随时间旋转，projection 使用实际 framebuffer 宽高比。
 
@@ -456,7 +458,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37 课已验收、待提交合并；第 38～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37 课已完成、验收并合并；第 38～52 课待执行 |
 
 ## 12. 协作要求
 
