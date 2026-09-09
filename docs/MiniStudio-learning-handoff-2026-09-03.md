@@ -329,9 +329,9 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～37 课均已完成、验收并合并；下一课为第 38 课「背面剔除与双面表面」，尚未启动。**
+当前处于：**第 1～37 课均已完成、验收并合并；第 38 课「背面剔除与双面表面」已完成并通过验收，等待学习者确认提交、推送并合并。下一课为第 39 课「索引立方体与面独立 UV」，尚未启动。**
 
-逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37 课已合并，课程分支 `codex/lesson-37-triangle-winding` 继续保留；后续按 [A 阶段第 38 课教案](lessons/A-foundations.md) 和课程分支规则开课。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
+逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37 课已合并，课程分支 `codex/lesson-37-triangle-winding` 继续保留；当前按 [A 阶段第 38 课教案](lessons/A-foundations.md) 在 `codex/lesson-38-face-culling` 继续练习、纠错与验收。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
 第 37 课启动记录（2026-09-09）：只读检查实际目录、Application、GlfwWindow、Renderer、RenderCommand、ShaderProgram 与 VertexArray，确认依赖和资源所有权保持单向。第 36 课成果 `635c891` 已在 `main` 历史中；开课前工作区干净，本地 `main`、`origin/main` 与实时查询的远端 `main` 均为 `69c98d1`。公司 macOS arm64 使用 Apple Clang 21，在独立的 `build/lesson-37-macos-debug` 目录执行 Debug 配置与编译，成功且无编译器警告；从该构建目录启动完整程序，成功创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，运行期间未报告 OpenGL 错误，最终退出码为 0。退出期间有一条 macOS TSM 键盘系统诊断；本轮未通过自动化核实画面、resize 或具体 Esc 按键，不把启动运行检查写成完整交互验收，也未执行 Sanitizer 或 Windows 回归。随后从稳定 `main` 创建 `codex/lesson-37-triangle-winding`；仅更新本启动记录，核心业务代码由学习者实现。
 
@@ -342,6 +342,14 @@ int main() {
 第 37 课最终验收（2026-09-09）：实际再次读取改动，确认学习者已恢复索引 `0,1,2` 与 `2,3,0`、`CounterClockwise` 正面约定、Model1／Model2 每秒 90／45 度的旋转，并删除 RenderCommand.cpp 中未使用的 ShaderProgram 头文件引用。保留正面红、背面绿的标记色，与纹理各占 50%；剔除保持关闭，原有深度清除、测试、写入和 `LESS` 顺序保持不变。学习者已报告三组实验符合预期，并解释交换索引后坐标不变，所以深度不变；教学中进一步澄清改变的是同一三角形的顶点绕序，而非物体之间的 draw 提交顺序。最终源码在公司 macOS arm64 的 `build/lesson-37-macos-debug` 重新编译成功且无警告，完整程序创建 OpenGL 4.1 Core Context、Shader 链接成功、链接日志为空，运行未报告 OpenGL 错误，最终退出码为 0；有一条 macOS TSM 键盘系统诊断。画面对照依据学习者报告，本轮未独立读回 GPU 颜色，也未重新验证 resize、具体 Esc 按键、Sanitizer 或 Windows。核心实现、实验复原和原理验收均通过，助手仅更新学习记录，未代写核心业务代码。下一步等待学习者明确确认提交、推送课程分支并合并到 `main`；分支继续保留，第 38 课尚未启动。
 
 第 37 课合并记录（2026-09-09）：学习者明确要求“提交推送合并，然后开始下一课”。已提交课程成果 `0fc5f91`，推送 `codex/lesson-37-triangle-winding`，以合并提交 `45ec882` 纳入 `main` 并推送远端；课程分支继续保留。上方验收记录中的“等待确认”是当时状态，当前 Git 操作已完成。随后同步本完成记录，再从干净、稳定的最新 `main` 开始第 38 课。
+
+第 38 课启动记录（2026-09-09）：第 37 课完成记录提交 `530a9d3` 已同步至远端 `main` 与课程分支，实时远端查询确认两者一致。开课前工作区干净，目标课程分支不存在；只读复核 Application、Renderer、RenderCommand、目录及已有资源所有权，确认依赖继续保持单向，资源由原有 RAII 对象拥有。公司 macOS arm64 使用 Apple Clang 21，在全新 `build/lesson-38-macos-debug` 完成 Debug 配置和编译，无编译器警告；完整基线程序成功创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空，运行未报告 OpenGL 错误，最终退出码 0。有一条 macOS TSM 键盘系统诊断，本轮不计为画面、resize 或具体 Esc 按键的独立验收，也未执行 Windows 或 Sanitizer 回归。随后从稳定 `main` 创建 `codex/lesson-38-face-culling`，仅更新启动记录与进度摘要，未实现本课业务代码。
+
+第 38 课核心任务（35～60 分钟）：在无状态 RenderCommand 中新增最小剔除开关与剔除面选择接口，例如 `SetFaceCullingEnabled(bool)`、项目枚举 `CullFace { Back, Front }` 和 `SetCullFace(CullFace)`，实现分别使用 `glEnable/glDisable(GL_CULL_FACE)` 与 `glCullFace`。Renderer 在 draw 前编排设置，保持逆时针为正面和原始一致绕序；把 Model1／Model2 的旋转轴从 Z 改为 Y，保持 90／45 度每秒，用上一课红色正面、绿色背面与纹理混合的输出观察翻面。依次对比关闭剔除、开启且剔除背面、开启且剔除正面，先预测再记录每种状态下哪些面可见；侧面对相机时投影变窄，不以固定恰好 90 度作为透视场景翻面的验收条件。完成后保存逆时针正面、开启背面剔除、Y 轴旋转的默认配置，并保留标记色供验收。保持原有深度、矩阵、资源和线程边界，不增加法线、光照、资源类、依赖或状态管理器。剔除设置属于 Current Context，由主线程调用；接口不拥有新资源，也不保存重复的 C++ 状态。验收需有三组观察、构建运行与 Shader/OpenGL 无错误证据，并能解释 `glCullFace` 指定的是丢弃哪一面，以及树叶等平面素材为什么可能需要双面显示。本课尚未提交、推送或合并。
+
+第 38 课首次代码检查（2026-09-09）：学习者报告三组实验符合预期。实际读取改动确认剔除开关正确使用 `GL_CULL_FACE`，项目枚举 Back／Front 正确映射到 `GL_BACK`／`GL_FRONT`，两个矩形均已改为绕 Y 轴旋转，速度仍为每秒 90／45 度。新增 `SetGlobalDepth` 与 `SetGlobalCullFace` 仅组合现有无状态调用，不拥有资源或保存重复状态，当前可以保留；名称中的 Global 不代表跨窗口或跨 Context 生效，调用只修改主线程的 Current Context。深度写入在清屏之前开启，状态配置仍位于 draw 之前，职责与依赖方向保持正确。macOS Debug 编译成功且无警告，完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，启动运行检查未报告 OpenGL 错误。画面对照依据学习者报告，未独立读回 GPU 颜色，未执行 Windows 或 Sanitizer 回归。当前 Renderer 仍设置 `CullFace::Front`，保留了第三组实验；下一步由学习者将其恢复为 `CullFace::Back`，保持启用剔除、逆时针正面和 Y 轴旋转，并解释树叶等平面素材为什么可能需要关闭背面剔除。最终配置与原理验收完成前，不判本课最终通过；尚未提交、推送或合并。
+
+第 38 课最终验收（2026-09-09）：实际再次读取源码，确认最终配置为启用面剔除、`CullFace::Back`、`FrontFaceWinding::CounterClockwise`，两个矩形保持一致索引并分别以每秒 90／45 度绕 Y 轴旋转。学习者完成关闭剔除、剔除背面、剔除正面三组实验并报告结果符合预期，能够解释树叶通常以几乎无厚度的平面表示、观察角度容易看到背面，因此启用背面剔除会让背面整片消失；这类材质可按需求关闭剔除或使用真正的双面几何。`SetFaceCullingEnabled` 与 `SetCullFace` 映射正确；新增的两个组合函数不拥有资源或缓存状态，只对主线程的 Current Context 发出已有状态调用。最终源码在公司 macOS arm64 的 `build/lesson-38-macos-debug` 重新编译成功且无警告，完整程序创建 OpenGL 4.1 Core Context、Shader 链接成功、链接日志为空，运行未报告 OpenGL 错误，最终退出码为 0；有一条 macOS TSM 键盘系统诊断。画面对照依据学习者报告，本轮未独立读回 GPU 颜色，也未重新验证 resize、具体 Esc 按键、Sanitizer 或 Windows。核心实现、三组实验、最终配置和原理验收均通过，助手仅更新学习记录，未代写核心业务代码。下一步等待学习者明确确认提交、推送课程分支并合并到 `main`；第 39 课尚未启动。
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现外部 PNG 四色纹理与正反面标记色；model 随时间旋转，projection 使用实际 framebuffer 宽高比。
 
@@ -458,7 +466,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37 课已完成、验收并合并；第 38～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37 课已合并；第 38 课已验收、待提交合并；第 39～52 课待执行 |
 
 ## 12. 协作要求
 

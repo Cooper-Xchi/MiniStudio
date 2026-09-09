@@ -15,6 +15,14 @@ namespace RenderCommand {
         Clockwise
     };
 
+    enum class CullFace {
+        Back,
+        Front
+    };
+
+    void SetFaceCullingEnabled(bool enabled);
+    void SetCullFace(CullFace face);
+
     void SetFrontFaceWinding(FrontFaceWinding winding);
 
     void Clear(float red, float green, float blue, float alpha);
@@ -25,5 +33,9 @@ namespace RenderCommand {
     void SetDepthWriteEnabled(bool enabled);
 
     void SetDepthCompare(DepthCompare compare);
+
+    void SetGlobalDepth(bool enableDepth,bool writeDepth,DepthCompare mode);
+
+    void SetGlobalCullFace(bool enable,CullFace face,FrontFaceWinding winding);
 
 }
