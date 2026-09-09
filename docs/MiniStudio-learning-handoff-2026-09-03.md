@@ -415,6 +415,8 @@ int main() {
 
 第 45 课合并记录（2026-09-09）：按学习者的明确要求，已提交课程成果 `74ec708`，推送 `codex/lesson-45-mouse-delta-focus`，并以合并提交 `b91fb12` 纳入 `main`；课程分支继续保留。上方验收记录中的“尚未提交、推送或合并”是历史状态，当前 Git 操作已完成。随后同步完成记录，并从稳定的最新 `main` 开始第 46 课。
 
+第 45 课合并后修正（2026-09-09）：开始第 46 课前重新构建最新 `main` 时，编译器在 `Application.cpp` 窗口初始化分支末尾发现意外文本 `tui`。该文本与课程功能无关，但会导致 `use of undeclared identifier 'tui'`，因此未在失败基线上创建新课程分支。已通过提交 `2e9efe2` 删除这三个字符；公司 macOS arm64 Debug 目标随后恢复编译成功且无警告。此记录保留失败和修复证据，避免把第 45 课运行验收时较早的成功二进制误写成合并后源码仍可构建。
+
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements` 呈现 24 顶点、36 索引的纹理立方体；model 随时间绕 X、Y 两轴旋转，projection 使用实际 framebuffer 宽高比。
 
 第 33 课启动记录（2026-09-08）：只读核对目录、职责、资源所有权与依赖方向；拉取远端引用后确认 `main` 与 `origin/main` 同为 `48596d3`，第 32 课已合并，工作区干净。基线从独立的 `build/lesson-33-debug` 目录完成 Debug 配置和编译，无编译器警告；本轮尚未重新进行运行验收。随后从该稳定 `main` 创建 `codex/lesson-33-depth-testing`。
