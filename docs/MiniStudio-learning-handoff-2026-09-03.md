@@ -329,9 +329,9 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～41 课均已完成、验收并合并；第 42 课「帧间时间与移动积分」已完成并验收，待提交、推送与合并；第 43 课尚未开始。**
+当前处于：**第 1～42 课均已完成、验收并合并；第 43 课尚未开始。**
 
-逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～41 课已合并，对应课程分支继续保留；第 42 课已在 `codex/lesson-42-frame-delta` 完成并验收，尚未提交、推送或合并。第 43 课尚未启动；每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
+逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～42 课已合并，对应课程分支继续保留；第 43 课尚未启动。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
 第 37 课启动记录（2026-09-09）：只读检查实际目录、Application、GlfwWindow、Renderer、RenderCommand、ShaderProgram 与 VertexArray，确认依赖和资源所有权保持单向。第 36 课成果 `635c891` 已在 `main` 历史中；开课前工作区干净，本地 `main`、`origin/main` 与实时查询的远端 `main` 均为 `69c98d1`。公司 macOS arm64 使用 Apple Clang 21，在独立的 `build/lesson-37-macos-debug` 目录执行 Debug 配置与编译，成功且无编译器警告；从该构建目录启动完整程序，成功创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，运行期间未报告 OpenGL 错误，最终退出码为 0。退出期间有一条 macOS TSM 键盘系统诊断；本轮未通过自动化核实画面、resize 或具体 Esc 按键，不把启动运行检查写成完整交互验收，也未执行 Sanitizer 或 Windows 回归。随后从稳定 `main` 创建 `codex/lesson-37-triangle-winding`；仅更新本启动记录，核心业务代码由学习者实现。
 
@@ -388,6 +388,8 @@ int main() {
 第 42 课首次代码检查（2026-09-09）：学习者在 `Application` 中以 `start_time` 初始化 `previous_time`，每帧只采样一次 `current_time`，分别计算累计秒数和帧间秒数，再更新上一帧时间点；累计时间仍交给 Renderer，Camera 新增纯 CPU `Move(displacement)` 并以 `position += displacement` 积分。学习者一度尝试把秒数赋给时间点，随后理解 `steady_clock::time_point`、两时间点相减得到的 duration 和 `.count()` 后的浮点秒数不能混用，并完成正确实现。助手按既有偏好将速度整理为具名的 `camera_speed = 0.25f`，把 `delta_times` 改为带单位的 `delta_seconds`，未改变算法。忽略构建目录中的 22 行 C++ 实验以速度 `0.25` 对比 `10 × 0.1` 与 `4 × 0.25` 两组时间步，两组均输出位移 `0.25`、退出码为 0；macOS Debug 增量编译成功且无警告，完整程序两次成功创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空，启动期间未报告 OpenGL 错误。程序均以 Ctrl-C 结束；自动化无法把该命令行 GLFW 窗口作为可控制应用读取，因此尚未独立核实画面移动和平滑性，也未验证自然退出、resize、Sanitizer 或 Windows。代码与数值实验通过，下一步等待学习者确认第一帧无跳跃、立方体平稳向左移动后做最终验收；尚未提交、推送或合并。
 
 第 42 课最终验收（2026-09-09）：学习者确认实际运行一切正常，即第一帧没有异常跳跃，Camera 沿世界 `+X` 平稳移动，画面中的立方体持续向左。结合首次检查，当前实现明确区分累计时间与帧间秒数：累计时间只驱动物体旋转，真实 delta 只用于 `speed × delta_seconds` 的相机位移；`previous_time` 始终保存时间点并在本帧差值计算后更新。两组总时长同为一秒但帧间划分不同的人工输入均得到位移 `0.25`，验证结果不依赖帧数；当前不限制 delta，调试暂停后的单帧大位移属于已知语义。实现、数值实验、macOS 构建启动和学习者画面观察均通过，第 42 课验收完成；尚未提交、推送或合并，第 43 课尚未启动。
+
+第 42 课合并记录（2026-09-09）：学习者明确要求提交、合并并开始下一课。已提交课程成果 `19ca5be`，推送 `codex/lesson-42-frame-delta`，并以合并提交 `84c275e` 纳入 `main`；课程分支继续保留。上方验收记录中的“尚未提交、推送或合并”是历史状态，当前 Git 操作已完成。随后同步完成记录，并从稳定的最新 `main` 开始第 43 课。
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements` 呈现 24 顶点、36 索引的纹理立方体；model 随时间绕 X、Y 两轴旋转，projection 使用实际 framebuffer 宽高比。
 
@@ -504,7 +506,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～41 课已完成、验收并合并；第 42 课已验收，待提交、推送与合并；第 43～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～42 课已完成、验收并合并；第 43～52 课待执行 |
 
 ## 12. 协作要求
 
