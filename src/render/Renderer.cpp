@@ -34,7 +34,13 @@ void main() {
 uniform sampler2D texture_sampler;
 
 void main() {
-    fragment_color = texture(texture_sampler, uv_coord);
+    vec4 face;
+    if(gl_FrontFacing){
+    face = vec4(1.0,0.0,0.0,1.0);
+}else{
+    face = vec4(0.0,1.0,0.0,1.0);
+}
+    fragment_color = mix(texture(texture_sampler, uv_coord),face,0.5f);
 }
 )";
 
@@ -47,7 +53,7 @@ void main() {
 
     const unsigned int indexes[] = {
         0,1,2,
-        2,3,0
+        2,3,0,
     };
 
     ImageData image;
@@ -101,6 +107,7 @@ bool Renderer::DrawFrame(
     RenderCommand::SetDepthTestEnabled(true);
     RenderCommand::SetDepthWriteEnabled(true);
     RenderCommand::SetDepthCompare(RenderCommand::DepthCompare::LESS);
+    RenderCommand::SetFrontFaceWinding(RenderCommand::FrontFaceWinding::CounterClockwise);
     RenderCommand::Clear(0.36,0.5,0.6,1);
     shader_program_.Use();
     const float aspect =

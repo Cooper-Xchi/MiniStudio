@@ -1,5 +1,4 @@
 #include "RenderCommand.h"
-
 #include "opengl/OpenGLHeaders.h"
 
 namespace RenderCommand {
@@ -50,6 +49,17 @@ namespace RenderCommand {
                 break;
             case DepthCompare::NOTEQUAL:
                 glDepthFunc(GL_NOTEQUAL);
+                break;
+        }
+    }
+
+    void SetFrontFaceWinding(FrontFaceWinding winding) {
+        switch (winding) {
+            case FrontFaceWinding::Clockwise:
+                glFrontFace(GL_CW);
+                break;
+            case FrontFaceWinding::CounterClockwise:
+                glFrontFace(GL_CCW);
                 break;
         }
     }
