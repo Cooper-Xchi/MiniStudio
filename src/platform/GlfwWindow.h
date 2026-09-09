@@ -18,6 +18,16 @@ public:
     GlfwWindow(GlfwWindow&&) = delete;
     GlfwWindow& operator=(GlfwWindow&&) = delete;
 
+    struct MouseInputState {
+        double delta_x = 0.0;
+        double delta_y = 0.0;
+        bool left_pressed = false;
+        bool right_pressed = false;
+    };
+
+    [[nodiscard]] MouseInputState ReadMouseInput();
+    void SetCursorCaptured(bool captured);
+
     bool Initialize(
         int width,
         int height,
@@ -39,7 +49,9 @@ private:
     int width,
     int height
 );
-
+    double previous_cursor_x_ = 0.0;
+    double previous_cursor_y_ = 0.0;
+    bool has_cursor_baseline_ = false;
     GLFWwindow* handle_ = nullptr;
     bool glfw_initialized_ = false;
 };
