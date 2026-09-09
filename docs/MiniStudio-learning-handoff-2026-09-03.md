@@ -329,9 +329,9 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～42 课均已完成、验收并合并；第 43 课「输入快照驱动相机平移」已完成并验收，待提交、推送与合并；第 44 课尚未开始。**
+当前处于：**第 1～43 课均已完成、验收并合并；第 44 课尚未开始。**
 
-逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～42 课已合并，对应课程分支继续保留；第 43 课已在 `codex/lesson-43-input-snapshot` 完成并验收，尚未提交、推送或合并。第 44 课尚未启动；每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
+逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～43 课已合并，对应课程分支继续保留；第 44 课尚未启动。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
 第 37 课启动记录（2026-09-09）：只读检查实际目录、Application、GlfwWindow、Renderer、RenderCommand、ShaderProgram 与 VertexArray，确认依赖和资源所有权保持单向。第 36 课成果 `635c891` 已在 `main` 历史中；开课前工作区干净，本地 `main`、`origin/main` 与实时查询的远端 `main` 均为 `69c98d1`。公司 macOS arm64 使用 Apple Clang 21，在独立的 `build/lesson-37-macos-debug` 目录执行 Debug 配置与编译，成功且无编译器警告；从该构建目录启动完整程序，成功创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，运行期间未报告 OpenGL 错误，最终退出码为 0。退出期间有一条 macOS TSM 键盘系统诊断；本轮未通过自动化核实画面、resize 或具体 Esc 按键，不把启动运行检查写成完整交互验收，也未执行 Sanitizer 或 Windows 回归。随后从稳定 `main` 创建 `codex/lesson-37-triangle-winding`；仅更新本启动记录，核心业务代码由学习者实现。
 
@@ -396,6 +396,8 @@ int main() {
 第 43 课核心任务（50～80 分钟）：在 `GlfwWindow.h` 定义只包含 `w_pressed`、`a_pressed`、`s_pressed`、`d_pressed` 四个布尔值的 `MovementKeyState`，由窗口通过 `GetMovementKeyState()` 或同等清晰接口按值返回；实现内部使用 `glfwGetKey`，不得公开 `GLFWwindow*`。`Application` 必须在本帧 `PollEvents()` 之后读取一次快照，再把 W/S 映射为世界 `-Z/+Z`、A/D 映射为世界 `-X/+X` 的移动方向，以现有 `camera_speed * delta_seconds` 计算 displacement 并调用 `Camera::Move`；删除第 42 课无条件沿 `+X` 移动的代码。Camera 不包含 GLFW 头文件、不接收按键枚举或快照，Renderer 与 `main.cpp` 保持不变。按键松开时零方向自然停止，相反方向同时按下应相互抵消；本课不归一化斜向向量，斜向速度较快作为第 47 课问题保留，也不新增事件总线、Input Manager、回调队列或新依赖。验收依次检查 W、S、A、D，W+S、A+D，松开停止及 Esc 退出，并能说明为何输入状态要在 `PollEvents()` 后读取，以及值类型快照只表达本帧状态、不应把其引用保存到下一帧。本课尚未提交、推送或合并。
 
 第 43 课最终验收（2026-09-09）：学习者在 `GlfwWindow` 公共边界内新增四布尔值 `MovementKeyState`，由 `GetMovementKeyState()` 按值返回本帧 W/A/S/D 状态；实现使用显式 `GLFW_PRESS` 比较，未暴露 `GLFWwindow*`。`Application` 在 `PollEvents()` 后取得只读快照，将 W/S 映射为世界 `-Z/+Z`、A/D 映射为世界 `-X/+X`，用应用层 `camera_speed * delta_seconds` 形成最终位移并交给 Camera；第 42 课无条件移动已删除。首次检查发现速度被临时放入 Camera 的公开成员，学习者随后移回 Application，并删除窗口层无用的 GLM 依赖；助手仅整理新代码中的命名、冗余构造和空格。Camera 继续只接收平台无关的 displacement，Renderer 与 `main.cpp` 未改变，依赖方向符合约束。公司 macOS arm64 Debug 增量编译成功且无警告，完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空，启动期间未报告 OpenGL 错误；助手以 Ctrl-C 结束，学习者实际确认 W、S、A、D、相反方向组合、松开停止和 Esc 均符合预期。本课按计划保留未归一化的斜向速度，不新增输入管理器或事件系统。代码、构建和交互行为通过验收；尚未提交、推送或合并，第 44 课尚未启动。
+
+第 43 课合并记录（2026-09-09）：学习者明确要求提交、合并并开始下一课。已提交课程成果 `2100f34`，推送 `codex/lesson-43-input-snapshot`，并以合并提交 `6fd1d6c` 纳入 `main`；课程分支继续保留。上方验收记录中的“尚未提交、推送或合并”是历史状态，当前 Git 操作已完成。随后同步完成记录，并从稳定的最新 `main` 开始第 44 课。
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements` 呈现 24 顶点、36 索引的纹理立方体；model 随时间绕 X、Y 两轴旋转，projection 使用实际 framebuffer 宽高比。
 
@@ -512,7 +514,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～42 课已完成、验收并合并；第 43 课已验收，待提交、推送与合并；第 44～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～43 课已完成、验收并合并；第 44～52 课待执行 |
 
 ## 12. 协作要求
 
