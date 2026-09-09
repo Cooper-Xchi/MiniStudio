@@ -154,7 +154,7 @@ Debug 和 Sanitizer 版本在正常路径下不应输出 OpenGL 错误、Address
 | 第 25～30 月 | 2D 动画、视频素材和 Metal | 扩展多媒体与第三平台能力 |
 | 第 31～36 月 | 大场景、性能架构、AI 工作流和真实协作 | 建立高级/专家方向的能力证据 |
 
-完整的阶段目标、验收标准、前四周课程和求职时间线见 [`docs/MiniStudio-curriculum-24-36-months.md`](docs/MiniStudio-curriculum-24-36-months.md)。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
+完整的阶段目标、验收标准和求职时间线见[课程路线](docs/MiniStudio-curriculum-24-36-months.md)。每节课的讲解内容、核心练习、边界和验收标准见[逐课教案索引](docs/lessons/README.md)，当前待执行的第 37～52 课另有详细步骤、易错点和追问。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
 
 ## 仓库结构
 
@@ -168,6 +168,7 @@ MiniStudio/
 │   └── textures/
 │       └── lesson21-quadrants.png
 ├── docs/
+│   ├── lessons/                       # 逐课索引与 A～L 阶段教案
 │   ├── MiniStudio-curriculum-24-36-months.md
 │   ├── MiniStudio-learning-handoff-2026-09-03.md
 │   ├── MiniStudio-depth-pipeline-review.md
