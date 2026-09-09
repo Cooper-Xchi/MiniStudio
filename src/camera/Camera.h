@@ -7,6 +7,7 @@ class Camera {
 public:
     void SetPosition(const glm::vec3& position);
     [[nodiscard]] glm::mat4 ViewMatrix() const;
+    void Move(const glm::vec3& displacement);
 
 private:
     glm::vec3 position_{0.0f};

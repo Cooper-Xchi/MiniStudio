@@ -13,3 +13,7 @@ void Camera::SetPosition(const glm::vec3& position) {
 glm::mat4 Camera::ViewMatrix() const {
     return glm::lookAt(position_, position_ + forward_, up_);
 }
+
+void Camera::Move(const glm::vec3& displacement) {
+    position_ += displacement;
+}
