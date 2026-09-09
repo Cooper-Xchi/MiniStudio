@@ -329,7 +329,7 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～37 课均已完成、验收并合并；第 38 课「背面剔除与双面表面」已完成并通过验收，等待学习者确认提交、推送并合并。下一课为第 39 课「索引立方体与面独立 UV」，尚未启动。**
+当前处于：**第 1～38 课均已完成、验收并合并；下一课为第 39 课「索引立方体与面独立 UV」，尚未启动。**
 
 逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37 课已合并，课程分支 `codex/lesson-37-triangle-winding` 继续保留；当前按 [A 阶段第 38 课教案](lessons/A-foundations.md) 在 `codex/lesson-38-face-culling` 继续练习、纠错与验收。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
@@ -350,6 +350,8 @@ int main() {
 第 38 课首次代码检查（2026-09-09）：学习者报告三组实验符合预期。实际读取改动确认剔除开关正确使用 `GL_CULL_FACE`，项目枚举 Back／Front 正确映射到 `GL_BACK`／`GL_FRONT`，两个矩形均已改为绕 Y 轴旋转，速度仍为每秒 90／45 度。新增 `SetGlobalDepth` 与 `SetGlobalCullFace` 仅组合现有无状态调用，不拥有资源或保存重复状态，当前可以保留；名称中的 Global 不代表跨窗口或跨 Context 生效，调用只修改主线程的 Current Context。深度写入在清屏之前开启，状态配置仍位于 draw 之前，职责与依赖方向保持正确。macOS Debug 编译成功且无警告，完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，启动运行检查未报告 OpenGL 错误。画面对照依据学习者报告，未独立读回 GPU 颜色，未执行 Windows 或 Sanitizer 回归。当前 Renderer 仍设置 `CullFace::Front`，保留了第三组实验；下一步由学习者将其恢复为 `CullFace::Back`，保持启用剔除、逆时针正面和 Y 轴旋转，并解释树叶等平面素材为什么可能需要关闭背面剔除。最终配置与原理验收完成前，不判本课最终通过；尚未提交、推送或合并。
 
 第 38 课最终验收（2026-09-09）：实际再次读取源码，确认最终配置为启用面剔除、`CullFace::Back`、`FrontFaceWinding::CounterClockwise`，两个矩形保持一致索引并分别以每秒 90／45 度绕 Y 轴旋转。学习者完成关闭剔除、剔除背面、剔除正面三组实验并报告结果符合预期，能够解释树叶通常以几乎无厚度的平面表示、观察角度容易看到背面，因此启用背面剔除会让背面整片消失；这类材质可按需求关闭剔除或使用真正的双面几何。`SetFaceCullingEnabled` 与 `SetCullFace` 映射正确；新增的两个组合函数不拥有资源或缓存状态，只对主线程的 Current Context 发出已有状态调用。最终源码在公司 macOS arm64 的 `build/lesson-38-macos-debug` 重新编译成功且无警告，完整程序创建 OpenGL 4.1 Core Context、Shader 链接成功、链接日志为空，运行未报告 OpenGL 错误，最终退出码为 0；有一条 macOS TSM 键盘系统诊断。画面对照依据学习者报告，本轮未独立读回 GPU 颜色，也未重新验证 resize、具体 Esc 按键、Sanitizer 或 Windows。核心实现、三组实验、最终配置和原理验收均通过，助手仅更新学习记录，未代写核心业务代码。下一步等待学习者明确确认提交、推送课程分支并合并到 `main`；第 39 课尚未启动。
+
+第 38 课合并记录（2026-09-09）：学习者明确要求提交合并并开始下一课。已提交课程成果 `75bd3fa`，推送 `codex/lesson-38-face-culling`，以合并提交 `6daf405` 纳入 `main` 并推送远端；课程分支继续保留。上方验收记录中的“等待确认”是历史状态，当前 Git 操作已完成。随后同步本完成记录，再从干净、稳定的最新 `main` 开始第 39 课。
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements`、4 个顶点和 6 个索引呈现外部 PNG 四色纹理与正反面标记色；model 随时间旋转，projection 使用实际 framebuffer 宽高比。
 
@@ -466,7 +468,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37 课已合并；第 38 课已验收、待提交合并；第 39～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～38 课已合并；第 39～52 课待执行 |
 
 ## 12. 协作要求
 

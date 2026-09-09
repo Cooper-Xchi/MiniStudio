@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目第 1～37 课均已通过验收并合并，第 38 课「背面剔除与双面表面」已验收、待提交合并。当前依赖继续保持 `Application → Renderer → RenderCommand → OpenGL`；正面约定和面剔除由无状态 RenderCommand 设置，Renderer 编排。
+项目第 1～38 课均已通过验收并合并。当前依赖继续保持 `Application → Renderer → RenderCommand → OpenGL`；正面约定和面剔除由无状态 RenderCommand 设置，Renderer 编排。
 
 已经完成：
 
@@ -65,7 +65,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第三十七课的三角形绕序与正面判定：以项目侧枚举封装 `glFrontFace`，保持剔除关闭，用 `gl_FrontFacing` 对比两种正面约定和单个三角形反转；最终恢复一致的逆时针绕序及原有旋转，保留纹理与标记色各占 50% 的输出。macOS Debug 构建与运行检查通过，Windows 尚未验证本课。
 - 完成第三十八课的背面剔除实验：分别封装剔除开关与被剔除面选择，让两个矩形绕 Y 轴翻面，并对比关闭剔除、剔除背面和剔除正面；最终保存逆时针正面与背面剔除配置。macOS Debug 构建与运行检查通过，Windows 尚未验证本课。
 
-前 37 课均已完成并合并回 `main`。第 37 课课程成果 `0fc5f91` 已通过 `45ec882` 合并，课程分支 `codex/lesson-37-triangle-winding` 已推送并继续保留。第 38 课成果位于 `codex/lesson-38-face-culling`，已经验收，尚未提交、推送或合并；第 39 课尚未启动。
+前 38 课均已完成并合并回 `main`。第 38 课课程成果 `75bd3fa` 已通过 `6daf405` 合并，课程分支 `codex/lesson-38-face-culling` 已推送并继续保留。第 39 课尚未启动。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
