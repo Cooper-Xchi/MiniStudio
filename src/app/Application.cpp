@@ -11,7 +11,7 @@ int Application::Run() {
             fullscreen_on_secondary_monitor
         )) {
         return 1;
-    }tui
+    }
     if (!renderer_.Initialize()) return 1;
     constexpr float camera_speed = 0.25f;
     const auto start_time = std::chrono::steady_clock::now();
