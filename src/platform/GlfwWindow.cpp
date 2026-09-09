@@ -147,3 +147,55 @@ GlfwWindow::MovementKeyState GlfwWindow::GetMovementKeyState() const {
     }
     return movement_key_state;
 }
+
+GlfwWindow::MouseInputState GlfwWindow::ReadMouseInput() {
+    MouseInputState mouse_state;
+    if (glfwGetWindowAttrib(handle_, GLFW_FOCUSED) == GLFW_FALSE) {
+        has_cursor_baseline_ = false;
+        return mouse_state;
+    }
+    if (glfwGetMouseButton(handle_,GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+        mouse_state.left_pressed = true;
+    }
+    if (glfwGetMouseButton(handle_,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+        mouse_state.right_pressed = true;
+    }
+    if (glfwGetInputMode(handle_, GLFW_CURSOR) != GLFW_CURSOR_DISABLED) {
+        has_cursor_baseline_ = false;
+        return mouse_state;
+    }
+    if (!has_cursor_baseline_ ) {
+        double cursor_pos_x;
+        double cursor_pos_y;
+        glfwGetCursorPos(handle_,&cursor_pos_x,&cursor_pos_y);
+        previous_cursor_x_ = cursor_pos_x;
+        previous_cursor_y_ = cursor_pos_y;
+        mouse_state.delta_x = 0.0f;
+        mouse_state.delta_y = 0.0f;
+        has_cursor_baseline_ = true;
+        return mouse_state;
+    }
+    double current_cursor_x_;
+    double current_cursor_y_;
+    glfwGetCursorPos(handle_,&current_cursor_x_,&current_cursor_y_);
+    mouse_state.delta_x = current_cursor_x_ - previous_cursor_x_;
+    mouse_state.delta_y = current_cursor_y_ - previous_cursor_y_;
+    previous_cursor_x_ = current_cursor_x_;
+    previous_cursor_y_ = current_cursor_y_;
+
+
+    return mouse_state;
+}
+void GlfwWindow::SetCursorCaptured(bool captured) {
+    if (handle_ == nullptr) {
+        return ;
+    }
+    const int target_mode = captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL;
+    const int current_mode = glfwGetInputMode(handle_,GLFW_CURSOR);
+    if (target_mode == current_mode) {
+        return;
+    }else {
+        glfwSetInputMode(handle_,GLFW_CURSOR,captured?GLFW_CURSOR_DISABLED:GLFW_CURSOR_NORMAL);
+        has_cursor_baseline_ = false;
+    }
+}

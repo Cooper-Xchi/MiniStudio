@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目第 1～44 课均已通过验收并合并。当前依赖形成 `Application → GlfwWindow/Camera/Renderer → RenderCommand → OpenGL`；窗口提供值类型按键快照，Application 映射时间与移动意图，Camera 保持纯 CPU 职责。
+项目第 1～44 课均已通过验收并合并。第 45 课「鼠标位移与焦点切换」已完成并通过验收，等待提交合并。当前依赖形成 `Application → GlfwWindow/Camera/Renderer → RenderCommand → OpenGL`；窗口提供值类型输入快照并维护鼠标采样基准，Application 决定捕获操作，Camera 保持纯 CPU 职责。
 
 已经完成：
 
@@ -70,8 +70,9 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第四十二课的帧间时间与移动积分：Application 区分累计时间与帧间秒数，Camera 按速度乘 delta 的位移沿世界轴移动；相同总时长的不同时间步得到相同位移。
 - 完成第四十三课的输入快照驱动相机平移：GlfwWindow 按值返回 W/A/S/D 状态，Application 在事件轮询后把按键映射为移动方向并结合 delta 形成位移，Camera 不依赖平台输入。
 - 完成第四十四课的时间、输入和相机依赖复盘：记录一帧数据流、所有权、单位、生命周期、线程与复制边界，并用纯 CPU 小实验验证 Camera 的独立测试边界。
+- 完成第四十五课的鼠标位移与焦点切换：GlfwWindow 按值返回鼠标 delta 与按钮状态，在捕获、释放和焦点切换时维护采样基准；Application 用左键捕获、右键释放并打印非零样本，尚未驱动相机旋转。
 
-前 44 课均已完成并合并回 `main`。第 44 课课程成果 `6e52f83` 已通过 `35636b3` 合并，课程分支 `codex/lesson-44-time-input-camera-review` 已推送并继续保留；第 45 课尚未启动。
+前 44 课均已完成并合并回 `main`。第 45 课已在 `codex/lesson-45-mouse-delta-focus` 完成并通过验收，等待提交、推送和合并；第 46 课尚未启动。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
@@ -162,7 +163,7 @@ Debug 和 Sanitizer 版本在正常路径下不应输出 OpenGL 错误、Address
 | 第 25～30 月 | 2D 动画、视频素材和 Metal | 扩展多媒体与第三平台能力 |
 | 第 31～36 月 | 大场景、性能架构、AI 工作流和真实协作 | 建立高级/专家方向的能力证据 |
 
-完整的阶段目标、验收标准和求职时间线见[课程路线](docs/MiniStudio-curriculum-24-36-months.md)。每节课的讲解内容、核心练习、边界和验收标准见[逐课教案索引](docs/lessons/README.md)，第 37～52 课另有详细步骤、易错点和追问，其中第 37～44 课已合并、第 45～52 课待执行。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
+完整的阶段目标、验收标准和求职时间线见[课程路线](docs/MiniStudio-curriculum-24-36-months.md)。每节课的讲解内容、核心练习、边界和验收标准见[逐课教案索引](docs/lessons/README.md)，第 37～52 课另有详细步骤、易错点和追问，其中第 37～44 课已合并、第 45 课已验收并等待合并、第 46～52 课待执行。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
 
 ## 仓库结构
 

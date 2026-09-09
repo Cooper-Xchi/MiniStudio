@@ -329,9 +329,9 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～44 课均已完成、验收并合并；第 45 课尚未开始。**
+当前处于：**第 1～44 课均已完成、验收并合并；第 45 课「鼠标位移与焦点切换」已完成并通过验收，等待提交合并；第 46 课尚未开始。**
 
-逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～44 课已合并，对应课程分支继续保留；第 45 课尚未启动。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
+逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～44 课已合并，对应课程分支继续保留；第 45 课已在 `codex/lesson-45-mouse-delta-focus` 验收，等待提交合并。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
 第 37 课启动记录（2026-09-09）：只读检查实际目录、Application、GlfwWindow、Renderer、RenderCommand、ShaderProgram 与 VertexArray，确认依赖和资源所有权保持单向。第 36 课成果 `635c891` 已在 `main` 历史中；开课前工作区干净，本地 `main`、`origin/main` 与实时查询的远端 `main` 均为 `69c98d1`。公司 macOS arm64 使用 Apple Clang 21，在独立的 `build/lesson-37-macos-debug` 目录执行 Debug 配置与编译，成功且无编译器警告；从该构建目录启动完整程序，成功创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，运行期间未报告 OpenGL 错误，最终退出码为 0。退出期间有一条 macOS TSM 键盘系统诊断；本轮未通过自动化核实画面、resize 或具体 Esc 按键，不把启动运行检查写成完整交互验收，也未执行 Sanitizer 或 Windows 回归。随后从稳定 `main` 创建 `codex/lesson-37-triangle-winding`；仅更新本启动记录，核心业务代码由学习者实现。
 
@@ -406,6 +406,12 @@ int main() {
 第 44 课验收记录（2026-09-09）：学习者查看课程内容后确认已经掌握，并明确要求助手直接完成、提交、合并并开始下一课。助手新增 [docs/MiniStudio-time-input-camera-review.md](MiniStudio-time-input-camera-review.md)，记录五步帧数据流，并逐项说明输入、时间、位移、Camera position、view 与 Program uniform 的生产者、所有权、单位、生命周期、线程和复制边界；内容已与 Application、GlfwWindow、Camera、Renderer 和 ShaderProgram 源码核对。另在被忽略的独立构建目录编译运行 21 行纯 CPU 小实验，只编译 Camera.cpp 并使用 GLM 头文件：相机从 `x=0.25` 沿 `+X` 移动 `0.5` 后，view 的 X 平移由 `-0.25` 变为 `-0.75`，退出码为 0，证明无需窗口或 OpenGL Context。完整 macOS Debug 目标再次构建成功且无警告；本课最终不修改业务源码、不新增依赖。课程成果当前等待提交、推送和合并；未执行 Sanitizer 或 Windows 验证。
 
 第 44 课合并记录（2026-09-09）：按学习者的明确要求，已提交课程成果 `6e52f83`，推送 `codex/lesson-44-time-input-camera-review`，并以合并提交 `35636b3` 纳入 `main`；课程分支继续保留。上方验收记录中的“等待提交、推送和合并”是历史状态，当前 Git 操作已完成。随后同步完成记录，并从稳定的最新 `main` 开始第 45 课。
+
+第 45 课启动记录（2026-09-09）：第 44 课完成记录 `5acf5dc` 已同步到本地与远端 `main`、`codex/lesson-44-time-input-camera-review`，开课前工作区干净且目标课程分支不存在；随后从稳定 `main` 创建 `codex/lesson-45-mouse-delta-focus`。公司 macOS arm64 使用 Apple Clang 21，在全新的 `build/lesson-45-macos-debug` 完成 Debug 配置和编译，成功且无编译器警告；完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空，启动观察期间未报告 OpenGL 错误，随后以 Ctrl-C 结束；本轮不记录自然退出、画面读回、交互、Sanitizer 或 Windows 验证。开课前只读检查确认：GlfwWindow 当前独占窗口和 GLFW 输入查询，Application 在 `PollEvents()` 后编排输入，Camera 与 Renderer 不应知道鼠标或焦点；因此鼠标绝对位置、相邻采样基准和捕获状态继续由 GlfwWindow 管理，Application 只接收值类型 delta 并决定进入或退出捕获。
+
+第 45 课核心任务（45～75 分钟）：在 `GlfwWindow` 增加值类型 `MouseDelta { double x; double y; }`，以及捕获切换、左右鼠标键状态和 `ReadMouseDelta()` 的最小公开接口。GlfwWindow 私有保存上次光标坐标与“基准是否有效”；`ReadMouseDelta()` 只在窗口已聚焦且光标已捕获时调用 `glfwGetCursorPos`，首个有效样本只建立基准并返回零，后续返回当前位置减上次位置。失焦、退出捕获或捕获状态真正发生变化时必须使基准失效，防止恢复输入后的巨大跳变；重复设置相同捕获状态不能每帧清空基准。Application 在 `PollEvents()` 后用左键进入 `GLFW_CURSOR_DISABLED`、右键恢复 `GLFW_CURSOR_NORMAL`，Esc 继续关闭窗口；每帧读取一次 delta，只打印非零的受控样本，不把它传入 Camera。原始窗口坐标的 Y 轴向下，本课保留该符号，下一课再映射为 pitch。验收时检查：捕获后的首样本为零、静止接近零、连续移动符号和大小合理、右键可释放、重新捕获及切出再切回没有巨幅 delta、W/A/S/D 与 Esc 未回归。本课不新增 Input Manager、事件总线、回调体系或相机旋转；代码由学习者实现，完成后由助手实际读取并执行 macOS 构建与运行检查。本课尚未提交、推送或合并。
+
+第 45 课验收记录（2026-09-09）：学习者在 GlfwWindow 公共边界新增按值返回的 `MouseInputState`，包含本帧 `delta_x/delta_y` 与左右键状态；GlfwWindow 私有保存上一有效光标坐标和基准有效位。`ReadMouseInput()` 在主线程依次处理窗口焦点、按钮状态、捕获模式、首次基准和后续差值，失焦或未捕获时使基准失效；`SetCursorCaptured()` 只在模式实际变化时切换 `GLFW_CURSOR_DISABLED/NORMAL` 并清除基准。Application 在 `PollEvents()` 后读取一次快照，以左键捕获、右键释放，只打印非零 delta，未把鼠标输入传给 Camera。公司 macOS arm64 Debug 增量编译成功且无警告；完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功且日志为空，运行会话记录到连续的正负方向、整数和亚像素 delta，并以退出码 0 正常结束。学习者实际确认捕获、释放、静止、连续移动、重新捕获、切出切回、W/A/S/D 和 Esc 均符合预期。本课没有修改 Camera、Renderer 或依赖关系，代码和交互行为通过验收；当前尚未提交、推送或合并，未执行 Sanitizer 或 Windows 验证。
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements` 呈现 24 顶点、36 索引的纹理立方体；model 随时间绕 X、Y 两轴旋转，projection 使用实际 framebuffer 宽高比。
 
@@ -522,7 +528,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～44 课已完成、验收并合并；第 45～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～44 课已完成、验收并合并；第 45 课已完成并通过验收，等待提交合并；第 46～52 课待执行 |
 
 ## 12. 协作要求
 

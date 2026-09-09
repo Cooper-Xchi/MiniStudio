@@ -1,5 +1,6 @@
 #include "Application.h"
 #include <chrono>
+#include <iostream>
 
 int Application::Run() {
     constexpr bool fullscreen_on_secondary_monitor = false;
@@ -10,7 +11,7 @@ int Application::Run() {
             fullscreen_on_secondary_monitor
         )) {
         return 1;
-    }
+    }tui
     if (!renderer_.Initialize()) return 1;
     constexpr float camera_speed = 0.25f;
     const auto start_time = std::chrono::steady_clock::now();
@@ -27,10 +28,20 @@ int Application::Run() {
         previous_time = current_time;
         glm::vec3 movement{0.0f};
         const GlfwWindow::MovementKeyState keys = window_.GetMovementKeyState();
+        const GlfwWindow::MouseInputState mouse = window_.ReadMouseInput();
+        if (mouse.delta_x != 0.0f || mouse.delta_y != 0.0f) {
+            std::cout<<"mouse deltaposition : "<<mouse.delta_x<<" , "<<mouse.delta_y<<std::endl;
+        }
         if (keys.w_pressed) movement.z -= 1.0f;
         if (keys.s_pressed) movement.z += 1.0f;
         if (keys.a_pressed) movement.x -= 1.0f;
         if (keys.d_pressed) movement.x += 1.0f;
+        if (mouse.left_pressed) {
+            window_.SetCursorCaptured(true);
+        }
+        if (mouse.right_pressed) {
+            window_.SetCursorCaptured(false);
+        }
         camera_.Move(movement * camera_speed * delta_seconds);
         int framebuffer_width = 0;
         int framebuffer_height = 0;
