@@ -329,9 +329,9 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～39 课均已完成、验收并合并；第 40 课「几何、状态与资源架构复盘」已完成并验收，待提交、推送与合并；第 41 课尚未开始。**
+当前处于：**第 1～40 课均已完成、验收并合并；第 41 课尚未开始。**
 
-逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～39 课已合并，对应课程分支继续保留；第 40 课已在 `codex/lesson-40-geometry-state-review` 完成并验收，成果记录在[几何、状态与资源架构复盘](MiniStudio-geometry-state-resource-review.md)，尚未提交、推送或合并。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
+逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～40 课已合并，对应课程分支继续保留；第 40 课成果记录在[几何、状态与资源架构复盘](MiniStudio-geometry-state-resource-review.md)。第 41 课尚未启动；每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
 第 37 课启动记录（2026-09-09）：只读检查实际目录、Application、GlfwWindow、Renderer、RenderCommand、ShaderProgram 与 VertexArray，确认依赖和资源所有权保持单向。第 36 课成果 `635c891` 已在 `main` 历史中；开课前工作区干净，本地 `main`、`origin/main` 与实时查询的远端 `main` 均为 `69c98d1`。公司 macOS arm64 使用 Apple Clang 21，在独立的 `build/lesson-37-macos-debug` 目录执行 Debug 配置与编译，成功且无编译器警告；从该构建目录启动完整程序，成功创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，运行期间未报告 OpenGL 错误，最终退出码为 0。退出期间有一条 macOS TSM 键盘系统诊断；本轮未通过自动化核实画面、resize 或具体 Esc 按键，不把启动运行检查写成完整交互验收，也未执行 Sanitizer 或 Windows 回归。随后从稳定 `main` 创建 `codex/lesson-37-triangle-winding`；仅更新本启动记录，核心业务代码由学习者实现。
 
@@ -370,6 +370,8 @@ int main() {
 第 40 课核心任务（30～50 分钟）：由学习者新增 `docs/MiniStudio-geometry-state-resource-review.md`，用一页文档记录四部分。第一，画出 `main → Application → GlfwWindow/Renderer → ShaderProgram/VertexArray/Texture2D/RenderCommand → OpenGL` 的依赖，并单独写明 GlfwWindow 创建和持有 Context 生命周期。第二，用表格列出 CPU 顶点／索引、ImageData、VAO、VBO、EBO、Program、Texture、model/projection uniform 值、深度与剔除状态各自的产生位置、所有者或状态位置、复制边界、更新频率与结束时机。第三，写出 Application 和 Renderer 成员按声明逆序析构的实际顺序，并说明为何 GPU 资源必须先于 Context 释放。第四，给出一次“立方体某一面消失”的排查顺序，至少依次覆盖暂时关闭剔除、核对正面约定、核对该面六个索引及范围、用叉积检查外向绕序、检查 model 是否存在负缩放、再区分深度问题。文档最后回答：VAO 记录 attribute 与 EBO 绑定并不等于拥有 CPU 数组；OpenGL VAO 本身也不会替 C++ 代码删除 VBO/EBO，当前是 `VertexArray` 包装类主动统一拥有并释放三个句柄。本课不重构业务代码、不新增依赖、Mesh、状态管理器或 RenderDevice。完成后由助手实际读取文档，检查每项是否与源码一致，并用现有稳定程序回归行为；尚未提交、推送或合并。
 
 第 40 课最终验收（2026-09-09）：学习者明确表示已掌握复盘内容，并要求助手直接整理以避免重复书写。助手新增 `docs/MiniStudio-geometry-state-resource-review.md`，按照实际源码记录模块依赖、CPU 数据与 GPU 资源的复制边界、Current Context 状态、更新频率、结束时机、`Application`／`Renderer` 成员逆序析构，以及“立方体某一面消失”的排查顺序。文档明确区分：VBO 不拥有原 CPU 数组，`glBufferData` 会把数据复制到独立的 OpenGL Buffer；VAO 记录布局与绑定，不自动删除 VBO/EBO，当前 C++ `VertexArray` 包装类统一拥有并删除三个句柄。复盘确认依赖方向单向、GPU 资源先于 Context 销毁，当前无需新增通用 Mesh、状态管理器或 `RenderDevice`。本课未修改业务源码；第 39 课合并后的稳定程序已在开课时于公司 macOS arm64 独立完成配置、编译和运行检查，因此文档整理后不重复运行。文档内容与源码一致，格式检查通过后第 40 课验收完成；尚未提交、推送或合并，第 41 课尚未开始。
+
+第 40 课合并记录（2026-09-09）：学习者明确要求提交并合并。已提交课程成果 `c4af79e`，推送 `codex/lesson-40-geometry-state-review`，并以合并提交 `efffe63` 纳入 `main`；课程分支继续保留。上方验收记录中的“尚未提交、推送或合并”是历史状态，当前 Git 操作已完成。第 41 课尚未启动。
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements` 呈现 24 顶点、36 索引的纹理立方体；model 随时间绕 X、Y 两轴旋转，projection 使用实际 framebuffer 宽高比。
 
@@ -486,7 +488,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～39 课已合并；第 40 课已验收，待提交、推送与合并；第 41～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～40 课已完成、验收并合并；第 41～52 课待执行 |
 
 ## 12. 协作要求
 
