@@ -44,16 +44,57 @@ void main() {
 }
 )";
 
-    const float triangle_vertices[] = {
-        -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-         0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-        -0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+    const float cube_vertices[] = {
+        // 正面 +Z：从立方体外部观察为逆时针
+        -0.5f, -0.5f,  0.5f,  1, 0, 0,  0, 0,
+         0.5f, -0.5f,  0.5f,  0, 1, 0,  1, 0,
+         0.5f,  0.5f,  0.5f,  0, 0, 1,  1, 1,
+        -0.5f,  0.5f,  0.5f,  1, 1, 1,  0, 1,
+
+        //后面
+         0.5f, -0.5f,  -0.5f,  1, 0, 0,  0, 0,
+        -0.5f, -0.5f,  -0.5f,  0, 1, 0,  1, 0,
+        -0.5f,  0.5f,  -0.5f,  0, 0, 1,  1, 1,
+         0.5f,  0.5f,  -0.5f,  1, 1, 1,  0, 1,
+
+        //左面
+        -0.5f, -0.5f, -0.5f,  1, 0, 0,  0, 0,
+        -0.5f, -0.5f,  0.5f,  0, 1, 0,  1, 0,
+        -0.5f,  0.5f,  0.5f,  0, 0, 1,  1, 1,
+        -0.5f,  0.5f, -0.5f,  1, 1, 1,  0, 1,
+
+        //右面
+         0.5f, -0.5f,  0.5f,  1, 0, 0,  0, 0,
+         0.5f, -0.5f, -0.5f,  0, 1, 0,  1, 0,
+         0.5f,  0.5f, -0.5f,  0, 0, 1,  1, 1,
+         0.5f,  0.5f,  0.5f,  1, 1, 1,  0, 1,
+
+        //上面
+        -0.5f,  0.5f,  0.5f,  1, 0, 0,  0, 0,
+         0.5f,  0.5f,  0.5f,  0, 1, 0,  1, 0,
+         0.5f,  0.5f, -0.5f,  0, 0, 1,  1, 1,
+        -0.5f,  0.5f, -0.5f,  1, 1, 1,  0, 1,
+
+        //下面
+        -0.5f, -0.5f, -0.5f,  1, 0, 0,  0, 0,
+         0.5f, -0.5f, -0.5f,  0, 1, 0,  1, 0,
+         0.5f, -0.5f,  0.5f,  0, 0, 1,  1, 1,
+        -0.5f, -0.5f,  0.5f,  1, 1, 1,  0, 1,
     };
 
-    const unsigned int indexes[] = {
-        0,1,2,
-        2,3,0,
+    const unsigned int indices[] = {
+        0, 1, 2,
+        2, 3, 0,
+        4, 5, 6,
+        6, 7, 4,
+        8, 9, 10,
+        10, 11, 8,
+        12, 13, 14,
+        14, 15, 12,
+        16,17, 18,
+        18, 19, 16,
+        20,21,22,
+        22,23,20,
     };
 
     ImageData image;
@@ -61,7 +102,7 @@ void main() {
         return false;
     }
     if (!shader_program_.Initialize(vertex_source, fragment_source)) return false;
-    if (!vertex_array_.Initialize(triangle_vertices,std::size(triangle_vertices),indexes,std::size(indexes))) return false;
+    if (!vertex_array_.Initialize(cube_vertices,std::size(cube_vertices),indices,std::size(indices))) return false;
     if (!texture_.Initialize(image.width, image.height,image.rgba_pixels.data())) return false;
     shader_program_.Use();
 
@@ -77,18 +118,11 @@ void main() {
     return true;
 }
 
-glm::mat4 Model1(float elapsed_seconds) {
+glm::mat4 CubeModel(float elapsed_seconds) {
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.1f, 0.0f, -2.0f));
     model = glm::rotate(model,glm::radians(90.0f * elapsed_seconds), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::scale(model,glm::vec3(0.5f));
-    return model;
-}
-
-glm::mat4 Model2(float elapsed_seconds) {
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.4f, 0.0f, -3.0f));
-    model = glm::rotate(model,glm::radians(45.0f * elapsed_seconds), glm::vec3(0.0f,  1.0f, 0.0f));
+    model = glm::rotate(model,glm::radians(180.0f * elapsed_seconds), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::scale(model,glm::vec3(0.5f));
     return model;
 }
@@ -120,14 +154,7 @@ bool Renderer::DrawFrame(
     if (!shader_program_.SetMat4("projection", projection)) {
         return false;
     }
-    if (!shader_program_.SetMat4("model",Model1(elapsed_seconds))) {
-        return false;
-    }
-    vertex_array_.Bind();
-    texture_.Bind(0);
-    RenderCommand::DrawIndexedTriangles(vertex_array_.IndexCount());
-    shader_program_.Use();
-    if (!shader_program_.SetMat4("model",Model2(elapsed_seconds))) {
+    if (!shader_program_.SetMat4("model",CubeModel(elapsed_seconds))) {
         return false;
     }
     vertex_array_.Bind();
