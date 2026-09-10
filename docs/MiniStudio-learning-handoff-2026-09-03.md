@@ -329,9 +329,9 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～48 课均已完成、验收并合并；第 49 课尚未开始。**
+当前处于：**第 1～48 课均已完成、验收并合并；第 49 课「Alpha 裁剪与带孔平面」已完成并通过验收，等待提交合并；第 50 课尚未开始。**
 
-逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～48 课已合并，对应课程分支继续保留；第 49 课尚未开始。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
+逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～48 课已合并，对应课程分支继续保留；第 49 课已在 `codex/lesson-49-alpha-cutout` 完成并通过验收，等待提交合并。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
 第 37 课启动记录（2026-09-09）：只读检查实际目录、Application、GlfwWindow、Renderer、RenderCommand、ShaderProgram 与 VertexArray，确认依赖和资源所有权保持单向。第 36 课成果 `635c891` 已在 `main` 历史中；开课前工作区干净，本地 `main`、`origin/main` 与实时查询的远端 `main` 均为 `69c98d1`。公司 macOS arm64 使用 Apple Clang 21，在独立的 `build/lesson-37-macos-debug` 目录执行 Debug 配置与编译，成功且无编译器警告；从该构建目录启动完整程序，成功创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，运行期间未报告 OpenGL 错误，最终退出码为 0。退出期间有一条 macOS TSM 键盘系统诊断；本轮未通过自动化核实画面、resize 或具体 Esc 按键，不把启动运行检查写成完整交互验收，也未执行 Sanitizer 或 Windows 回归。随后从稳定 `main` 创建 `codex/lesson-37-triangle-winding`；仅更新本启动记录，核心业务代码由学习者实现。
 
@@ -440,6 +440,12 @@ int main() {
 第 48 课验收记录（2026-09-10）：已完成 `docs/MiniStudio-interactive-camera-review.md`，记录六类操作的步骤、预期、公司 macOS arm64 实测结果与证据，并复核 main、Application、GlfwWindow、Camera、Renderer、RenderCommand 和 OpenGL 的职责、单向依赖、线程及资源所有权。全新的 `build/lesson-48-macos-debug` 使用 Apple Clang 21 完成 Debug 配置和编译，无编译器警告；程序创建 OpenGL 4.1 Core Context，Shader 链接成功且日志为空。受控 UI 回归向真实窗口发送 W/S、A+D、鼠标捕获与位移，切换 Finder 造成失焦后重新获焦，resize 至 `920×700` 再恢复，最小化 `1s` 再恢复，最后发送 Esc；关键步骤均截图，运行日志没有 OpenGL 错误，程序以退出码 0 结束。结果未发现卡键、相反输入非法向量、首帧猛转、resize 投影异常、最小化恢复失败或关闭失败；最小化期间的具体 framebuffer 数值未单独记录，Windows 未验证。复盘确认 Application 的成员逆序析构为 Camera、Renderer、GlfwWindow，使 Renderer 的 GPU 资源在窗口和 Context 销毁前释放；Camera 仍只拥有 CPU 状态，没有理由增加新抽象或修改业务代码。本课通过验收，当前尚未提交、推送或合并。
 
 第 48 课合并记录（2026-09-10）：按学习者的明确要求，已将复盘文档和验收记录提交为 `b0c19e2`，推送 `codex/lesson-48-interactive-camera-review`，并以合并提交 `ca226d8` 纳入 `main`；课程分支继续保留。上方验收记录中的“尚未提交、推送或合并”是历史状态，当前 Git 操作已完成。随后同步完成记录，并从稳定的最新 `main` 开始第 49 课。
+
+第 49 课启动记录（2026-09-10）：第 48 课完成记录 `1f6a40b` 已同步到本地与远端 `main`、`codex/lesson-48-interactive-camera-review`，开课前工作区干净且目标课程分支不存在；随后从稳定 `main` 创建 `codex/lesson-49-alpha-cutout`。公司 macOS arm64 使用 Apple Clang 21，在全新的 `build/lesson-49-macos-debug` 完成 Debug 配置和编译，成功且无编译器警告；完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空，启动观察期间未报告 OpenGL 错误，随后以 Ctrl-C 结束；本轮不记录自然退出、交互、Sanitizer 或 Windows 验证。开课前只读检查确认：Texture2D 已能接收任意 RGBA 字节并复制到 GPU，不需要新增图片依赖；Alpha 裁剪属于 Renderer 的固定演示场景与片元 Shader，带孔图片可由 Renderer.cpp 内的无状态辅助函数生成；前景平面所需 VAO 和纹理继续由 Renderer 按值拥有，Application、GlfwWindow、Camera、RenderCommand 和底层资源接口无需扩张。
+
+第 49 课核心任务（40～65 分钟）：在 Renderer 中把现有立方体资源命名明确为 cube，并增加由 Renderer 独占的 cutout plane VertexArray 与 Texture2D；在 Renderer.cpp 的匿名命名空间或同等局部边界内生成一张小型 RGBA 图片，实心区域 alpha 为 255、中心孔 alpha 为 0，再通过现有 Texture2D 上传，禁止新增文件解码依赖。增加一个位于旋转立方体前方、面向初始相机的四顶点六索引平面；片元 Shader 先采样纹理，当 `texel.a < 0.5` 时执行 `discard`，否则输出 texel。每帧分别上传立方体和平面的 model，绑定各自 VAO 与纹理并绘制，保持深度测试和深度写入开启；最终明确恢复背面剔除、剔除 Back、正面逆时针的默认状态，平面若选择双面显示只能在其绘制边界临时关闭剔除并在之后恢复。先做一次故障注入：去掉 `discard`、只让孔像素 alpha 为 0，观察在未启用混合时孔仍以 RGB 写颜色并参与深度；再恢复裁剪。验收要求实心区域正常遮挡后方立方体、中心孔能看到后方立方体，移动和转头后深度关系仍正确，运行无 Shader 或 OpenGL 错误；能解释 alpha 为 0 只是一个输出分量，而 `discard` 会终止该片元并阻止颜色与深度写入。本课不做半透明、混合、Alpha-to-Coverage、材质系统或透明排序；代码由学习者实现，完成后由助手读取源码、构建并运行验收。本课尚未提交、推送或合并。
+
+第 49 课验收记录（2026-09-10）：学习者将 Renderer 的原立方体资源明确命名为 cube，并增加由 Renderer 按值独占的 cutout plane VertexArray 与 Texture2D；`CreateCenterHoleImage()` 收在 Renderer.cpp 的匿名命名空间，生成一次 `16×16` RGBA 图片后由现有 Texture2D 复制到 GPU，中心 `8×8` 区域保留红色 RGB 但 alpha 为 0，外围为不透明绿色。片元 Shader 在 alpha 小于 `0.5` 时执行 `discard`；每帧先在背面剔除、深度测试和深度写入开启时绘制旋转立方体，再只为前景平面关闭剔除，绘制完成后恢复 Back 与 CounterClockwise。公司 macOS arm64 的 Debug 增量编译成功且无警告；完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空，运行期间未报告 OpenGL 错误。实测截图确认绿色实心区遮挡后方场景，中心孔同时显示旋转立方体和清屏背景；学习者确认最终交互与双面显示符合预期，Esc 使程序以退出码 0 结束。只输出 alpha 0 而不裁剪的故障注入未由助手单独留存截图；最终源码和现象能够区分 alpha 通道值与真正终止颜色／深度写入的 `discard`。Application、窗口、Camera、RenderCommand、Texture2D 接口和依赖方向均未变化；未执行 Sanitizer 或 Windows 验证。本课通过验收，当前尚未提交、推送或合并。
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements` 呈现 24 顶点、36 索引的纹理立方体；model 随时间绕 X、Y 两轴旋转，projection 使用实际 framebuffer 宽高比。
 
@@ -556,7 +562,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～48 课已完成、验收并合并；第 49～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～48 课已完成、验收并合并；第 49 课已完成并通过验收，等待提交合并；第 50～52 课待执行 |
 
 ## 12. 协作要求
 

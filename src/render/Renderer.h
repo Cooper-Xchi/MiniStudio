@@ -1,7 +1,6 @@
 #pragma once
 
 #include <glm/mat4x4.hpp>
-
 #include "Texture2D.h"
 #include "render/ShaderProgram.h"
 #include "render/VertexArray.h"
@@ -13,6 +12,7 @@ public:
     Renderer& operator=(const Renderer&) = delete;
     Renderer(Renderer&&) noexcept = default;
     Renderer& operator=(Renderer&&) noexcept = default;
+
     bool Initialize();
     bool DrawFrame(
         float elapsed_seconds,
@@ -23,6 +23,9 @@ public:
 
 private:
     ShaderProgram shader_program_;
-    VertexArray vertex_array_;
-    Texture2D texture_;
+    VertexArray cube_vertex_array_;
+    Texture2D cube_texture_;
+
+    VertexArray cutout_vertex_array_;
+    Texture2D cutout_texture_;
 };
