@@ -1,6 +1,5 @@
 #include "Application.h"
 #include <chrono>
-#include <iostream>
 
 int Application::Run() {
     constexpr bool fullscreen_on_secondary_monitor = false;
@@ -14,6 +13,7 @@ int Application::Run() {
     }
     if (!renderer_.Initialize()) return 1;
     constexpr float camera_speed = 0.25f;
+    constexpr float mouse_sensitivity = 0.1f;
     const auto start_time = std::chrono::steady_clock::now();
     auto previous_time = start_time;
     camera_.SetPosition(glm::vec3(0.25f, 0.0f, 0.0f));
@@ -29,9 +29,6 @@ int Application::Run() {
         glm::vec3 movement{0.0f};
         const GlfwWindow::MovementKeyState keys = window_.GetMovementKeyState();
         const GlfwWindow::MouseInputState mouse = window_.ReadMouseInput();
-        if (mouse.delta_x != 0.0f || mouse.delta_y != 0.0f) {
-            std::cout<<"mouse deltaposition : "<<mouse.delta_x<<" , "<<mouse.delta_y<<std::endl;
-        }
         if (keys.w_pressed) movement.z -= 1.0f;
         if (keys.s_pressed) movement.z += 1.0f;
         if (keys.a_pressed) movement.x -= 1.0f;
@@ -42,7 +39,12 @@ int Application::Run() {
         if (mouse.right_pressed) {
             window_.SetCursorCaptured(false);
         }
+        const float yaw_delta =
+            static_cast<float>(mouse.delta_x) * mouse_sensitivity;
+        const float pitch_delta =
+            static_cast<float>(-mouse.delta_y) * mouse_sensitivity;
         camera_.Move(movement * camera_speed * delta_seconds);
+        camera_.Rotate(yaw_delta, pitch_delta);
         int framebuffer_width = 0;
         int framebuffer_height = 0;
         window_.GetFramebufferSize(framebuffer_width, framebuffer_height);

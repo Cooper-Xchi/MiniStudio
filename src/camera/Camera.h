@@ -9,8 +9,20 @@ public:
     [[nodiscard]] glm::mat4 ViewMatrix() const;
     void Move(const glm::vec3& displacement);
 
+    void Rotate(
+    float yaw_delta_degrees,
+    float pitch_delta_degrees
+);
+
+    [[nodiscard]] glm::vec3 Forward() const;
+
 private:
     glm::vec3 position_{0.0f};
     glm::vec3 forward_{0.0f, 0.0f, -1.0f};
     glm::vec3 up_{0.0f, 1.0f, 0.0f};
+
+    float yaw_degrees_ = -90.0f;
+    float pitch_degrees_ = 0.0f;
+
+    void UpdateForward();
 };
