@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目第 1～51 课均已通过验收并合并到本地 `main`。第 52 课已按学习者要求由助手完成 v0.2 工程收尾与 Windows 验证，个人季度复盘问答跳过，待本轮提交合并。当前依赖形成 `Application → GlfwWindow/Camera/Renderer → RenderCommand → OpenGL`；窗口提供值类型输入快照并维护鼠标采样基准，Application 决定输入映射，Camera 保持纯 CPU 职责。
+项目第 1～52 课已完成并合并到远端 `main`。其中第 52 课按学习者要求由助手完成 v0.2 工程收尾与 Windows 验证，个人季度复盘问答跳过。当前依赖形成 `Application → GlfwWindow/Camera/Renderer → RenderCommand → OpenGL`；窗口提供值类型输入快照并维护鼠标采样基准，Application 决定输入映射，Camera 保持纯 CPU 职责。
 
 已经完成：
 
@@ -79,7 +79,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第五十一课的两层透明排序：ShaderProgram 增加 vec4 uniform 上传接口；Renderer 用临时 CPU 绘制项保存 model、tint 和相机空间深度，从远到近排序并复用平面资源绘制红、蓝两层，理解混合顺序与物体中心排序的局限。
 - 完成第五十二课的 v0.2 工程收尾：整理透明阶段边界和状态恢复，增加默认关闭的 CTest 回归目标，以真实 GPU 读回检查透明颜色、深度、裁剪、resize 和资源释放，并保存短演示及验证说明。Windows Debug、Release 和默认构建通过；本轮未在 macOS 实测，个人复盘按要求跳过。
 
-第 51 课成果提交为 `9ecba97`，通过合并提交 `19fc863` 纳入本地 `main`。第 52 课成果位于 `codex/lesson-52-v02-validation`，待本轮提交、合并并与第 51 课一起推送；课程分支继续保留。详细验证边界见 [v0.2 验证与交接](docs/MiniStudio-v0.2-validation.md)。
+第 51 课成果 `9ecba97` 通过 `19fc863` 合并，第 52 课成果 `7978696` 通过 `c37f1cb` 合并；两课成果及 `main` 均已推送远端，课程分支继续保留。详细验证边界见 [v0.2 验证与交接](docs/MiniStudio-v0.2-validation.md)。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
@@ -170,7 +170,7 @@ Debug 正常路径不应输出 OpenGL 错误；Release 通过 `NDEBUG` 移除每
 | 第 25～30 月 | 2D 动画、视频素材和 Metal | 扩展多媒体与第三平台能力 |
 | 第 31～36 月 | 大场景、性能架构、AI 工作流和真实协作 | 建立高级/专家方向的能力证据 |
 
-完整的阶段目标、验收标准和求职时间线见[课程路线](docs/MiniStudio-curriculum-24-36-months.md)。每节课的讲解内容、核心练习、边界和验收标准见[逐课教案索引](docs/lessons/README.md)，第 37～52 课另有详细步骤、易错点和追问；第 37～51 课已合并，第 52 课工程验收完成、待合并，个人复盘按要求跳过。下一课为 B01（第 53 课）CPU MeshData 与顶点布局，尚未开课。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
+完整的阶段目标、验收标准和求职时间线见[课程路线](docs/MiniStudio-curriculum-24-36-months.md)。每节课的讲解内容、核心练习、边界和验收标准见[逐课教案索引](docs/lessons/README.md)，第 37～52 课另有详细步骤、易错点和追问；第 37～52 课已合并，第 52 课仅记工程验收，个人复盘按要求跳过。下一课为 B01（第 53 课）CPU MeshData 与顶点布局，尚未开课。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
 
 ## 仓库结构
 
