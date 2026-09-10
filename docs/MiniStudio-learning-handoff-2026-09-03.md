@@ -329,9 +329,9 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～45 课均已完成、验收并合并；第 46 课「yaw／pitch 驱动观察方向」已启动，尚未验收。**
+当前处于：**第 1～45 课均已完成、验收并合并；第 46 课「yaw／pitch 驱动观察方向」已完成并通过验收，等待提交合并；第 47 课尚未开始。**
 
-逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～45 课已合并，对应课程分支继续保留；当前在 `codex/lesson-46-yaw-pitch-camera` 推进第 46 课。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
+逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～45 课已合并，对应课程分支继续保留；第 46 课已在 `codex/lesson-46-yaw-pitch-camera` 验收，等待提交合并。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
 第 37 课启动记录（2026-09-09）：只读检查实际目录、Application、GlfwWindow、Renderer、RenderCommand、ShaderProgram 与 VertexArray，确认依赖和资源所有权保持单向。第 36 课成果 `635c891` 已在 `main` 历史中；开课前工作区干净，本地 `main`、`origin/main` 与实时查询的远端 `main` 均为 `69c98d1`。公司 macOS arm64 使用 Apple Clang 21，在独立的 `build/lesson-37-macos-debug` 目录执行 Debug 配置与编译，成功且无编译器警告；从该构建目录启动完整程序，成功创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，运行期间未报告 OpenGL 错误，最终退出码为 0。退出期间有一条 macOS TSM 键盘系统诊断；本轮未通过自动化核实画面、resize 或具体 Esc 按键，不把启动运行检查写成完整交互验收，也未执行 Sanitizer 或 Windows 回归。随后从稳定 `main` 创建 `codex/lesson-37-triangle-winding`；仅更新本启动记录，核心业务代码由学习者实现。
 
@@ -420,6 +420,8 @@ int main() {
 第 46 课启动记录（2026-09-09）：第 45 课合并后修正记录 `52fd81a` 已同步到本地与远端 `main`、`codex/lesson-45-mouse-delta-focus`，开课前工作区干净且目标课程分支不存在；随后从稳定 `main` 创建 `codex/lesson-46-yaw-pitch-camera`。公司 macOS arm64 使用 Apple Clang 21，在全新的 `build/lesson-46-macos-debug` 完成 Debug 配置和编译，成功且无编译器警告；完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空，启动观察期间未报告 OpenGL 错误，随后以 Ctrl-C 结束；本轮不记录自然退出、交互、Sanitizer 或 Windows 验证。开课前只读检查确认：GlfwWindow 已完整拥有焦点、捕获和鼠标 delta 采样状态；Application 在轮询后读取值快照；Camera 当前只保存 position、固定 forward 和 up，并计算 view。因此本课新增的 yaw、pitch、forward 推导及俯仰限制归 Camera 所有，鼠标像素到角度的灵敏度与符号映射归 Application；Renderer 和窗口接口无需了解相机角度。
 
 第 46 课核心任务（60～90 分钟）：为 Camera 增加按“角度增量”旋转的最小接口、只读按值返回的 forward 观察接口，以及私有 `yaw_degrees_`、`pitch_degrees_` 和更新 forward 的辅助函数。采用初始 `yaw=-90°`、`pitch=0°` 对应世界 `-Z`；每次旋转先累加 yaw/pitch，把 pitch 限制在 `[-89°, 89°]`，再用球面方向公式计算并归一化 forward。先用固定角度验证：`(-90°, 0°)` 约为 `(0, 0, -1)`，yaw 增加 `90°` 后约为 `(1, 0, 0)`，pitch 增加 `30°` 后 Y 分量约为 `0.5`。随后由 Application 用 `0.1°/pixel` 的灵敏度映射第 45 课 delta：`yaw_delta = +delta_x * sensitivity`，`pitch_delta = -delta_y * sensitivity`；鼠标 delta 已是本帧累计像素，不再乘 `delta_seconds`。更新朝向后再取得 view，移除第 45 课的鼠标打印。验收时检查左右／上下观察方向、极端上下移动不翻转或产生非法矩阵、重新捕获及焦点切换无跳变、W/A/S/D 与 Esc 未回归；本课 W/A/S/D 仍沿世界轴移动，转头后移动方向暂不跟随视线，这是第 47 课范围。本课不增加四元数、roll、局部移动、Camera 对 GLFW 的依赖或新的输入框架；代码由学习者实现，完成后由助手读取源码、执行固定角度小实验，并完成 macOS 构建与运行检查。本课尚未提交、推送或合并。
+
+第 46 课验收记录（2026-09-10）：学习者为 Camera 增加 `Rotate(yaw_delta_degrees, pitch_delta_degrees)`、按值返回的 `Forward()`、私有 yaw/pitch 状态和 forward 更新函数；Camera 将 pitch 限制在 `[-89°, 89°]`，用角度转弧度后的球面公式生成并归一化 forward，继续只依赖 GLM 与标准数学函数。Application 删除第 45 课调试输出，以 `0.1°/pixel` 把 `delta_x` 映射为 yaw、把 `-delta_y` 映射为 pitch，没有再次乘 `delta_seconds`；W/A/S/D 仍沿世界轴。被忽略的纯 CPU 固定角度实验通过：yaw 增加 `90°` 得到 `(1, 0, 0)`，pitch 增加 `30°` 得到约 `(0, 0.5, -0.866025)`。公司 macOS arm64 Debug 增量编译成功且无警告，完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空；学习者实际确认左右、上下、连续水平旋转、极限俯仰、重新捕获和焦点切换均符合预期。辅助运行会话最终由 Ctrl-C 结束，未把它记录为本课新的 Esc 自然退出证据；Esc 路径未被本课修改，上一课已有正常退出证据。本课未执行 Sanitizer 或 Windows 验证，代码和交互行为通过验收。课程分支已存在远端框架检查点 `04b0f67`，最终修正和完成记录尚未提交、推送或合并。
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements` 呈现 24 顶点、36 索引的纹理立方体；model 随时间绕 X、Y 两轴旋转，projection 使用实际 framebuffer 宽高比。
 
@@ -536,7 +538,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～45 课已完成、验收并合并；第 46 课进行中；第 47～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～45 课已完成、验收并合并；第 46 课已完成并通过验收，等待提交合并；第 47～52 课待执行 |
 
 ## 12. 协作要求
 

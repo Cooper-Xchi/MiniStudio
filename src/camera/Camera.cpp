@@ -1,12 +1,6 @@
-//
-// Created by 陈泓池 on 2026/9/9.
-//
-
 #include "Camera.h"
-
-#include <iostream>
-#include <ostream>
 #include <glm/ext/matrix_transform.hpp>
+#include <cmath>
 
 void Camera::SetPosition(const glm::vec3& position) {
     position_ = position;
@@ -26,8 +20,7 @@ void Camera::Rotate(
 ) {
     yaw_degrees_ += yaw_delta_degrees;
     pitch_degrees_ += pitch_delta_degrees;
-    if (pitch_degrees_ >= 90.0f) pitch_degrees_ = 90.0f;
-    else if (pitch_degrees_ <= -90.0f) pitch_degrees_ = -90.0f;
+    pitch_degrees_ = glm::clamp(pitch_degrees_, -89.0f, 89.0f);
     UpdateForward();
 
 
@@ -35,7 +28,7 @@ void Camera::Rotate(
 }
 
 glm::vec3 Camera::Forward() const {
-
+    return forward_;
 
 
 }
@@ -44,8 +37,8 @@ glm::vec3 Camera::Forward() const {
 void Camera::UpdateForward() {
     float yaw_radians = glm::radians(yaw_degrees_);
     float pitch_radians = glm::radians(pitch_degrees_);
-    auto x = cos(yaw_radians) * cos(pitch_radians);
-    auto y = sin(pitch_radians);
-    auto z = sin(yaw_radians) * cos(pitch_radians);
-    forward_ = glm::vec3(x, y, z);
+    auto x = std::cos(yaw_radians) * std::cos(pitch_radians);
+    auto y = std::sin(pitch_radians);
+    auto z = std::sin(yaw_radians) * std::cos(pitch_radians);
+    forward_ = glm::normalize(glm::vec3(x, y, z));
 }
