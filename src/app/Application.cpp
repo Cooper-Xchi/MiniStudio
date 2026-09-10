@@ -29,10 +29,6 @@ int Application::Run() {
         glm::vec3 movement{0.0f};
         const GlfwWindow::MovementKeyState keys = window_.GetMovementKeyState();
         const GlfwWindow::MouseInputState mouse = window_.ReadMouseInput();
-        if (keys.w_pressed) movement.z -= 1.0f;
-        if (keys.s_pressed) movement.z += 1.0f;
-        if (keys.a_pressed) movement.x -= 1.0f;
-        if (keys.d_pressed) movement.x += 1.0f;
         if (mouse.left_pressed) {
             window_.SetCursorCaptured(true);
         }
@@ -43,8 +39,17 @@ int Application::Run() {
             static_cast<float>(mouse.delta_x) * mouse_sensitivity;
         const float pitch_delta =
             static_cast<float>(-mouse.delta_y) * mouse_sensitivity;
-        camera_.Move(movement * camera_speed * delta_seconds);
         camera_.Rotate(yaw_delta, pitch_delta);
+        const glm::vec3 forward = camera_.Forward();
+        const glm::vec3 right = camera_.Right();
+        if (keys.w_pressed) movement += forward;
+        if (keys.s_pressed) movement -= forward;
+        if (keys.a_pressed) movement -= right;
+        if (keys.d_pressed) movement += right;
+        if (glm::dot(movement, movement) > 0.0f) {
+            movement = glm::normalize(movement);
+        }
+        camera_.Move(movement * camera_speed * delta_seconds);
         int framebuffer_width = 0;
         int framebuffer_height = 0;
         window_.GetFramebufferSize(framebuffer_width, framebuffer_height);

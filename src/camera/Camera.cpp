@@ -29,8 +29,10 @@ void Camera::Rotate(
 
 glm::vec3 Camera::Forward() const {
     return forward_;
+}
 
-
+glm::vec3 Camera::Right() const {
+    return glm::normalize(glm::cross(forward_, up_));
 }
 
 

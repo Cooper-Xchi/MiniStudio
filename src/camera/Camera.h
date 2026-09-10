@@ -15,6 +15,7 @@ public:
 );
 
     [[nodiscard]] glm::vec3 Forward() const;
+    [[nodiscard]] glm::vec3 Right() const;
 
 private:
     glm::vec3 position_{0.0f};

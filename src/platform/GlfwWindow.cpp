@@ -1,6 +1,5 @@
 #include "GlfwWindow.h"
 #include "opengl/OpenGLHeaders.h"
-
 #include <iostream>
 #include <GLFW/glfw3.h>
 

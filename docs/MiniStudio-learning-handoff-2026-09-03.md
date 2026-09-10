@@ -329,9 +329,9 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～46 课均已完成、验收并合并；第 47 课尚未开始。**
+当前处于：**第 1～46 课均已完成、验收并合并；第 47 课「相机局部移动与斜向归一化」已完成并通过验收，等待提交合并；第 48 课尚未开始。**
 
-逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～46 课已合并，对应课程分支继续保留；第 47 课尚未启动。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
+逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～46 课已合并，对应课程分支继续保留；第 47 课已在 `codex/lesson-47-local-camera-movement` 验收，等待提交合并。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
 第 37 课启动记录（2026-09-09）：只读检查实际目录、Application、GlfwWindow、Renderer、RenderCommand、ShaderProgram 与 VertexArray，确认依赖和资源所有权保持单向。第 36 课成果 `635c891` 已在 `main` 历史中；开课前工作区干净，本地 `main`、`origin/main` 与实时查询的远端 `main` 均为 `69c98d1`。公司 macOS arm64 使用 Apple Clang 21，在独立的 `build/lesson-37-macos-debug` 目录执行 Debug 配置与编译，成功且无编译器警告；从该构建目录启动完整程序，成功创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，运行期间未报告 OpenGL 错误，最终退出码为 0。退出期间有一条 macOS TSM 键盘系统诊断；本轮未通过自动化核实画面、resize 或具体 Esc 按键，不把启动运行检查写成完整交互验收，也未执行 Sanitizer 或 Windows 回归。随后从稳定 `main` 创建 `codex/lesson-37-triangle-winding`；仅更新本启动记录，核心业务代码由学习者实现。
 
@@ -424,6 +424,12 @@ int main() {
 第 46 课验收记录（2026-09-10）：学习者为 Camera 增加 `Rotate(yaw_delta_degrees, pitch_delta_degrees)`、按值返回的 `Forward()`、私有 yaw/pitch 状态和 forward 更新函数；Camera 将 pitch 限制在 `[-89°, 89°]`，用角度转弧度后的球面公式生成并归一化 forward，继续只依赖 GLM 与标准数学函数。Application 删除第 45 课调试输出，以 `0.1°/pixel` 把 `delta_x` 映射为 yaw、把 `-delta_y` 映射为 pitch，没有再次乘 `delta_seconds`；W/A/S/D 仍沿世界轴。被忽略的纯 CPU 固定角度实验通过：yaw 增加 `90°` 得到 `(1, 0, 0)`，pitch 增加 `30°` 得到约 `(0, 0.5, -0.866025)`。公司 macOS arm64 Debug 增量编译成功且无警告，完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空；学习者实际确认左右、上下、连续水平旋转、极限俯仰、重新捕获和焦点切换均符合预期。辅助运行会话最终由 Ctrl-C 结束，未把它记录为本课新的 Esc 自然退出证据；Esc 路径未被本课修改，上一课已有正常退出证据。本课未执行 Sanitizer 或 Windows 验证，代码和交互行为通过验收。课程分支已存在远端框架检查点 `04b0f67`，最终修正和完成记录尚未提交、推送或合并。
 
 第 46 课合并记录（2026-09-10）：按学习者的明确要求，已将最终修正和验收记录提交为 `79d1893`，推送 `codex/lesson-46-yaw-pitch-camera`，并以合并提交 `bd7a693` 纳入 `main`；课程分支继续保留。上方验收记录中的“尚未提交、推送或合并”是历史状态，当前 Git 操作已完成。随后同步完成记录，并从稳定的最新 `main` 开始第 47 课。
+
+第 47 课启动记录（2026-09-10）：第 46 课完成记录 `841ee19` 已同步到本地与远端 `main`、`codex/lesson-46-yaw-pitch-camera`，开课前工作区干净且目标课程分支不存在；随后从稳定 `main` 创建 `codex/lesson-47-local-camera-movement`。公司 macOS arm64 使用 Apple Clang 21，在全新的 `build/lesson-47-macos-debug` 完成 Debug 配置和编译，成功且无编译器警告；完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空，启动观察期间未报告 OpenGL 错误，随后以 Ctrl-C 结束；本轮不记录自然退出、交互、Sanitizer 或 Windows 验证。开课前只读检查确认：GlfwWindow 继续只生产按键与鼠标值快照，Camera 按值提供归一化 forward 并接收最终世界位移，Application 仍把 W/A/S/D 直接映射到世界 X/Z。因此右方向作为相机姿态的派生量由 Camera 计算并按值提供，Application 负责把按键意图组合、归一化，再乘速度与 delta；Renderer 和窗口模块无需变化。
+
+第 47 课核心任务（40～65 分钟）：为 Camera 增加按值返回的 `Right()`，使用 `normalize(cross(forward_, up_))` 计算局部右方向；初始朝向时应约为世界 `+X`，yaw 增加 `90°` 后应约为世界 `+Z`。Application 先用本帧鼠标 delta 调用 `Rotate()`，随后用更新后的 `Forward()` 与 `Right()` 组合移动意图：W 加 forward、S 减 forward、D 加 right、A 减 right。仅当 `dot(movement, movement) > 0` 时归一化 movement，避免相反按键抵消为零后对零向量归一化产生 NaN；最后仍用 `camera_speed * delta_seconds` 得到位移并调用 `Move()`。本阶段采用自由飞行，forward 的 Y 分量参与 W/S 移动；鼠标 delta 不乘时间，而键盘方向乘以世界单位／秒和 delta。验收时检查默认和旋转后的 forward/right 正交且长度约为 1，未归一化的斜向长度约为 `sqrt(2)`、归一化后为 1；实际运行中转头后 W/S 跟随视线，直行与斜行在相同时间内距离接近，相反按键抵消且画面不消失。课程范围止于局部轴与匀速移动，不增加碰撞、加速度、地面约束、roll 或新的控制器类；代码由学习者实现，完成后由助手读取源码、运行纯 CPU 方向实验，并完成 macOS 构建与交互检查。本课尚未提交、推送或合并。
+
+第 47 课验收记录（2026-09-10）：学习者为 Camera 增加按值返回的 `Right()`，使用 `normalize(cross(forward_, up_))` 从当前姿态生成局部右方向；Application 在读取本帧输入后先调用 `Rotate()`，再以更新后的 forward/right 映射 W/S 与 A/D，只有 `dot(movement, movement) > 0` 时才归一化，最后用 `camera_speed * delta_seconds` 形成位移。被忽略的纯 CPU 实验验证初始 forward/right 点积为 0，原始对角合向量长度为 `1.41421`，归一化后为 1；yaw 增加 `90°` 后 forward 约为 `+X`、right 约为 `+Z`。公司 macOS arm64 Debug 增量编译成功且无警告；完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空，运行期间未报告 OpenGL 错误并以退出码 0 结束。学习者实际确认局部移动与斜向速度感觉符合预期；相反方向组合由零向量保护覆盖。本课没有修改输入接口、Renderer 或资源所有权，未执行 Sanitizer 或 Windows 验证，代码和交互行为通过验收；当前尚未提交、推送或合并。
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements` 呈现 24 顶点、36 索引的纹理立方体；model 随时间绕 X、Y 两轴旋转，projection 使用实际 framebuffer 宽高比。
 
@@ -540,7 +546,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～46 课已完成、验收并合并；第 47～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～46 课已完成、验收并合并；第 47 课已完成并通过验收，等待提交合并；第 48～52 课待执行 |
 
 ## 12. 协作要求
 
