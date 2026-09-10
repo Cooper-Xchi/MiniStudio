@@ -3,6 +3,9 @@
 //
 
 #include "Renderer.h"
+#include <algorithm>
+#include <array>
+
 #include "image/ImageLoader.h"
 #include <iterator>
 #include <glm/ext/matrix_clip_space.hpp>
@@ -31,6 +34,12 @@ namespace {
         return image;
 
     }
+
+    struct TransparentDrawItem {
+        glm::mat4 model;
+        glm::vec4 tint;
+        float view_z;
+    };
 }
 
 bool Renderer::Initialize() {
@@ -54,10 +63,11 @@ void main() {
     out vec4 fragment_color;
     in vec2 uv_coord;
 uniform sampler2D texture_sampler;
+uniform vec4 tint;
 
 void main() {
     vec4 texel = texture(texture_sampler, uv_coord);
-    fragment_color = texel;
+    fragment_color = tint * texel;
 }
 )";
 
@@ -183,6 +193,7 @@ bool Renderer::DrawFrame(
     RenderCommand::Clear(0.36,0.5,0.6,1);
 
     //开始
+
     shader_program_.Use();
     const float aspect =
         static_cast<float>(framebuffer_width) /
@@ -199,23 +210,52 @@ bool Renderer::DrawFrame(
     if (!shader_program_.SetMat4("projection", projection)) {
         return false;
     }
+    std::array<TransparentDrawItem, 2> items{};
+    TransparentDrawItem item;
+    TransparentDrawItem item2;
+    item.model = glm::translate(glm::mat4(1.0f),glm::vec3(0.2f,0.2f,-1.0f));
+    item.tint = glm::vec4(1.0f,0.0f,0.0f,1.0f);
+    item2.model = glm::translate(glm::mat4(1.0f),glm::vec3(-0.2f,-0.2f,-1.50f));
+    item2.tint = glm::vec4(0.0f,0.0f,1.0f,1.0f);
+    const glm::vec4 center_view =
+    view * item.model * glm::vec4(0, 0, 0, 1);
+    const glm::vec4 center_view2 =
+    view * item2.model * glm::vec4(0, 0, 0, 1);
+    item.view_z = center_view.z;
+    item2.view_z = center_view2.z;
+    // 将 center_view.z 保存到 item.view_z
+    items[0] = item;
+    items[1] = item2;
+    std::sort(items.begin(),items.end(),
+    [](const TransparentDrawItem& a, const TransparentDrawItem& b) {
+        return a.view_z < b.view_z;
+    });
+    cube_vertex_array_.Bind();
+    cube_texture_.Bind(0);
     if (!shader_program_.SetMat4("model",CubeModel(elapsed_seconds))) {
         return false;
     }
-    cube_vertex_array_.Bind();
-    cube_texture_.Bind(0);
-    RenderCommand::DrawIndexedTriangles(cube_vertex_array_.IndexCount());
-    RenderCommand::SetDepthWriteEnabled(false);
-    RenderCommand::SetBlendingEnabled(true);
-    RenderCommand::SetBlendFunction(RenderCommand::BlendFactor::SourceAlpha,RenderCommand::BlendFactor::OneMinusSourceAlpha);
-    RenderCommand::SetFaceCullingEnabled(false);
-    shader_program_.Use();
-    if (!shader_program_.SetMat4("model",TranslucentModel())) {
+    if (!shader_program_.SetVec4("tint",glm::vec4(1.0f,1.0f,1.0f,1.0f))) {
         return false;
     }
-    translucent_vertex_array_.Bind();
-    translucent_texture_.Bind(0);
-    RenderCommand::DrawIndexedTriangles(translucent_vertex_array_.IndexCount());
+    RenderCommand::DrawIndexedTriangles(cube_vertex_array_.IndexCount());
+    for (auto& item : items) {
+        RenderCommand::SetDepthWriteEnabled(false);
+        RenderCommand::SetBlendingEnabled(true);
+        RenderCommand::SetBlendFunction(RenderCommand::BlendFactor::SourceAlpha,RenderCommand::BlendFactor::OneMinusSourceAlpha);
+        RenderCommand::SetFaceCullingEnabled(false);
+        shader_program_.Use();
+        translucent_vertex_array_.Bind();
+        translucent_texture_.Bind(0);
+        if (!shader_program_.SetMat4("model",item.model)) {
+            return false;
+        }
+        if (!shader_program_.SetVec4("tint",item.tint)) {
+            return false;
+        }
+        RenderCommand::DrawIndexedTriangles(translucent_vertex_array_.IndexCount());
+    }
+
     RenderCommand::SetDepthWriteEnabled(true);
     RenderCommand::SetBlendingEnabled(false);
     RenderCommand::SetFaceCullingEnabled(true);

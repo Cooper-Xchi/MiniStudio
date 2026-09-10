@@ -22,6 +22,9 @@ public:
 
     bool SetMat4(const char* name, const glm::mat4& value);
 
+    bool SetVec4(const char* name, const glm::vec4& value);
+
+
 
 
 

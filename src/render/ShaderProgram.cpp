@@ -118,3 +118,11 @@ bool ShaderProgram::SetMat4(const char* name, const glm::mat4& value) {
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
     return true;
 }
+
+bool ShaderProgram::SetVec4(const char* name, const glm::vec4& value) {
+    if (program_id_ == 0) return false;
+    const int location = glGetUniformLocation(program_id_, name);
+    if (location < 0) return false;
+    glUniform4fv(location, 1, glm::value_ptr(value));
+    return true;
+}
