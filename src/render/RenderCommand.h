@@ -20,6 +20,17 @@ namespace RenderCommand {
         Front
     };
 
+    enum class BlendFactor {
+        SourceAlpha,
+        OneMinusSourceAlpha,
+    };
+
+    void SetBlendingEnabled(bool enabled);
+    void SetBlendFunction(
+        BlendFactor source,
+        BlendFactor destination
+    );
+
     void SetFaceCullingEnabled(bool enabled);
     void SetCullFace(CullFace face);
 

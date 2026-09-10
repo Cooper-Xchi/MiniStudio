@@ -329,9 +329,9 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～49 课均已完成、验收并合并；第 50 课尚未开始。**
+当前处于：**第 1～49 课均已完成、验收并合并；第 50 课颜色混合与一个半透明表面已通过验收，尚未提交、推送或合并。**
 
-逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～49 课已合并，对应课程分支继续保留；第 50 课尚未开始。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
+逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～49 课已合并，对应课程分支继续保留；第 50 课已验收但尚未提交、推送或合并。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
 第 37 课启动记录（2026-09-09）：只读检查实际目录、Application、GlfwWindow、Renderer、RenderCommand、ShaderProgram 与 VertexArray，确认依赖和资源所有权保持单向。第 36 课成果 `635c891` 已在 `main` 历史中；开课前工作区干净，本地 `main`、`origin/main` 与实时查询的远端 `main` 均为 `69c98d1`。公司 macOS arm64 使用 Apple Clang 21，在独立的 `build/lesson-37-macos-debug` 目录执行 Debug 配置与编译，成功且无编译器警告；从该构建目录启动完整程序，成功创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，运行期间未报告 OpenGL 错误，最终退出码为 0。退出期间有一条 macOS TSM 键盘系统诊断；本轮未通过自动化核实画面、resize 或具体 Esc 按键，不把启动运行检查写成完整交互验收，也未执行 Sanitizer 或 Windows 回归。随后从稳定 `main` 创建 `codex/lesson-37-triangle-winding`；仅更新本启动记录，核心业务代码由学习者实现。
 
@@ -449,6 +449,12 @@ int main() {
 
 第 49 课合并记录（2026-09-10）：按学习者的明确要求，已将 Alpha 裁剪实现和验收记录提交为 `bfbb200`，推送 `codex/lesson-49-alpha-cutout`，并以合并提交 `d51ad68` 纳入 `main`；课程分支继续保留。上方验收记录中的“尚未提交、推送或合并”是历史状态，当前 Git 操作已完成。第 50 课尚未开始。
 
+第 50 课启动记录（2026-09-10）：开始时发现另一条已完成任务链已把远端 `main` 推进到第 49 课，原本地第 37 课实验分支没有未提交内容，因此没有重复提交或覆盖；本地 `main` 以 `--ff-only` 更新到 `origin/main=0be6f9f`，工作区干净且目标课程分支不存在。家用 Windows 首次使用旧 CLion 增量构建目录时，程序在立方体 VAO 初始化阶段返回失败；只读检查与临时诊断确认 `VertexArray` 句柄呈 MSVC Debug 的 `0xCCCCCCCC` 未初始化标记，而源码仍有正确成员默认值，原因是跨 44 个提交增量更新后旧调用方对象文件与新版 `Renderer` 类布局不一致。临时诊断代码已全部移除。随后使用全新的 `build/lesson-50-windows-debug` 目录重新配置，vcpkg manifest 安装路径、GLFW、GLAD 与 GLM 均正确，12 个目标完整编译并链接成功；程序持续运行 10 秒，创建 OpenGL 4.1 Core Context、Shader 链接成功且日志为空，未报告 OpenGL 错误，最后由助手以 Ctrl-C 结束，因此只记录 Windows 启动基线，不记录自然退出或完整交互验收。公司 Mac 的第 49 课验证仍独立有效，本轮未重新验证 macOS。随后从稳定 `main` 创建 `codex/lesson-50-alpha-blending`。
+
+第 50 课核心任务（45～75 分钟）：明确使用非预乘 alpha，先手算 `source=(1,0,0)`、`destination=(0,0,1)`、`alpha=0.5` 的 RGB 结果；在无状态 RenderCommand 中增加混合开关和最小混合因子接口，把源因子 `SourceAlpha`、目标因子 `OneMinusSourceAlpha` 映射到 OpenGL。将第 49 课前景平面的生成纹理改为固定透明度，移除会把 alpha 0 实验提前丢弃的 `discard`；不透明立方体先在混合关闭、深度测试与写入开启时绘制，随后透明平面保持深度测试开启、关闭深度写入、开启混合并按 `SRC_ALPHA / ONE_MINUS_SRC_ALPHA` 绘制，结束后恢复深度写入、关闭混合并恢复默认剔除状态。依次用 alpha 0、约 0.5（128/255）和 1（255/255）观察结果；本课只处理一层透明，不做排序、预乘 alpha、Alpha-to-Coverage 或 Material 系统。验收需确认三组趋势、透明平面仍受前方不透明物体的深度遮挡、跨帧清深度正常，Windows Debug 构建运行无 Shader/OpenGL 错误，并解释源／目标颜色、关闭深度写入与关闭深度测试的区别。核心业务代码由学习者实现，完成后由助手读取与验证。
+
+第 50 课验收记录（2026-09-10）：学习者在 RenderCommand 中增加 `SetBlendingEnabled()`、`SetBlendFunction()` 和最小 `BlendFactor` 枚举，将非预乘 alpha 所需的 `SourceAlpha` 与 `OneMinusSourceAlpha` 映射到 OpenGL；Renderer 把第 49 课的裁剪平面改为固定 alpha 约 `0.5` 的半透明平面，移除 `discard`，并统一使用 translucent 命名。每帧先以默认深度与剔除状态绘制不透明立方体，再为半透明平面保留深度测试、关闭深度写入、开启标准 alpha 混合并临时关闭剔除，绘制后恢复深度写入、混合和剔除状态。学习者分别测试 alpha 0、128 和预期结果，确认画面符合趋势；能手算红色覆盖蓝色、alpha 0.5 时 RGB 为 `(0.5, 0.0, 0.5)`，并正确解释关闭深度写入不会取消深度比较，而关闭深度测试会让后画片元不经比较直接参与后续颜色处理。最终源码通过 `git diff --check`；家用 Windows 在加载 Visual Studio 2026 x64 开发环境后重新编译 `Renderer.cpp` 并成功链接，完整程序创建 OpenGL 4.1 Context、Shader 链接成功且日志为空，持续运行 10 秒未报告 OpenGL 错误，随后由助手以 Ctrl-C 结束。此次只形成 Windows 验证证据，未重新验证 macOS、Sanitizer 或自然退出。本课通过验收，当前尚未提交、推送或合并。
+
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements` 呈现 24 顶点、36 索引的纹理立方体；model 随时间绕 X、Y 两轴旋转，projection 使用实际 framebuffer 宽高比。
 
 第 33 课启动记录（2026-09-08）：只读核对目录、职责、资源所有权与依赖方向；拉取远端引用后确认 `main` 与 `origin/main` 同为 `48596d3`，第 32 课已合并，工作区干净。基线从独立的 `build/lesson-33-debug` 目录完成 Debug 配置和编译，无编译器警告；本轮尚未重新进行运行验收。随后从该稳定 `main` 创建 `codex/lesson-33-depth-testing`。
@@ -564,7 +570,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～49 课已完成、验收并合并；第 50～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～49 课已完成、验收并合并；第 50 课已验收但未合并；第 51～52 课待执行 |
 
 ## 12. 协作要求
 

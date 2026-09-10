@@ -12,7 +12,7 @@
 
 namespace {
 
-    ImageData CreateCenterHoleImage() {
+    ImageData CreateTranslucentImage() {
         ImageData image;
         int width = 16 , height = 16;
         image.width = width;
@@ -21,17 +21,11 @@ namespace {
         for (int x = 0; x < height; x++) {
             for (int y = 0; y < width; y++) {
                 int index = x  * width + y;
-                if (x >= 4 && x <= 11 && y >= 4 && y <= 11) {
-                    image.rgba_pixels[4*index] = 255;
-                    image.rgba_pixels[4*index+1] = 0;
-                    image.rgba_pixels[4*index+2] = 0;
-                    image.rgba_pixels[4*index+3] = 0;
-                }else {
-                    image.rgba_pixels[4*index] = 0;
-                    image.rgba_pixels[4*index+1] = 255;
-                    image.rgba_pixels[4*index+2] = 0;
-                    image.rgba_pixels[4*index+3] = 255;
-                }
+                image.rgba_pixels[4*index] = 255;
+                image.rgba_pixels[4*index+1] = 255;
+                image.rgba_pixels[4*index+2] = 255;
+                image.rgba_pixels[4*index+3] = 128;
+
             }
         }
         return image;
@@ -63,10 +57,7 @@ uniform sampler2D texture_sampler;
 
 void main() {
     vec4 texel = texture(texture_sampler, uv_coord);
-if (texel.a < 0.5) {
-    discard;
-}
-fragment_color = texel;
+    fragment_color = texel;
 }
 )";
 
@@ -108,7 +99,7 @@ fragment_color = texel;
         -0.5f, -0.5f,  0.5f,  1, 1, 1,  0, 1,
     };
 
-    const float cutout_vertices[] = {
+    const float translucent_vertices[] = {
         // 正面 +Z：从立方体外部观察为逆时针
         -0.8f, -0.8f,  0.0f,  1, 0, 0,  0, 0,
          0.8f, -0.8f,  0.0f,  0, 1, 0,  1, 0,
@@ -131,21 +122,21 @@ fragment_color = texel;
         22,23,20,
     };
 
-    const unsigned int cutout_indices[] = {
+    const unsigned int translucent_indices[] = {
         0, 1, 2,
         2, 3, 0,
     };
 
     ImageData image;
-    const ImageData cutout_image = CreateCenterHoleImage();
+    const ImageData translucent_image = CreateTranslucentImage();
     if (!LoadImageRgba("assets/textures/lesson21-quadrants.png",image)) {
         return false;
     }
     if (!shader_program_.Initialize(vertex_source, fragment_source)) return false;
     if (!cube_vertex_array_.Initialize(cube_vertices,std::size(cube_vertices),indices,std::size(indices))) return false;
-    if (!cutout_vertex_array_.Initialize(cutout_vertices,std::size(cutout_vertices),cutout_indices,std::size(cutout_indices))) return false;
+    if (!translucent_vertex_array_.Initialize(translucent_vertices,std::size(translucent_vertices),translucent_indices,std::size(translucent_indices))) return false;
     if (!cube_texture_.Initialize(image.width, image.height,image.rgba_pixels.data())) return false;
-    if (!cutout_texture_.Initialize(cutout_image.width, cutout_image.height,cutout_image.rgba_pixels.data())) return false;
+    if (!translucent_texture_.Initialize(translucent_image.width, translucent_image.height,translucent_image.rgba_pixels.data())) return false;
     shader_program_.Use();
     if (!shader_program_.SetInt("texture_sampler", 0)) {
         return false;
@@ -162,7 +153,7 @@ glm::mat4 CubeModel(float elapsed_seconds) {
     return model;
 }
 
-glm::mat4 CutOutModel() {
+glm::mat4 TranslucentModel() {
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.1f, 0.0f, -1.2f));
     model = glm::scale(model,glm::vec3(1.0f));
@@ -214,19 +205,21 @@ bool Renderer::DrawFrame(
     cube_vertex_array_.Bind();
     cube_texture_.Bind(0);
     RenderCommand::DrawIndexedTriangles(cube_vertex_array_.IndexCount());
+    RenderCommand::SetDepthWriteEnabled(false);
+    RenderCommand::SetBlendingEnabled(true);
+    RenderCommand::SetBlendFunction(RenderCommand::BlendFactor::SourceAlpha,RenderCommand::BlendFactor::OneMinusSourceAlpha);
     RenderCommand::SetFaceCullingEnabled(false);
     shader_program_.Use();
-    if (!shader_program_.SetMat4("model",CutOutModel())) {
+    if (!shader_program_.SetMat4("model",TranslucentModel())) {
         return false;
     }
-    cutout_vertex_array_.Bind();
-    cutout_texture_.Bind(0);
-    RenderCommand::DrawIndexedTriangles(cutout_vertex_array_.IndexCount());
-    RenderCommand::SetGlobalCullFace(
-    true,
-    RenderCommand::CullFace::Back,
-    RenderCommand::FrontFaceWinding::CounterClockwise
-);
+    translucent_vertex_array_.Bind();
+    translucent_texture_.Bind(0);
+    RenderCommand::DrawIndexedTriangles(translucent_vertex_array_.IndexCount());
+    RenderCommand::SetDepthWriteEnabled(true);
+    RenderCommand::SetBlendingEnabled(false);
+    RenderCommand::SetFaceCullingEnabled(true);
+
     #ifndef NDEBUG
         return OpenGLDebug::CheckErrors("Renderer::DrawFrame");
     #endif

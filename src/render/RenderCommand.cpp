@@ -1,6 +1,19 @@
 #include "RenderCommand.h"
 #include "opengl/OpenGLHeaders.h"
 
+
+namespace {
+    GLenum BlendFactorMap(RenderCommand::BlendFactor factor) {
+        switch (factor) {
+            case RenderCommand::BlendFactor::SourceAlpha:
+                return GL_SRC_ALPHA;
+            case RenderCommand::BlendFactor::OneMinusSourceAlpha:
+                return GL_ONE_MINUS_SRC_ALPHA;
+        }
+        return GL_ONE;
+    }
+}
+
 namespace RenderCommand {
     void Clear(float red, float green, float blue, float alpha){
         glClearColor(red, green, blue, alpha);
@@ -93,5 +106,20 @@ namespace RenderCommand {
         RenderCommand::SetFaceCullingEnabled(enable);
         RenderCommand::SetCullFace(face);
         RenderCommand::SetFrontFaceWinding(winding);
+    }
+
+    void SetBlendingEnabled(bool enabled) {
+        if (!enabled) {
+            glDisable(GL_BLEND);
+        }else {
+            glEnable(GL_BLEND);
+        }
+    }
+
+    void SetBlendFunction(
+        BlendFactor source,
+        BlendFactor destination
+    ) {
+        glBlendFunc(BlendFactorMap(source),BlendFactorMap(destination));
     }
 }
