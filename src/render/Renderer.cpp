@@ -40,6 +40,30 @@ namespace {
         glm::vec4 tint;
         float view_z;
     };
+
+    std::array<TransparentDrawItem, 2> CreateTransparentDrawItems(const glm::mat4& view) {
+        std::array<TransparentDrawItem, 2> items{{
+            {glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, 0.2f, -1.0f)),
+             glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 0.0f},
+            {glm::translate(glm::mat4(1.0f), glm::vec3(-0.2f, -0.2f, -1.5f)),
+             glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 0.0f}
+        }};
+        for (auto& item : items) {
+            item.view_z = (view * item.model * glm::vec4(0, 0, 0, 1)).z;
+        }
+        std::sort(items.begin(), items.end(),
+            [](const TransparentDrawItem& a, const TransparentDrawItem& b) {
+                return a.view_z < b.view_z;
+            });
+        return items;
+    }
+
+    glm::mat4 CubeModel(float elapsed_seconds) {
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.1f, 0.0f, -2.0f));
+        model = glm::rotate(model, glm::radians(90.0f * elapsed_seconds), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(180.0f * elapsed_seconds), glm::vec3(1.0f, 0.0f, 0.0f));
+        return glm::scale(model, glm::vec3(0.5f));
+    }
 }
 
 bool Renderer::Initialize() {
@@ -154,24 +178,6 @@ void main() {
     return true;
 }
 
-glm::mat4 CubeModel(float elapsed_seconds) {
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.1f, 0.0f, -2.0f));
-    model = glm::rotate(model,glm::radians(90.0f * elapsed_seconds), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model,glm::radians(180.0f * elapsed_seconds), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::scale(model,glm::vec3(0.5f));
-    return model;
-}
-
-glm::mat4 TranslucentModel() {
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.1f, 0.0f, -1.2f));
-    model = glm::scale(model,glm::vec3(1.0f));
-    return model;
-}
-
-
-
 bool Renderer::DrawFrame(
     const float elapsed_seconds,
     const int framebuffer_width,
@@ -190,6 +196,7 @@ bool Renderer::DrawFrame(
     //设置全局状态
     RenderCommand::SetGlobalDepth(true,true,RenderCommand::DepthCompare::LESS);
     RenderCommand::SetGlobalCullFace(true,RenderCommand::CullFace::Back,RenderCommand::FrontFaceWinding::CounterClockwise);
+    RenderCommand::SetBlendingEnabled(false);
     RenderCommand::Clear(0.36,0.5,0.6,1);
 
     //开始
@@ -210,26 +217,6 @@ bool Renderer::DrawFrame(
     if (!shader_program_.SetMat4("projection", projection)) {
         return false;
     }
-    std::array<TransparentDrawItem, 2> items{};
-    TransparentDrawItem item;
-    TransparentDrawItem item2;
-    item.model = glm::translate(glm::mat4(1.0f),glm::vec3(0.2f,0.2f,-1.0f));
-    item.tint = glm::vec4(1.0f,0.0f,0.0f,1.0f);
-    item2.model = glm::translate(glm::mat4(1.0f),glm::vec3(-0.2f,-0.2f,-1.50f));
-    item2.tint = glm::vec4(0.0f,0.0f,1.0f,1.0f);
-    const glm::vec4 center_view =
-    view * item.model * glm::vec4(0, 0, 0, 1);
-    const glm::vec4 center_view2 =
-    view * item2.model * glm::vec4(0, 0, 0, 1);
-    item.view_z = center_view.z;
-    item2.view_z = center_view2.z;
-    // 将 center_view.z 保存到 item.view_z
-    items[0] = item;
-    items[1] = item2;
-    std::sort(items.begin(),items.end(),
-    [](const TransparentDrawItem& a, const TransparentDrawItem& b) {
-        return a.view_z < b.view_z;
-    });
     cube_vertex_array_.Bind();
     cube_texture_.Bind(0);
     if (!shader_program_.SetMat4("model",CubeModel(elapsed_seconds))) {
@@ -239,29 +226,38 @@ bool Renderer::DrawFrame(
         return false;
     }
     RenderCommand::DrawIndexedTriangles(cube_vertex_array_.IndexCount());
-    for (auto& item : items) {
-        RenderCommand::SetDepthWriteEnabled(false);
-        RenderCommand::SetBlendingEnabled(true);
-        RenderCommand::SetBlendFunction(RenderCommand::BlendFactor::SourceAlpha,RenderCommand::BlendFactor::OneMinusSourceAlpha);
-        RenderCommand::SetFaceCullingEnabled(false);
-        shader_program_.Use();
-        translucent_vertex_array_.Bind();
-        translucent_texture_.Bind(0);
-        if (!shader_program_.SetMat4("model",item.model)) {
-            return false;
-        }
-        if (!shader_program_.SetVec4("tint",item.tint)) {
-            return false;
-        }
-        RenderCommand::DrawIndexedTriangles(translucent_vertex_array_.IndexCount());
+    if (!DrawTransparentSurfaces(view)) {
+        return false;
     }
-
-    RenderCommand::SetDepthWriteEnabled(true);
-    RenderCommand::SetBlendingEnabled(false);
-    RenderCommand::SetFaceCullingEnabled(true);
 
     #ifndef NDEBUG
         return OpenGLDebug::CheckErrors("Renderer::DrawFrame");
     #endif
     return true;
+}
+
+bool Renderer::DrawTransparentSurfaces(const glm::mat4& view) {
+    const auto items = CreateTransparentDrawItems(view);
+    RenderCommand::SetDepthWriteEnabled(false);
+    RenderCommand::SetBlendingEnabled(true);
+    RenderCommand::SetBlendFunction(RenderCommand::BlendFactor::SourceAlpha,
+                                  RenderCommand::BlendFactor::OneMinusSourceAlpha);
+    RenderCommand::SetFaceCullingEnabled(false);
+    translucent_vertex_array_.Bind();
+    translucent_texture_.Bind(0);
+
+    bool success = true;
+    for (const auto& item : items) {
+        if (!shader_program_.SetMat4("model", item.model) ||
+            !shader_program_.SetVec4("tint", item.tint)) {
+            success = false;
+            break;
+        }
+        RenderCommand::DrawIndexedTriangles(translucent_vertex_array_.IndexCount());
+    }
+    // Restore the opaque baseline even if a uniform upload fails.
+    RenderCommand::SetDepthWriteEnabled(true);
+    RenderCommand::SetBlendingEnabled(false);
+    RenderCommand::SetFaceCullingEnabled(true);
+    return success;
 }
