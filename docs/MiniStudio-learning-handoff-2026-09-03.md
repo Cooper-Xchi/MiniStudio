@@ -329,9 +329,9 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～50 课均已完成、验收并合并；第 51 课尚未开始。**
+当前处于：**第 1～50 课均已完成、验收并合并；第 51 课两层透明的顺序与最小排序已通过验收，尚未提交、推送或合并。**
 
-逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～50 课已合并，对应课程分支继续保留；第 51 课尚未开始。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
+逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～50 课已合并，对应课程分支继续保留；第 51 课已验收但尚未提交、推送或合并。后续是第 52 课 v0.2、架构验收与第一次季度复盘，尚未开课；每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
 第 37 课启动记录（2026-09-09）：只读检查实际目录、Application、GlfwWindow、Renderer、RenderCommand、ShaderProgram 与 VertexArray，确认依赖和资源所有权保持单向。第 36 课成果 `635c891` 已在 `main` 历史中；开课前工作区干净，本地 `main`、`origin/main` 与实时查询的远端 `main` 均为 `69c98d1`。公司 macOS arm64 使用 Apple Clang 21，在独立的 `build/lesson-37-macos-debug` 目录执行 Debug 配置与编译，成功且无编译器警告；从该构建目录启动完整程序，成功创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，运行期间未报告 OpenGL 错误，最终退出码为 0。退出期间有一条 macOS TSM 键盘系统诊断；本轮未通过自动化核实画面、resize 或具体 Esc 按键，不把启动运行检查写成完整交互验收，也未执行 Sanitizer 或 Windows 回归。随后从稳定 `main` 创建 `codex/lesson-37-triangle-winding`；仅更新本启动记录，核心业务代码由学习者实现。
 
@@ -457,6 +457,16 @@ int main() {
 
 第 50 课合并记录（2026-09-10）：按学习者明确要求，课程实现与验收记录已提交为 `88962f6` 并推送 `codex/lesson-50-alpha-blending`，随后以合并提交 `03fa7ca` 纳入 `main`；课程分支继续保留。首次推送 `main` 时本机直连 GitHub 443 连续超时；只读诊断确认 Windows 用户代理为 `127.0.0.1:7890`、Git 未配置代理且本地代理端口可用，通过一次性 `http.proxy` 参数成功读取远端后完成普通推送，未修改 Git 持久配置，也未使用强制推送。上方“尚未提交、推送或合并”是历史状态。
 
+第 51 课启动记录（2026-09-10）：第 50 课合并记录提交 `b7b323d` 已通过 Windows 用户代理的一次性 Git 参数推送，本地 `main`、`origin/main` 和实时查询的远端 `main` 一致；工作区干净且目标分支不存在。合并后的 Windows Debug 构建重新编译 RenderCommand 与 Renderer 并成功链接，随后从稳定 `main` 创建 `codex/lesson-51-transparent-sorting`。只读检查确认 Application 继续只把 Camera 生成的 view 矩阵交给 Renderer；Camera 不需要暴露位置或拥有渲染状态；RenderCommand 已具备深度、混合和剔除所需命令；Renderer 继续按值拥有 ShaderProgram、共享透明平面的 VertexArray 与 Texture2D。本课的两个透明绘制项是 Renderer 每帧临时构造的 CPU 值，不拥有 GPU 资源，排序后复用同一 VAO 与纹理；为让两个平面颜色可区分，只需给现有 ShaderProgram 增加一个最小 `vec4` uniform 上传接口，不新增 Material、场景系统或资源管理器。本轮启动证据仅来自家用 Windows，未重新验证 macOS 或 Sanitizer。
+
+第 51 课核心任务（60～90 分钟）：先在黑色背景上手算 alpha 均为 `0.5` 的红、蓝两层分别按红→蓝和蓝→红绘制后的 RGB，确认标准 alpha 混合具有顺序相关性。复用当前透明平面的 VAO 与纹理，增加 `ShaderProgram::SetVec4(const char*, const glm::vec4&)` 供片元 Shader 接收每个绘制项的 tint；不透明立方体使用白色 tint。Renderer.cpp 的局部边界定义只含 model、tint 和相机空间 z 的 `TransparentDrawItem`，每帧构造两个世界中不相交但屏幕有重叠的红、蓝半透明平面，用 `view * model * vec4(0,0,0,1)` 得到中心的相机空间 z，并用 `std::sort` 按远到近排序；当前相机前方 z 为负，因此更小的 z 先画。保持不透明阶段深度测试与写入开启；透明阶段保持测试、关闭写入、开启 `SRC_ALPHA / ONE_MINUS_SRC_ALPHA`，按排序结果逐项上传 tint 与 model 后绘制，最后统一恢复混合、深度写入和剔除。先故意反转比较器观察重叠颜色，再恢复正确顺序并移动、转动相机验证排序变化。本课只解决两个可按中心整体排序的平面，不处理相交面、循环遮挡、三角形级排序、预乘 alpha、OIT 或通用场景／Material。验收要求两种顺序的结果可预测且画面差异可复现，相机移动后排序依据仍正确，状态恢复不影响下一帧，并能解释为何世界 z 排序会随相机方向失效以及物体中心排序的局限。
+
+第 51 课中途检查（2026-09-10）：学习者完成 `ShaderProgram::SetVec4()`，沿用现有 Program 与 location 检查，通过 `glUniform4fv(location, 1, glm::value_ptr(value))` 上传单个向量；片元 Shader 输出 `tint * texel`。Renderer 每帧在立方体 draw 前上传白色 tint，在透明平面 draw 前上传红色 tint，均检查返回值，且 tint alpha 保持 1，使最终透明度仍为 `128/255`。助手实际读取三个源码文件的改动；复用家用 Windows 的 `build/lesson-50-windows-debug`，MSVC x64 重新编译 Renderer、ShaderProgram 并成功链接，未输出编译警告；完整程序持续运行 10 秒，OpenGL 4.1 Context 与 Shader 链接正常，未报告 OpenGL 错误，随后由助手 Ctrl-C 结束。本轮未独立采集画面或验证自然退出，未执行 macOS 回归。颜色手算中的遗漏已讲清：第二层要与第一层叠加黑色背景后的颜色继续混合。下一步由学习者实现两个临时 CPU 绘制项、相机空间深度计算与远到近排序，并验证交换顺序和移动相机的结果；第 51 课整体仍在进行中。
+
+第 51 课排序实现检查（2026-09-10）：学习者已把红、蓝两个绘制项保存到 `std::array<TransparentDrawItem, 2>`，分别以 `view * model * vec4(0,0,0,1)` 计算并保存相机空间 z，通过比较器 `a.view_z < b.view_z` 排序整个绘制项；先用独立 CubeModel、白色 tint 和立方体资源绘制不透明物体，再遍历排序后的数组，上传各项 model 与 tint 并复用透明平面的 VAO 和纹理绘制。两次透明 draw 前均设置标准 alpha 混合、关闭深度写入与剔除，保留深度测试，循环后恢复状态；公共状态与资源绑定目前在循环内重复调用，可后续移到循环前整理。助手实际读取改动并在家用 Windows MSVC x64 下重新编译和链接成功，完整程序运行 10 秒，OpenGL 4.1 Context 与 Shader 链接正常，未报告 OpenGL 错误，随后 Ctrl-C 结束；未独立核实画面、自然退出或 macOS。当前代码检查与启动检查通过；仍待学习者对比正反排序的重叠颜色、移动相机并说明相机空间排序及中心排序的局限后完成整课验收。
+
+第 51 课最终验收记录（2026-09-10）：在上方最终排序实现检查后，学习者针对初始视角下正反比较器的重叠颜色，以及恢复远到近排序后移动到平面另一侧观察的三项实验，明确确认“符合预期”；画面证据来自学习者反馈，助手未独立截图或读回 GPU 像素。最终代码保留 `<` 比较器、逐帧相机空间深度计算和按排序数组绘制的流程，与此前 Windows Debug 成功编译及运行 10 秒的源码一致，因此文档收尾未重复运行相同检查。学习者独立解释了前后关系应相对于相机而非世界 z 判断；对穿插问题起初理解为平行平面的投影重叠，助手以三维相交的两张平面为例解释交线两侧所需绘制顺序相反，学习者随后确认理解物体中心排序不能保证穿插透明面正确。本课限定于受控的可整体排序场景，不据此宣称解决任意透明场景。ShaderProgram 保持 GPU Program 独占所有权，Renderer 继续拥有 GPU 资源；排序仅移动本帧 CPU 绘制项，所有渲染调用仍在持有 Current Context 的主线程。公共状态和资源绑定的循环内重复调用属于可选整理，不阻碍本课验收。家用 Windows 构建与启动证据、学习者的视觉反馈及原理纠正共同完成验收；未执行 macOS、Sanitizer 或自然退出回归。第 51 课通过，当前尚未提交、推送或合并，等待学习者确认本课 Git 操作后进入第 52 课。
+
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements` 呈现 24 顶点、36 索引的纹理立方体；model 随时间绕 X、Y 两轴旋转，projection 使用实际 framebuffer 宽高比。
 
 第 33 课启动记录（2026-09-08）：只读核对目录、职责、资源所有权与依赖方向；拉取远端引用后确认 `main` 与 `origin/main` 同为 `48596d3`，第 32 课已合并，工作区干净。基线从独立的 `build/lesson-33-debug` 目录完成 Debug 配置和编译，无编译器警告；本轮尚未重新进行运行验收。随后从该稳定 `main` 创建 `codex/lesson-33-depth-testing`。
@@ -572,7 +582,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～50 课已完成、验收并合并；第 51～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～50 课已完成、验收并合并；第 51 课已验收但未合并；第 52 课待执行 |
 
 ## 12. 协作要求
 
