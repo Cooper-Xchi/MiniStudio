@@ -329,9 +329,9 @@ int main() {
 
 ## 10. 当前阶段与下一步
 
-当前处于：**第 1～47 课均已完成、验收并合并；第 48 课尚未开始。**
+当前处于：**第 1～47 课均已完成、验收并合并；第 48 课「交互相机回归与架构复盘」已完成并通过验收，等待提交合并；第 49 课尚未开始。**
 
-逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～47 课已合并，对应课程分支继续保留；第 48 课尚未开始。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
+逐课备课已按学习者 2026-09-09 的要求写入 [docs/lessons/README.md](lessons/README.md) 及 A～L 阶段文档。第 37～47 课已合并，对应课程分支继续保留；第 48 课已在 `codex/lesson-48-interactive-camera-review` 完成并通过验收，等待提交合并。每次仍只执行一个核心任务，远期教案不代表已经实施或验收。
 
 第 37 课启动记录（2026-09-09）：只读检查实际目录、Application、GlfwWindow、Renderer、RenderCommand、ShaderProgram 与 VertexArray，确认依赖和资源所有权保持单向。第 36 课成果 `635c891` 已在 `main` 历史中；开课前工作区干净，本地 `main`、`origin/main` 与实时查询的远端 `main` 均为 `69c98d1`。公司 macOS arm64 使用 Apple Clang 21，在独立的 `build/lesson-37-macos-debug` 目录执行 Debug 配置与编译，成功且无编译器警告；从该构建目录启动完整程序，成功创建 OpenGL 4.1 Core Context，Shader 链接成功、链接日志为空，运行期间未报告 OpenGL 错误，最终退出码为 0。退出期间有一条 macOS TSM 键盘系统诊断；本轮未通过自动化核实画面、resize 或具体 Esc 按键，不把启动运行检查写成完整交互验收，也未执行 Sanitizer 或 Windows 回归。随后从稳定 `main` 创建 `codex/lesson-37-triangle-winding`；仅更新本启动记录，核心业务代码由学习者实现。
 
@@ -432,6 +432,12 @@ int main() {
 第 47 课验收记录（2026-09-10）：学习者为 Camera 增加按值返回的 `Right()`，使用 `normalize(cross(forward_, up_))` 从当前姿态生成局部右方向；Application 在读取本帧输入后先调用 `Rotate()`，再以更新后的 forward/right 映射 W/S 与 A/D，只有 `dot(movement, movement) > 0` 时才归一化，最后用 `camera_speed * delta_seconds` 形成位移。被忽略的纯 CPU 实验验证初始 forward/right 点积为 0，原始对角合向量长度为 `1.41421`，归一化后为 1；yaw 增加 `90°` 后 forward 约为 `+X`、right 约为 `+Z`。公司 macOS arm64 Debug 增量编译成功且无警告；完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空，运行期间未报告 OpenGL 错误并以退出码 0 结束。学习者实际确认局部移动与斜向速度感觉符合预期；相反方向组合由零向量保护覆盖。本课没有修改输入接口、Renderer 或资源所有权，未执行 Sanitizer 或 Windows 验证，代码和交互行为通过验收；当前尚未提交、推送或合并。
 
 第 47 课合并记录（2026-09-10）：按学习者的明确要求，已将课程成果和验收记录提交为 `65d1a66`，推送 `codex/lesson-47-local-camera-movement`，并以合并提交 `2cbd90e` 纳入 `main`；课程分支继续保留。上方验收记录中的“尚未提交、推送或合并”是历史状态，当前 Git 操作已完成。随后同步完成记录，并从稳定的最新 `main` 开始第 48 课。
+
+第 48 课启动记录（2026-09-10）：第 47 课完成记录 `2a2080c` 已同步到本地与远端 `main`、`codex/lesson-47-local-camera-movement`，开课前工作区干净且目标课程分支不存在；随后从稳定 `main` 创建 `codex/lesson-48-interactive-camera-review`。公司 macOS arm64 使用 Apple Clang 21，在全新的 `build/lesson-48-macos-debug` 完成 Debug 配置和编译，成功且无编译器警告；完整程序创建 OpenGL 4.1 Core Context，Shader 链接成功、日志为空，启动观察期间未报告 OpenGL 错误，随后以 Ctrl-C 结束，因此本轮只记录启动基线，不记录自然退出或完整交互结果，也未执行 Sanitizer 或 Windows 验证。开课前只读检查确认：main 只启动 Application；Application 按值拥有 GlfwWindow、Renderer 和 Camera 并编排帧循环；GlfwWindow 管理 GLFW、窗口、Context、输入快照与鼠标基准；Camera 只保存 CPU 相机状态和数学操作；Renderer 独占 Shader Program、VAO/VBO/EBO 与纹理；所有调用仍在主线程，成员逆序析构保证 GPU 资源先于窗口和 Context 释放。
+
+第 48 课核心任务（35～60 分钟）：建立交互相机回归表，分别记录正常移动、转头、失焦／重新获焦、resize、最小化／恢复、关闭六类操作的步骤、预期结果、公司 macOS 实测结果与证据；未执行的平台或操作明确写“未验证”，不得推断为通过。重点检查按键松开后无持续移动，重新捕获或获焦后的首帧无猛转，极端俯仰不翻转，窗口 framebuffer 为零时跳过绘制且恢复后继续显示，Esc 或窗口关闭能正常退出。随后画出或列出 main、Application、GlfwWindow、Camera、Renderer、RenderCommand 和 OpenGL 的依赖与所有权，说明成员析构顺序为何使 GPU 资源在 Context 销毁前释放，并回答失焦与最小化为何必须分开记录。复盘结果写入 `docs/MiniStudio-interactive-camera-review.md`；本课不增加多相机、输入绑定系统、事件总线或新的渲染抽象，只有回归发现真实缺陷时才做最小修复。完成后由助手读取记录和相关源码、重新构建，并按已执行的交互项验收。本课尚未提交、推送或合并。
+
+第 48 课验收记录（2026-09-10）：已完成 `docs/MiniStudio-interactive-camera-review.md`，记录六类操作的步骤、预期、公司 macOS arm64 实测结果与证据，并复核 main、Application、GlfwWindow、Camera、Renderer、RenderCommand 和 OpenGL 的职责、单向依赖、线程及资源所有权。全新的 `build/lesson-48-macos-debug` 使用 Apple Clang 21 完成 Debug 配置和编译，无编译器警告；程序创建 OpenGL 4.1 Core Context，Shader 链接成功且日志为空。受控 UI 回归向真实窗口发送 W/S、A+D、鼠标捕获与位移，切换 Finder 造成失焦后重新获焦，resize 至 `920×700` 再恢复，最小化 `1s` 再恢复，最后发送 Esc；关键步骤均截图，运行日志没有 OpenGL 错误，程序以退出码 0 结束。结果未发现卡键、相反输入非法向量、首帧猛转、resize 投影异常、最小化恢复失败或关闭失败；最小化期间的具体 framebuffer 数值未单独记录，Windows 未验证。复盘确认 Application 的成员逆序析构为 Camera、Renderer、GlfwWindow，使 Renderer 的 GPU 资源在窗口和 Context 销毁前释放；Camera 仍只拥有 CPU 状态，没有理由增加新抽象或修改业务代码。本课通过验收，当前尚未提交、推送或合并。
 
 macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg manifest 提供 GLFW 与 GLAD，GLAD 只在 Windows 条件分支初始化。当前代码已经拆分应用、窗口、Shader Program、顶点输入资源、Texture2D 和无状态渲染命令，并通过 `glDrawElements` 呈现 24 顶点、36 索引的纹理立方体；model 随时间绕 X、Y 两轴旋转，projection 使用实际 framebuffer 宽高比。
 
@@ -548,7 +554,7 @@ macOS 使用 Homebrew GLFW 3.4 和系统 `OpenGL::GL`；Windows 使用 vcpkg man
 | 第 7 周 | 模型矩阵与坐标变换 | 第 25～28 课已完成、验收并合并 |
 | 第 8 周 | 投影与裁剪空间 | 第 29～32 课已完成、验收并合并 |
 | 第 9 周 | 深度测试 | 第 33～36 课均已完成、验收并合并 |
-| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～47 课已完成、验收并合并；第 48～52 课待执行 |
+| 第 10～13 周 | 绕序与剔除、立方体、交互相机、透明基础及 v0.2 | 第 37～47 课已完成、验收并合并；第 48 课已完成并通过验收，等待提交合并；第 49～52 课待执行 |
 
 ## 12. 协作要求
 
