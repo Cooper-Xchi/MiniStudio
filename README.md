@@ -13,11 +13,11 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 当前第一套图形 API 是 **OpenGL 4.1 Core Profile + GLFW + macOS OpenGL.framework**。完成桌面渲染器后，目标岗位路线依次进入 Android/OpenGL ES 和 Vulkan；Metal 放在专家能力进阶阶段验证。第一套渲染器完成前不并行学习多套 API。
 
-当前里程碑版本为 **v0.1.0**。
+当前里程碑版本为 **v0.2.0**。
 
 ## 当前进度
 
-项目第 1～50 课均已通过验收并合并。第 51 课“两层透明的顺序与最小排序”已通过验收，尚未提交、推送或合并。当前依赖形成 `Application → GlfwWindow/Camera/Renderer → RenderCommand → OpenGL`；窗口提供值类型输入快照并维护鼠标采样基准，Application 决定输入映射，Camera 保持纯 CPU 职责。
+项目第 1～51 课均已通过验收并合并到本地 `main`。第 52 课已按学习者要求由助手完成 v0.2 工程收尾与 Windows 验证，个人季度复盘问答跳过，待本轮提交合并。当前依赖形成 `Application → GlfwWindow/Camera/Renderer → RenderCommand → OpenGL`；窗口提供值类型输入快照并维护鼠标采样基准，Application 决定输入映射，Camera 保持纯 CPU 职责。
 
 已经完成：
 
@@ -77,14 +77,15 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第四十九课的 Alpha 裁剪与带孔平面：程序生成带透明中心的 RGBA 纹理，片元 Shader 用阈值和 `discard` 形成真正不写颜色与深度的孔，Renderer 分别拥有立方体和平面的顶点与纹理资源，并把双面绘制限制在平面边界内。
 - 完成第五十课的单层非预乘 Alpha 混合：RenderCommand 封装混合开关与最小混合因子，Renderer 在不透明物体之后绘制固定半透明平面，保留深度测试、临时关闭深度写入，并在透明绘制后恢复状态。
 - 完成第五十一课的两层透明排序：ShaderProgram 增加 vec4 uniform 上传接口；Renderer 用临时 CPU 绘制项保存 model、tint 和相机空间深度，从远到近排序并复用平面资源绘制红、蓝两层，理解混合顺序与物体中心排序的局限。
+- 完成第五十二课的 v0.2 工程收尾：整理透明阶段边界和状态恢复，增加默认关闭的 CTest 回归目标，以真实 GPU 读回检查透明颜色、深度、裁剪、resize 和资源释放，并保存短演示及验证说明。Windows Debug、Release 和默认构建通过；本轮未在 macOS 实测，个人复盘按要求跳过。
 
-前 50 课均已完成并合并回 `main`。第 50 课成果提交为 `88962f6`，并通过合并提交 `03fa7ca` 纳入 `main`；`codex/lesson-50-alpha-blending` 已推送并继续保留。第 51 课已在 `codex/lesson-51-transparent-sorting` 通过验收，尚未提交、推送或合并。
+第 51 课成果提交为 `9ecba97`，通过合并提交 `19fc863` 纳入本地 `main`。第 52 课成果位于 `codex/lesson-52-v02-validation`，待本轮提交、合并并与第 51 课一起推送；课程分支继续保留。详细验证边界见 [v0.2 验证与交接](docs/MiniStudio-v0.2-validation.md)。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
 ## 构建与运行
 
-当前已在 macOS arm64、Apple Clang、CMake 3.25 以上、Homebrew GLFW 3.4 和 GLM 1.0.3 环境下验证。首次构建前需要安装 CMake、GLFW 和 GLM：
+此前课程已在 macOS arm64、Apple Clang、CMake 3.25 以上、Homebrew GLFW 3.4 和 GLM 1.0.3 环境下验证。v0.2 本轮实际验证主机为 Windows，不能用历史记录代替此次 macOS 回归。macOS 首次构建前需要安装 CMake、GLFW 和 GLM：
 
 ```bash
 brew install cmake glfw glm
@@ -128,7 +129,7 @@ CLion 可以使用自身提供的 Ninja，并将构建产物放在独立的 `cma
 
 ### Windows 构建
 
-Windows 使用 vcpkg 提供 GLFW 和 GLAD；GLAD 只在 Windows 上负责加载 OpenGL 4.1 函数，macOS 仍使用系统的 `OpenGL.framework`。配置时将 `VCPKG_ROOT` 替换为本机 vcpkg 路径：
+Windows 使用 vcpkg 提供 GLFW、GLM 和 GLAD；GLAD 只在 Windows 上负责加载 OpenGL 4.1 函数，macOS 仍使用系统的 `OpenGL.framework`。在已加载 Visual Studio x64 开发环境的终端执行，`VCPKG_ROOT` 指向本机 vcpkg 路径：
 
 ```powershell
 cmake -S . -B build/windows `
@@ -140,13 +141,13 @@ cmake --build build/windows --parallel
 ./build/windows/ministudio.exe
 ```
 
-## v0.1 运行验收
+## v0.2 运行与回归
 
-程序启动后应显示一个带 RGB 插值颜色的三角形和蓝灰色背景。拖动窗口边缘时，viewport 应跟随实际 framebuffer 尺寸更新；按下 Esc 后程序应通过统一退出路径关闭。
+程序启动后显示旋转的纹理立方体和红、蓝两层半透明平面，背景为蓝灰色。W/A/S/D 移动，左键捕获鼠标并转头，右键释放鼠标；resize 更新 viewport 和透视宽高比，Esc 退出。透明平面保持深度测试但不写深度，先画不透明物体，再按相机空间深度从远到近画透明物体。
 
-Debug 和 Sanitizer 版本在正常路径下不应输出 OpenGL 错误、AddressSanitizer 错误或 UndefinedBehaviorSanitizer 错误。Release 版本应保持相同画面，但不执行每帧 `glGetError()` 检查。
+自动回归目标默认关闭；配置时增加 `-DMINISTUDIO_BUILD_TESTS=ON`，构建后执行 `ctest --test-dir <构建目录> --output-on-failure`。测试需要可用的 OpenGL 图形环境。具体命令、真实 GPU 演示、所有权与状态图、Windows 结果和 macOS 未验证项见 [v0.2 验证与交接](docs/MiniStudio-v0.2-validation.md)。
 
-对象所有权、Context、逐帧顺序和逆序析构说明见 [`docs/MiniStudio-v0.1-lifecycle.md`](docs/MiniStudio-v0.1-lifecycle.md)。
+Debug 正常路径不应输出 OpenGL 错误；Release 通过 `NDEBUG` 移除每帧错误检查。本轮未运行 Sanitizer。v0.1 的彩色三角形与生命周期验收作为历史记录保留在 [v0.1 生命周期说明](docs/MiniStudio-v0.1-lifecycle.md)，不是当前默认画面。
 
 ## 版本路线
 
@@ -169,7 +170,7 @@ Debug 和 Sanitizer 版本在正常路径下不应输出 OpenGL 错误、Address
 | 第 25～30 月 | 2D 动画、视频素材和 Metal | 扩展多媒体与第三平台能力 |
 | 第 31～36 月 | 大场景、性能架构、AI 工作流和真实协作 | 建立高级/专家方向的能力证据 |
 
-完整的阶段目标、验收标准和求职时间线见[课程路线](docs/MiniStudio-curriculum-24-36-months.md)。每节课的讲解内容、核心练习、边界和验收标准见[逐课教案索引](docs/lessons/README.md)，第 37～52 课另有详细步骤、易错点和追问，其中第 37～50 课已合并、第 51 课已验收但未合并、第 52 课待执行。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
+完整的阶段目标、验收标准和求职时间线见[课程路线](docs/MiniStudio-curriculum-24-36-months.md)。每节课的讲解内容、核心练习、边界和验收标准见[逐课教案索引](docs/lessons/README.md)，第 37～52 课另有详细步骤、易错点和追问；第 37～51 课已合并，第 52 课工程验收完成、待合并，个人复盘按要求跳过。下一课为 B01（第 53 课）CPU MeshData 与顶点布局，尚未开课。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
 
 ## 仓库结构
 
@@ -191,7 +192,11 @@ MiniStudio/
 │   ├── MiniStudio-time-input-camera-review.md
 │   ├── MiniStudio-texture-pipeline-review.md
 │   ├── MiniStudio-transform-pipeline-review.md
-│   └── MiniStudio-v0.1-lifecycle.md
+│   ├── MiniStudio-v0.1-lifecycle.md
+│   ├── MiniStudio-v0.2-validation.md
+│   └── media/ministudio-v02-demo.gif
+├── tests/
+│   └── V02Regression.cpp              # 可选的真实 OpenGL 集成回归
 ├── third_party/
 │   └── stb/
 │       ├── README.md
@@ -201,6 +206,9 @@ MiniStudio/
     ├── app/
     │   ├── Application.h
     │   └── Application.cpp
+    ├── camera/
+    │   ├── Camera.h
+    │   └── Camera.cpp
     ├── image/
     │   ├── ImageData.h
     │   ├── ImageLoader.h
@@ -225,4 +233,4 @@ MiniStudio/
         └── Renderer.cpp
 ```
 
-完整课程路线见 [`docs/MiniStudio-curriculum-24-36-months.md`](docs/MiniStudio-curriculum-24-36-months.md)，当前状态和下一步见 [`docs/MiniStudio-learning-handoff-2026-09-03.md`](docs/MiniStudio-learning-handoff-2026-09-03.md)，v0.1 生命周期说明见 [`docs/MiniStudio-v0.1-lifecycle.md`](docs/MiniStudio-v0.1-lifecycle.md)。README 只提供稳定的项目入口和概览；AI 助手在本仓库中的操作和教学边界见 [`AGENTS.md`](AGENTS.md)。
+完整课程路线见 [`docs/MiniStudio-curriculum-24-36-months.md`](docs/MiniStudio-curriculum-24-36-months.md)，当前状态和下一步见 [`docs/MiniStudio-learning-handoff-2026-09-03.md`](docs/MiniStudio-learning-handoff-2026-09-03.md)，当前版本验证见 [v0.2 验证与交接](docs/MiniStudio-v0.2-validation.md)，早期生命周期说明见 [v0.1 记录](docs/MiniStudio-v0.1-lifecycle.md)。README 只提供稳定的项目入口和概览；AI 助手在本仓库中的操作和教学边界见 [`AGENTS.md`](AGENTS.md)。

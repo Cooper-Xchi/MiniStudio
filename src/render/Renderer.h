@@ -22,6 +22,8 @@ public:
     );
 
 private:
+    bool DrawTransparentSurfaces(const glm::mat4& view);
+
     ShaderProgram shader_program_;
     VertexArray cube_vertex_array_;
     Texture2D cube_texture_;
