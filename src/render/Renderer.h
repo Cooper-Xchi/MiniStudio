@@ -26,6 +26,6 @@ private:
     VertexArray cube_vertex_array_;
     Texture2D cube_texture_;
 
-    VertexArray cutout_vertex_array_;
-    Texture2D cutout_texture_;
+    VertexArray translucent_vertex_array_;
+    Texture2D translucent_texture_;
 };

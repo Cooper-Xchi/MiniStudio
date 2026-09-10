@@ -17,7 +17,7 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 
 ## 当前进度
 
-项目第 1～49 课均已通过验收并合并。第 50 课尚未开始。当前依赖形成 `Application → GlfwWindow/Camera/Renderer → RenderCommand → OpenGL`；窗口提供值类型输入快照并维护鼠标采样基准，Application 决定输入映射，Camera 保持纯 CPU 职责。
+项目第 1～49 课均已通过验收并合并。第 50 课“颜色混合与一个半透明表面”已通过验收，尚未提交、推送或合并。当前依赖形成 `Application → GlfwWindow/Camera/Renderer → RenderCommand → OpenGL`；窗口提供值类型输入快照并维护鼠标采样基准，Application 决定输入映射，Camera 保持纯 CPU 职责。
 
 已经完成：
 
@@ -75,8 +75,9 @@ MiniStudio 是一个持续演进的现代 C++ 与实时渲染学习项目。它�
 - 完成第四十七课的相机局部移动与斜向归一化：Camera 按值提供 forward/right，Application 在本帧旋转后组合 W/A/S/D 局部方向，非零时归一化后再按速度和帧间秒数移动。
 - 完成第四十八课的交互相机回归与架构复盘：在公司 macOS arm64 实测移动、转头、焦点、resize、最小化恢复和关闭路径，并记录模块职责、所有权、主线程执行与 GPU 资源先于 Context 释放的析构顺序。
 - 完成第四十九课的 Alpha 裁剪与带孔平面：程序生成带透明中心的 RGBA 纹理，片元 Shader 用阈值和 `discard` 形成真正不写颜色与深度的孔，Renderer 分别拥有立方体和平面的顶点与纹理资源，并把双面绘制限制在平面边界内。
+- 完成第五十课的单层非预乘 Alpha 混合：RenderCommand 封装混合开关与最小混合因子，Renderer 在不透明物体之后绘制固定半透明平面，保留深度测试、临时关闭深度写入，并在透明绘制后恢复状态。
 
-前 49 课均已完成并合并回 `main`。第 49 课成果提交为 `bfbb200`，并通过合并提交 `d51ad68` 纳入 `main`；`codex/lesson-49-alpha-cutout` 已推送并继续保留。第 50 课尚未启动。
+前 49 课均已完成并合并回 `main`。第 50 课已在 `codex/lesson-50-alpha-blending` 通过验收，尚未提交、推送或合并。
 
 仓库使用 `main` 保存已验收的稳定基线，并通过 `origin` 同步到 GitHub。独立的仓库用 SSH 密钥已配置为可写 Deploy key。已合并的课程分支均继续保留；后续课程遵守相同的独立分支规则。项目级 AI 协作边界和课程分支规则记录在 [`AGENTS.md`](AGENTS.md)。
 
@@ -167,7 +168,7 @@ Debug 和 Sanitizer 版本在正常路径下不应输出 OpenGL 错误、Address
 | 第 25～30 月 | 2D 动画、视频素材和 Metal | 扩展多媒体与第三平台能力 |
 | 第 31～36 月 | 大场景、性能架构、AI 工作流和真实协作 | 建立高级/专家方向的能力证据 |
 
-完整的阶段目标、验收标准和求职时间线见[课程路线](docs/MiniStudio-curriculum-24-36-months.md)。每节课的讲解内容、核心练习、边界和验收标准见[逐课教案索引](docs/lessons/README.md)，第 37～52 课另有详细步骤、易错点和追问，其中第 37～49 课已合并、第 50～52 课待执行。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
+完整的阶段目标、验收标准和求职时间线见[课程路线](docs/MiniStudio-curriculum-24-36-months.md)。每节课的讲解内容、核心练习、边界和验收标准见[逐课教案索引](docs/lessons/README.md)，第 37～52 课另有详细步骤、易错点和追问，其中第 37～49 课已合并、第 50 课已验收但未合并、第 51～52 课待执行。24 个月是核心路线，25～36 个月是进阶路线；课程不能替代岗位要求的商业项目年限。
 
 ## 仓库结构
 
