@@ -7,11 +7,12 @@ layout(location = 3) in vec3 normal;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat3 normal_matrix;
 out vec2 uv_coord;
 out vec3 world_normal;
 
 void main() {
     uv_coord = uv;
-    world_normal = mat3(model) * normal;
+    world_normal = normal_matrix * normal;
     gl_Position = projection * view * model * vec4(position, 1.0);
 }

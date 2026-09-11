@@ -71,6 +71,20 @@ namespace {
         model = glm::rotate(model, glm::radians(180.0f * elapsed_seconds), glm::vec3(1.0f, 0.0f, 0.0f));
         return glm::scale(model, glm::vec3(0.5f));
     }
+
+    glm::mat4 SlantedPlaneModel() {
+        glm::mat4 model = glm::translate(
+            glm::mat4(1.0f),
+            glm::vec3(-0.6f, 0.0f, -0.8f)
+        );
+        model = glm::scale(model, glm::vec3(0.45f, 0.45f, 0.12f));
+        model = glm::rotate(
+            model,
+            glm::radians(-45.0f),
+            glm::vec3(0.0f, 1.0f, 0.0f)
+        );
+        return model;
+    }
 }
 
 bool Renderer::Initialize() {
@@ -90,7 +104,7 @@ bool Renderer::Initialize() {
     if (!cube_vertex_array_.Initialize(cube)) return false;
     if (!cube_texture_.Initialize(image.width, image.height, image.rgba_pixels.data())) return false;
     const MeshData plane = CreateTexturedPlaneMesh();
-    if (!translucent_vertex_array_.Initialize(plane)) return false;
+    if (!plane_vertex_array_.Initialize(plane)) return false;
     if (!translucent_texture_.Initialize(translucent_image.width, translucent_image.height,
                                          translucent_image.rgba_pixels.data()))
         return false;
@@ -144,13 +158,14 @@ bool Renderer::DrawFrame(
         0.1f,
         100.0f
     );
+    const glm::mat4 model = CubeModel(elapsed_seconds);
+    if (!SetModelUniforms(model)) {
+        return false;
+    }
     if (!shader_program_.SetMat4("view", view)) {
         return false;
     }
     if (!shader_program_.SetMat4("projection", projection)) {
-        return false;
-    }
-    if (!shader_program_.SetMat4("model", CubeModel(elapsed_seconds))) {
         return false;
     }
     if (!shader_program_.SetVec4("tint", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))) {
@@ -162,6 +177,14 @@ bool Renderer::DrawFrame(
     cube_vertex_array_.Bind();
     cube_texture_.Bind(0);
     RenderCommand::DrawIndexedTriangles(cube_vertex_array_.IndexCount());
+    if (!SetModelUniforms(SlantedPlaneModel())) {
+        return false;
+    }
+    plane_vertex_array_.Bind();
+    cube_texture_.Bind(0);
+    RenderCommand::DrawIndexedTriangles(
+        plane_vertex_array_.IndexCount()
+    );
     if (!DrawTransparentSurfaces(view)) {
         return false;
     }
@@ -182,21 +205,30 @@ bool Renderer::DrawTransparentSurfaces(const glm::mat4 &view) {
     RenderCommand::SetBlendFunction(RenderCommand::BlendFactor::SourceAlpha,
                                     RenderCommand::BlendFactor::OneMinusSourceAlpha);
     RenderCommand::SetFaceCullingEnabled(false);
-    translucent_vertex_array_.Bind();
+    plane_vertex_array_.Bind();
     translucent_texture_.Bind(0);
 
     bool success = true;
     for (const auto &item: items) {
-        if (!shader_program_.SetMat4("model", item.model) ||
+        if (!SetModelUniforms(item.model) ||
             !shader_program_.SetVec4("tint", item.tint)) {
             success = false;
             break;
         }
-        RenderCommand::DrawIndexedTriangles(translucent_vertex_array_.IndexCount());
+        RenderCommand::DrawIndexedTriangles(plane_vertex_array_.IndexCount());
     }
     // Restore the opaque baseline even if a uniform upload fails.
     RenderCommand::SetDepthWriteEnabled(true);
     RenderCommand::SetBlendingEnabled(false);
     RenderCommand::SetFaceCullingEnabled(true);
     return success;
+}
+
+bool Renderer::SetModelUniforms(const glm::mat4 &model) {
+    if (!shader_program_.SetMat4("model", model) || !shader_program_.SetMat3("normal_matrix",
+                                                                             glm::transpose(
+                                                                                 glm::inverse(glm::mat3(model))))) {
+        return false;
+    }
+    return true;
 }

@@ -8,26 +8,33 @@
 class Renderer {
 public:
     Renderer() = default;
-    Renderer(const Renderer&) = delete;
-    Renderer& operator=(const Renderer&) = delete;
-    Renderer(Renderer&&) noexcept = default;
-    Renderer& operator=(Renderer&&) noexcept = default;
+
+    Renderer(const Renderer &) = delete;
+
+    Renderer &operator=(const Renderer &) = delete;
+
+    Renderer(Renderer &&) noexcept = default;
+
+    Renderer &operator=(Renderer &&) noexcept = default;
 
     bool Initialize();
+
     bool DrawFrame(
         float elapsed_seconds,
         int framebuffer_width,
         int framebuffer_height,
-        const glm::mat4& view
+        const glm::mat4 &view
     );
 
 private:
-    bool DrawTransparentSurfaces(const glm::mat4& view);
+    bool DrawTransparentSurfaces(const glm::mat4 &view);
+
+    bool SetModelUniforms(const glm::mat4 &model);
 
     ShaderProgram shader_program_;
     VertexArray cube_vertex_array_;
     Texture2D cube_texture_;
 
-    VertexArray translucent_vertex_array_;
+    VertexArray plane_vertex_array_;
     Texture2D translucent_texture_;
 };
