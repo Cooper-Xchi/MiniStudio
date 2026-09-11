@@ -26,7 +26,6 @@ public:
         bool right_pressed = false;
     };
 
-
     [[nodiscard]] MouseInputState ReadMouseInput();
     void SetCursorCaptured(bool captured);
 
