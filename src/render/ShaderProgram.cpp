@@ -6,7 +6,7 @@
 #include <utility>
 
 bool ShaderProgram::Initialize(const char *vertex, const char *fragment) {
-    if (program_id_!=0) return false;
+    if (program_id_ != 0) return false;
     unsigned int vid = CompileShader(GL_VERTEX_SHADER, vertex);
     if (vid == 0) return false;
     unsigned int fid = CompileShader(GL_FRAGMENT_SHADER, fragment);
@@ -14,7 +14,7 @@ bool ShaderProgram::Initialize(const char *vertex, const char *fragment) {
         glDeleteShader(vid);
         return false;
     }
-    unsigned int pid = LinkProgram(vid,fid);
+    unsigned int pid = LinkProgram(vid, fid);
 
     //链接成功删除shader并使用program
     glDeleteShader(vid);
@@ -22,10 +22,9 @@ bool ShaderProgram::Initialize(const char *vertex, const char *fragment) {
     if (pid == 0) return false;
     program_id_ = pid;
     return true;
-
 }
 
-void ShaderProgram::Use()  const{
+void ShaderProgram::Use() const {
     glUseProgram(program_id_);
 }
 
@@ -39,7 +38,7 @@ unsigned int ShaderProgram::CompileShader(unsigned int shader_type, const char *
     GLint log_length = 0;
     GLuint id = glCreateShader(shader_type);
     if (!id) {
-        std::cout << "Create shader : false"<< std::endl;
+        std::cout << "Create shader : false" << std::endl;
         return 0;
     }
     glShaderSource(id, 1, &source, nullptr);
@@ -47,7 +46,7 @@ unsigned int ShaderProgram::CompileShader(unsigned int shader_type, const char *
     glGetShaderiv(id, GL_COMPILE_STATUS, &success);
     glGetShaderiv(id, GL_INFO_LOG_LENGTH, &log_length);
     std::string info_log(static_cast<std::size_t>(log_length),
-    '\0');
+                         '\0');
     glGetShaderInfoLog(id, log_length, nullptr, info_log.data());
     if (success == GL_FALSE) {
         glDeleteShader(id);
@@ -64,7 +63,7 @@ unsigned int ShaderProgram::LinkProgram(unsigned int vid, unsigned int fid) {
     //链接program
     auto pid = glCreateProgram();
     if (pid == 0) {
-        std::cout << "Create program : false"<< std::endl;
+        std::cout << "Create program : false" << std::endl;
         return 0;
     }
     glAttachShader(pid, vid);
@@ -73,7 +72,7 @@ unsigned int ShaderProgram::LinkProgram(unsigned int vid, unsigned int fid) {
     glGetProgramiv(pid, GL_LINK_STATUS, &success);
     glGetProgramiv(pid, GL_INFO_LOG_LENGTH, &log_length);
     std::string info_log(static_cast<std::size_t>(log_length),
-    '\0');
+                         '\0');
     glGetProgramInfoLog(pid, log_length, nullptr, info_log.data());
     if (success == GL_FALSE) {
         std::cerr << "Program link failed: " << info_log << '\n';
@@ -84,25 +83,24 @@ unsigned int ShaderProgram::LinkProgram(unsigned int vid, unsigned int fid) {
 }
 
 void ShaderProgram::Release() {
-    if (program_id_!=0) {
+    if (program_id_ != 0) {
         glDeleteProgram(program_id_);
         program_id_ = 0;
     }
 }
 
-ShaderProgram::ShaderProgram(ShaderProgram&& other) noexcept :program_id_(other.program_id_) {
+ShaderProgram::ShaderProgram(ShaderProgram &&other) noexcept : program_id_(other.program_id_) {
     other.program_id_ = 0;
 }
 
-ShaderProgram& ShaderProgram::operator=(ShaderProgram&& other) noexcept{
-if (this == &other) return *this;
+ShaderProgram &ShaderProgram::operator=(ShaderProgram &&other) noexcept {
+    if (this == &other) return *this;
     Release();
-    program_id_ = std::exchange(other.program_id_,0);
+    program_id_ = std::exchange(other.program_id_, 0);
     return *this;
-
 }
 
-bool ShaderProgram::SetInt(const char* name, int value) {
+bool ShaderProgram::SetInt(const char *name, int value) {
     if (program_id_ == 0) return false;
     const int location = glGetUniformLocation(program_id_, name);
     if (location < 0) return false;
@@ -110,7 +108,7 @@ bool ShaderProgram::SetInt(const char* name, int value) {
     return true;
 }
 
-bool ShaderProgram::SetMat4(const char* name, const glm::mat4& value) {
+bool ShaderProgram::SetMat4(const char *name, const glm::mat4 &value) {
     if (program_id_ == 0) return false;
     const int location = glGetUniformLocation(program_id_, name);
     if (location < 0) return false;
@@ -118,10 +116,34 @@ bool ShaderProgram::SetMat4(const char* name, const glm::mat4& value) {
     return true;
 }
 
-bool ShaderProgram::SetVec4(const char* name, const glm::vec4& value) {
+bool ShaderProgram::SetVec4(const char *name, const glm::vec4 &value) {
     if (program_id_ == 0) return false;
     const int location = glGetUniformLocation(program_id_, name);
     if (location < 0) return false;
     glUniform4fv(location, 1, glm::value_ptr(value));
+    return true;
+}
+
+bool ShaderProgram::SetFloat(const char *name, float value) {
+    if (program_id_ == 0) return false;
+    const int location = glGetUniformLocation(program_id_, name);
+    if (location < 0) return false;
+    glUniform1f(location, value);
+    return true;
+}
+
+bool ShaderProgram::SetVec3(const char *name, const glm::vec3 &value) {
+    if (program_id_ == 0) return false;
+    const int location = glGetUniformLocation(program_id_, name);
+    if (location < 0) return false;
+    glUniform3fv(location, 1, glm::value_ptr(value));
+    return true;
+}
+
+bool ShaderProgram::SetMat3(const char *name, const glm::mat3 &value) {
+    if (program_id_ == 0) return false;
+    const int location = glGetUniformLocation(program_id_, name);
+    if (location < 0) return false;
+    glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
     return true;
 }

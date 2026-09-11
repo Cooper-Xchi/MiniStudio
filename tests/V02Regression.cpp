@@ -11,6 +11,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -158,7 +159,8 @@ void CheckResourcesAndCutout(int width, int height) {
 layout(location=0) in vec3 position;
 layout(location=2) in vec2 uv;
 out vec2 uv_coord;
-void main() { uv_coord=uv; gl_Position=vec4(position,1); }
+uniform mat3 basis;
+void main() { uv_coord=uv; gl_Position=vec4(basis*position,1); }
 )";
         const char* fragment = R"(#version 410 core
 in vec2 uv_coord;
@@ -166,8 +168,11 @@ out vec4 fragment_color;
 uniform sampler2D tex;
 uniform int cutout;
 uniform vec4 tint;
+uniform float intensity;
+uniform vec3 color_scale;
 void main() {
     vec4 value=texture(tex,uv_coord)*tint;
+    value.rgb *= color_scale * intensity;
     if (cutout != 0 && value.a < 0.5) discard;
     fragment_color=value;
 }
@@ -186,12 +191,34 @@ void main() {
         ShaderProgram shader(std::move(original_shader));
         Require(!original_shader.SetVec4("tint", glm::vec4(1)), "Moved-from shader should be empty");
         shader.Use();
-        Require(shader.SetInt("tex", 0) && shader.SetVec4("tint", glm::vec4(1)), "Uniform upload failed");
+        const glm::mat3 basis(1.0f);
+        Require(shader.SetInt("tex", 0) && shader.SetVec4("tint", glm::vec4(1)) &&
+                shader.SetFloat("intensity", 1.0f) &&
+                shader.SetVec3("color_scale", glm::vec3(1.0f)) &&
+                shader.SetMat3("basis", basis), "Uniform upload failed");
         Require(!shader.SetVec4("missing_uniform", glm::vec4(1)), "Missing uniform must fail");
         glGetIntegerv(GL_CURRENT_PROGRAM, &program_id);
         std::array<float, 4> uploaded{};
         glGetUniformfv(static_cast<GLuint>(program_id), glGetUniformLocation(static_cast<GLuint>(program_id), "tint"), uploaded.data());
         Require(std::all_of(uploaded.begin(), uploaded.end(), [](float v) { return Near(v, 1); }), "vec4 was not copied to the Program");
+        float uploaded_intensity = 0.0f;
+        glGetUniformfv(static_cast<GLuint>(program_id),
+                       glGetUniformLocation(static_cast<GLuint>(program_id), "intensity"),
+                       &uploaded_intensity);
+        Require(Near(uploaded_intensity, 1.0f), "float was not copied to the Program");
+        std::array<float, 3> uploaded_color{};
+        glGetUniformfv(static_cast<GLuint>(program_id),
+                       glGetUniformLocation(static_cast<GLuint>(program_id), "color_scale"),
+                       uploaded_color.data());
+        Require(std::all_of(uploaded_color.begin(), uploaded_color.end(), [](float v) { return Near(v, 1); }),
+                "vec3 was not copied to the Program");
+        std::array<float, 9> uploaded_basis{};
+        glGetUniformfv(static_cast<GLuint>(program_id),
+                       glGetUniformLocation(static_cast<GLuint>(program_id), "basis"),
+                       uploaded_basis.data());
+        Require(std::equal(uploaded_basis.begin(), uploaded_basis.end(), glm::value_ptr(basis),
+                           [](float a, float b) { return Near(a, b); }),
+                "mat3 was not copied to the Program");
 
         VertexArray empty_quad;
         Require(!empty_quad.Initialize(MeshData{}), "Empty MeshData must fail");
@@ -246,7 +273,62 @@ void main() {
     std::cout << "Expected missing-file diagnostic follows:\n";
     Require(!LoadImageRgba("assets/textures/__v02_missing__.png", image) && image.rgba_pixels == original,
             "Image loading failure must preserve the caller's output");
-    std::cout << "PASS vec4 upload, MeshData validation, resource moves/destruction, PNG failure path and alpha cutout\n";
+    std::cout << "PASS uniform uploads, MeshData validation, resource moves/destruction, PNG failure path and alpha cutout\n";
+}
+
+void CheckDirectionalDiffuse(int width, int height) {
+    std::string vertex_source;
+    std::string fragment_source;
+    Require(LoadTextFile("assets/shaders/scene.vert", vertex_source) &&
+            LoadTextFile("assets/shaders/scene.frag", fragment_source),
+            "Directional diffuse Shader sources did not load");
+
+    ShaderProgram shader;
+    Require(shader.Initialize(vertex_source.c_str(), fragment_source.c_str()),
+            "Directional diffuse Shader initialization failed");
+    MeshData plane = CreateTexturedPlaneMesh();
+    VertexArray quad;
+    Require(quad.Initialize(plane), "Directional diffuse quad initialization failed");
+    const unsigned char white[] = {255, 255, 255, 255};
+    Texture2D texture;
+    Require(texture.Initialize(1, 1, white), "Directional diffuse texture initialization failed");
+
+    shader.Use();
+    Require(shader.SetInt("texture_sampler", 0) &&
+            shader.SetInt("use_diffuse_lighting", 1) &&
+            shader.SetVec4("tint", glm::vec4(1.0f)) &&
+            shader.SetMat4("view", glm::mat4(1.0f)) &&
+            shader.SetMat4("projection", glm::mat4(1.0f)),
+            "Directional diffuse baseline uniform upload failed");
+    quad.Bind();
+    texture.Bind(0);
+    RenderCommand::SetGlobalDepth(true, true, RenderCommand::DepthCompare::LESS);
+    RenderCommand::SetBlendingEnabled(false);
+    RenderCommand::SetFaceCullingEnabled(false);
+
+    const auto draw = [&](const glm::vec3& light_direction, const glm::mat4& model) {
+        Require(shader.SetVec3("light_direction", light_direction) && shader.SetMat4("model", model),
+                "Directional diffuse draw uniform upload failed");
+        RenderCommand::Clear(0, 0, 0, 1);
+        RenderCommand::DrawIndexedTriangles(quad.IndexCount());
+        return ReadFrame(width, height);
+    };
+    const auto center = static_cast<std::size_t>(height / 2) * width + width / 2;
+    const auto front_lit = draw(glm::vec3(0, 0, 1), glm::mat4(1.0f));
+    Require(front_lit.rgba[center * 4] == 255 && Near(front_lit.depth[center], 0.5f),
+            "Front-facing normal did not receive full diffuse light");
+    const auto front_dark = draw(glm::vec3(0, 0, -1), glm::mat4(1.0f));
+    Require(front_dark.rgba[center * 4] == 0 && Near(front_dark.depth[center], 0.5f),
+            "Opposite light direction was not clamped to zero");
+    const auto rotated_lit = draw(
+        glm::vec3(0, 0, -1),
+        glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0, 1, 0))
+    );
+    Require(rotated_lit.rgba[center * 4] == 255 && Near(rotated_lit.depth[center], 0.5f),
+            "Model transform did not rotate the world-space normal");
+    Require(OpenGLDebug::CheckErrors("directional diffuse regression"),
+            "Directional diffuse regression produced an OpenGL error");
+    std::cout << "PASS clamped directional diffuse and world-space normal transform\n";
 }
 
 // Independent pixel-ray reference, not the renderer's object-center sorting algorithm.
@@ -301,7 +383,7 @@ void CheckPixels(const Frame& frame, const glm::vec3& eye, const glm::mat4& view
                 }
             }
             if (edge) continue;
-            glm::vec3 expected(0.36f, 0.5f, 0.6f);
+            glm::vec3 expected(0.0f);
             const float alpha = 128.0f / 255.0f;
             const int first = distances[0] > distances[1] ? 0 : 1;
             for (int i : {first, 1 - first}) {
@@ -362,10 +444,21 @@ void RunIntegration(const std::filesystem::path& captures) {
     window.GetFramebufferSize(width, height);
     Require(width > 0 && height > 0, "Empty framebuffer");
     CheckResourcesAndCutout(width, height);
+    CheckDirectionalDiffuse(width, height);
     GLint renderer_program = 0;
     {
         Renderer renderer;
         Require(renderer.Initialize(), "Renderer initialization failed");
+        GLint light_location = -1;
+        glGetIntegerv(GL_CURRENT_PROGRAM, &renderer_program);
+        light_location = glGetUniformLocation(static_cast<GLuint>(renderer_program), "light_direction");
+        Require(light_location >= 0, "Renderer light direction uniform is missing");
+        std::array<float, 3> light_direction{};
+        glGetUniformfv(static_cast<GLuint>(renderer_program), light_location, light_direction.data());
+        const glm::vec3 expected_light = glm::normalize(glm::vec3(0.4f, 0.8f, 1.0f));
+        const glm::vec3 uploaded_light(light_direction[0], light_direction[1], light_direction[2]);
+        Require(glm::length(uploaded_light - expected_light) < 0.0001f,
+                "Renderer did not upload the fixed normalized light direction");
         const glm::vec3 front_eye(0.25f, 0.0f, 1.5f), back_eye(0.25f, 0.0f, -4.0f);
         const auto front = glm::lookAt(front_eye, front_eye + glm::vec3(0,0,-1), glm::vec3(0,1,0));
         const auto back = glm::lookAt(back_eye, back_eye + glm::vec3(0,0,1), glm::vec3(0,1,0));

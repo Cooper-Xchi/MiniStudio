@@ -49,7 +49,16 @@ if(MINISTUDIO_BUILD_TESTS)
     )
 endif()
 
+add_custom_target(ministudio_assets
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+    "$<TARGET_FILE_DIR:ministudio>/assets"
+    COMMENT "Copying MiniStudio assets"
+    VERBATIM
+)
+
 foreach(target IN LISTS MINISTUDIO_TARGETS)
+    add_dependencies(${target} ministudio_assets)
     target_include_directories(${target} PRIVATE src)
     target_include_directories(${target} SYSTEM PRIVATE third_party/stb)
     target_compile_features(${target} PRIVATE cxx_std_20)
@@ -72,10 +81,4 @@ foreach(target IN LISTS MINISTUDIO_TARGETS)
     if(APPLE)
         target_compile_definitions(${target} PRIVATE GL_SILENCE_DEPRECATION)
     endif()
-    add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/assets"
-        "$<TARGET_FILE_DIR:${target}>/assets"
-        VERBATIM
-        )
 endforeach()
