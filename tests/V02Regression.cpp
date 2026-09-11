@@ -39,6 +39,9 @@ void CheckPrimitiveMeshes() {
 
     const std::array<glm::vec2, 4> expected_uvs{{{0, 0}, {1, 0}, {1, 1}, {0, 1}}};
     const std::array<glm::vec3, 4> expected_colors{{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {1, 1, 1}}};
+    const std::array<glm::vec3, 6> expected_normals{{
+        {0, 0, 1}, {0, 0, -1}, {-1, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, -1, 0}
+    }};
     for (std::size_t vertex = 0; vertex < cube.vertices.size(); ++vertex) {
         const auto& value = cube.vertices[vertex];
         Require(glm::length(value.uv - expected_uvs[vertex % 4]) < 0.0001f,
@@ -49,6 +52,8 @@ void CheckPrimitiveMeshes() {
                 Near(std::abs(value.position.y), 0.5f) &&
                 Near(std::abs(value.position.z), 0.5f),
                 "Cube position data changed during MeshData extraction");
+        Require(glm::length(value.normal - expected_normals[vertex / 4]) < 0.0001f,
+                "Cube face normal is incorrect");
     }
     for (std::size_t face = 0; face < 6; ++face) {
         const auto vertex = static_cast<std::uint32_t>(face * 4);
@@ -69,6 +74,8 @@ void CheckPrimitiveMeshes() {
                 "Textured plane position data changed during MeshData extraction");
         Require(glm::length(value.uv - expected_uvs[vertex]) < 0.0001f,
                 "Textured plane UV layout changed during MeshData extraction");
+        Require(glm::length(value.normal - glm::vec3(0, 0, 1)) < 0.0001f,
+                "Textured plane normal is incorrect");
     }
     std::cout << "PASS CPU primitive MeshData contracts\n";
 }
