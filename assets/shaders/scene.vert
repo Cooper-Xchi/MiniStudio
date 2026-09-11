@@ -8,10 +8,10 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 out vec2 uv_coord;
-out vec3 normal_direction;
+out vec3 world_normal;
 
 void main() {
     uv_coord = uv;
-    normal_direction = normal;
+    world_normal = mat3(model) * normal;
     gl_Position = projection * view * model * vec4(position, 1.0);
 }

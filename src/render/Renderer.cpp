@@ -100,6 +100,9 @@ bool Renderer::Initialize() {
     if (!shader_program_.Initialize(vertex_source.c_str(), fragment_source.c_str())) return false;
     std::cout << "shader_program is Initialized!" << std::endl;
     shader_program_.Use();
+    if (!shader_program_.SetVec3("light_direction", glm::normalize(glm::vec3(0.4f, 0.8f, 1.0f)))) {
+        return false;
+    }
     if (!shader_program_.SetInt("texture_sampler", 0)) {
         return false;
     }
@@ -127,7 +130,7 @@ bool Renderer::DrawFrame(
     RenderCommand::SetGlobalCullFace(true, RenderCommand::CullFace::Back,
                                      RenderCommand::FrontFaceWinding::CounterClockwise);
     RenderCommand::SetBlendingEnabled(false);
-    RenderCommand::Clear(0.36, 0.5, 0.6, 1);
+    RenderCommand::Clear(0.0, 0.0, 0.0, 1);
 
     //开始
 
@@ -153,7 +156,7 @@ bool Renderer::DrawFrame(
     if (!shader_program_.SetVec4("tint", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))) {
         return false;
     }
-    if (!shader_program_.SetInt("visualize_normals", 1)) {
+    if (!shader_program_.SetInt("use_diffuse_lighting", 1)) {
         return false;
     }
     cube_vertex_array_.Bind();
@@ -171,7 +174,7 @@ bool Renderer::DrawFrame(
 
 bool Renderer::DrawTransparentSurfaces(const glm::mat4 &view) {
     const auto items = CreateTransparentDrawItems(view);
-    if (!shader_program_.SetInt("visualize_normals", 0)) {
+    if (!shader_program_.SetInt("use_diffuse_lighting", 0)) {
         return false;
     }
     RenderCommand::SetDepthWriteEnabled(false);
