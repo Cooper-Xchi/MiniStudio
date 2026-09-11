@@ -1,5 +1,5 @@
 #pragma once
-#include <cstddef>
+#include "mesh/MeshData.h"
 
 class VertexArray {
 public:
@@ -11,7 +11,7 @@ public:
     VertexArray(VertexArray&& other) noexcept;
     VertexArray& operator=(VertexArray&& other) noexcept;
 
-    bool Initialize(const float* vertices, std::size_t float_count,const unsigned int* indices, std::size_t index_count);
+    bool Initialize(const MeshData& mesh);
     void Bind() const;
     int VertexCount() const;
     int IndexCount() const;

@@ -15,6 +15,7 @@ set(MINISTUDIO_SOURCES
         src/render/Texture2D.h
         src/image/ImageLoader.cpp
         src/camera/Camera.cpp
+        src/mesh/PrimitiveMeshes.cpp
 )
 
 add_executable(ministudio src/main.cpp ${MINISTUDIO_SOURCES})

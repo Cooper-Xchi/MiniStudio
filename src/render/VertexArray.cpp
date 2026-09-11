@@ -1,17 +1,16 @@
 #include "VertexArray.h"
 #include "opengl/OpenGLHeaders.h"
-
 #include <utility>
+#include <cstddef>
 
-bool VertexArray::Initialize(const float* vertices,
-    std::size_t float_count,
-    const unsigned int* indices,
-    std::size_t index_count) {
-    if (vertices == nullptr
-        || float_count  ==0
-        || float_count % 8 !=0
-        || index_count  == 0
-        || indices == nullptr
+bool VertexArray::Initialize(const MeshData& mesh) {
+    for (const std::uint32_t index : mesh.indices) {
+        if (index >= mesh.vertices.size()) {
+            return false;
+        }
+    }
+    if (mesh.vertices.empty()
+        || mesh.indices.empty()
         || vao_ != 0
         || vbo_ != 0
         || ebo_ != 0) return false;
@@ -25,12 +24,12 @@ bool VertexArray::Initialize(const float* vertices,
     }
     glBindVertexArray(vao_);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-    glBufferData(GL_ARRAY_BUFFER,static_cast<GLsizeiptr>(float_count * sizeof(float)),vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), nullptr);
+    glBufferData(GL_ARRAY_BUFFER,static_cast<GLsizeiptr>(mesh.vertices.size() * sizeof(MeshData::Vertex)),mesh.vertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MeshData::Vertex), reinterpret_cast<const void*>(offsetof(MeshData::Vertex, position)));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), reinterpret_cast<const void*>(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshData::Vertex), reinterpret_cast<const void*>(offsetof(MeshData::Vertex, color)));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), reinterpret_cast<const void*>(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(MeshData::Vertex), reinterpret_cast<const void*>(offsetof(MeshData::Vertex, uv)));
     glEnableVertexAttribArray(2);
     glGenBuffers(1, &ebo_);
     if (!ebo_) {
@@ -42,9 +41,9 @@ bool VertexArray::Initialize(const float* vertices,
     }
     glBindVertexArray(vao_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,static_cast<GLsizeiptr>(index_count * sizeof(unsigned int)),indices, GL_STATIC_DRAW);
-    index_count_ = static_cast<int>(index_count);
-    vertex_count_ = static_cast<int>(float_count/8);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,static_cast<GLsizeiptr>(mesh.indices.size() * sizeof(uint32_t)),mesh.indices.data(), GL_STATIC_DRAW);
+    index_count_ = static_cast<int>(mesh.indices.size());
+    vertex_count_ = static_cast<int>(mesh.vertices.size());
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     return true;

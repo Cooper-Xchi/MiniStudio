@@ -1,5 +1,7 @@
 #include "camera/Camera.h"
 #include "image/ImageLoader.h"
+#include "mesh/MeshData.h"
+#include "mesh/PrimitiveMeshes.h"
 #include "opengl/OpenGLHeaders.h"
 #include "platform/GlfwWindow.h"
 #include "render/OpenGLDebug.h"
@@ -28,6 +30,47 @@ void Require(bool condition, const char* message) {
 
 bool Near(float a, float b, float tolerance = 0.0001f) {
     return std::abs(a - b) <= tolerance;
+}
+
+void CheckPrimitiveMeshes() {
+    const MeshData cube = CreateTexturedCubeMesh();
+    Require(cube.vertices.size() == 24 && cube.indices.size() == 36,
+            "Textured cube must contain 24 vertices and 36 indices");
+
+    const std::array<glm::vec2, 4> expected_uvs{{{0, 0}, {1, 0}, {1, 1}, {0, 1}}};
+    const std::array<glm::vec3, 4> expected_colors{{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {1, 1, 1}}};
+    for (std::size_t vertex = 0; vertex < cube.vertices.size(); ++vertex) {
+        const auto& value = cube.vertices[vertex];
+        Require(glm::length(value.uv - expected_uvs[vertex % 4]) < 0.0001f,
+                "Cube face UV layout changed during MeshData extraction");
+        Require(glm::length(value.color - expected_colors[vertex % 4]) < 0.0001f,
+                "Cube face colors changed during MeshData extraction");
+        Require(Near(std::abs(value.position.x), 0.5f) &&
+                Near(std::abs(value.position.y), 0.5f) &&
+                Near(std::abs(value.position.z), 0.5f),
+                "Cube position data changed during MeshData extraction");
+    }
+    for (std::size_t face = 0; face < 6; ++face) {
+        const auto vertex = static_cast<std::uint32_t>(face * 4);
+        const auto index = face * 6;
+        Require(cube.indices[index] == vertex && cube.indices[index + 1] == vertex + 1 &&
+                cube.indices[index + 2] == vertex + 2 && cube.indices[index + 3] == vertex + 2 &&
+                cube.indices[index + 4] == vertex + 3 && cube.indices[index + 5] == vertex,
+                "Cube triangle indices changed during MeshData extraction");
+    }
+
+    const MeshData plane = CreateTexturedPlaneMesh();
+    Require(plane.vertices.size() == 4 && plane.indices == std::vector<std::uint32_t>({0, 1, 2, 2, 3, 0}),
+            "Textured plane topology changed during MeshData extraction");
+    for (std::size_t vertex = 0; vertex < plane.vertices.size(); ++vertex) {
+        const auto& value = plane.vertices[vertex];
+        Require(Near(std::abs(value.position.x), 0.8f) &&
+                Near(std::abs(value.position.y), 0.8f) && Near(value.position.z, 0.0f),
+                "Textured plane position data changed during MeshData extraction");
+        Require(glm::length(value.uv - expected_uvs[vertex]) < 0.0001f,
+                "Textured plane UV layout changed during MeshData extraction");
+    }
+    std::cout << "PASS CPU primitive MeshData contracts\n";
 }
 
 struct Frame {
@@ -98,11 +141,15 @@ void main() {
     fragment_color=value;
 }
 )";
-        const float vertices[] = {
-            -1,-1,0, 1,1,1, 0,0,  1,-1,0, 1,1,1, 1,0,
-             1, 1,0, 1,1,1, 1,1, -1, 1,0, 1,1,1, 0,1
+        MeshData quad_mesh;
+        quad_mesh.vertices = {
+            MeshData::Vertex{{-1, -1, 0}, {1, 1, 1}, {0, 0}},
+            MeshData::Vertex{{ 1, -1, 0}, {1, 1, 1}, {1, 0}},
+            MeshData::Vertex{{ 1,  1, 0}, {1, 1, 1}, {1, 1}},
+            MeshData::Vertex{{-1,  1, 0}, {1, 1, 1}, {0, 1}},
         };
-        const unsigned int indices[] = {0,1,2,2,3,0};
+        quad_mesh.indices = {0, 1, 2, 2, 3, 0};
+
         ShaderProgram original_shader;
         Require(original_shader.Initialize(vertex, fragment), "Cutout shader initialization failed");
         ShaderProgram shader(std::move(original_shader));
@@ -115,10 +162,20 @@ void main() {
         glGetUniformfv(static_cast<GLuint>(program_id), glGetUniformLocation(static_cast<GLuint>(program_id), "tint"), uploaded.data());
         Require(std::all_of(uploaded.begin(), uploaded.end(), [](float v) { return Near(v, 1); }), "vec4 was not copied to the Program");
 
+        VertexArray empty_quad;
+        Require(!empty_quad.Initialize(MeshData{}), "Empty MeshData must fail");
+
+        MeshData invalid_mesh = quad_mesh;
+        invalid_mesh.indices.push_back(static_cast<std::uint32_t>(invalid_mesh.vertices.size()));
+        VertexArray invalid_quad;
+        Require(!invalid_quad.Initialize(invalid_mesh), "Out-of-range mesh index must fail");
+
         VertexArray original_quad;
-        Require(original_quad.Initialize(vertices, std::size(vertices), indices, std::size(indices)), "Quad initialization failed");
+        Require(original_quad.Initialize(quad_mesh), "Quad initialization failed");
         VertexArray quad(std::move(original_quad));
-        Require(original_quad.IndexCount() == 0 && quad.IndexCount() == 6, "VAO move lost index ownership");
+        Require(original_quad.VertexCount() == 0 && original_quad.IndexCount() == 0 &&
+                quad.VertexCount() == 4 && quad.IndexCount() == 6,
+                "VAO move lost mesh ownership/counts");
         quad.Bind();
         glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &vao_id);
         glGetVertexAttribiv(0, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &vbo_id);
@@ -158,7 +215,7 @@ void main() {
     std::cout << "Expected missing-file diagnostic follows:\n";
     Require(!LoadImageRgba("assets/textures/__v02_missing__.png", image) && image.rgba_pixels == original,
             "Image loading failure must preserve the caller's output");
-    std::cout << "PASS vec4 upload, resource moves/destruction, PNG failure path and alpha cutout\n";
+    std::cout << "PASS vec4 upload, MeshData validation, resource moves/destruction, PNG failure path and alpha cutout\n";
 }
 
 // Independent pixel-ray reference, not the renderer's object-center sorting algorithm.
@@ -329,6 +386,7 @@ int main(int argc, char** argv) {
             std::cerr << "Usage: ministudio_regression [--capture-dir directory]\n";
             return 2;
         }
+        CheckPrimitiveMeshes();
         CheckCamera();
         RunIntegration(argc == 3 ? std::filesystem::path(argv[2]) : std::filesystem::path{});
         std::cout << "PASS MiniStudio v0.2 regression; resources released before Context\n";
