@@ -1,5 +1,6 @@
 #include "camera/Camera.h"
 #include "image/ImageLoader.h"
+#include "io/TextFileLoader.h"
 #include "mesh/MeshData.h"
 #include "mesh/PrimitiveMeshes.h"
 #include "opengl/OpenGLHeaders.h"
@@ -20,6 +21,7 @@
 #include <limits>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -30,6 +32,28 @@ void Require(bool condition, const char* message) {
 
 bool Near(float a, float b, float tolerance = 0.0001f) {
     return std::abs(a - b) <= tolerance;
+}
+
+void CheckTextFileLoading() {
+    std::string source;
+    Require(LoadTextFile("assets/shaders/scene.vert", source),
+            "External vertex Shader did not load");
+    Require(source.find("#version 410 core") != std::string::npos &&
+            source.find("gl_Position") != std::string::npos,
+            "External vertex Shader contents are incomplete");
+
+    Require(LoadTextFile("assets/shaders/scene.frag", source),
+            "External fragment Shader did not load");
+    Require(source.find("#version 410 core") != std::string::npos &&
+            source.find("fragment_color") != std::string::npos,
+            "External fragment Shader contents are incomplete");
+
+    source = "preserve caller output";
+    std::cout << "Expected missing-text-file diagnostic follows:\n";
+    Require(!LoadTextFile("assets/shaders/__missing__.frag", source) &&
+            source == "preserve caller output",
+            "Text loading failure must preserve the caller's output");
+    std::cout << "PASS external Shader text loading and failure rollback\n";
 }
 
 void CheckPrimitiveMeshes() {
@@ -393,6 +417,7 @@ int main(int argc, char** argv) {
             std::cerr << "Usage: ministudio_regression [--capture-dir directory]\n";
             return 2;
         }
+        CheckTextFileLoading();
         CheckPrimitiveMeshes();
         CheckCamera();
         RunIntegration(argc == 3 ? std::filesystem::path(argv[2]) : std::filesystem::path{});
