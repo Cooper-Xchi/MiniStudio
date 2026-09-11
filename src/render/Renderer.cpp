@@ -13,6 +13,8 @@
 #include <glm/ext/matrix_transform.hpp>
 #include "OpenGLDebug.h"
 #include "RenderCommand.h"
+#include "mesh/MeshData.h"
+#include "mesh/PrimitiveMeshes.h"
 
 namespace {
 
@@ -96,82 +98,23 @@ void main() {
 }
 )";
 
-    const float cube_vertices[] = {
-        // 正面 +Z：从立方体外部观察为逆时针
-        -0.5f, -0.5f,  0.5f,  1, 0, 0,  0, 0,
-         0.5f, -0.5f,  0.5f,  0, 1, 0,  1, 0,
-         0.5f,  0.5f,  0.5f,  0, 0, 1,  1, 1,
-        -0.5f,  0.5f,  0.5f,  1, 1, 1,  0, 1,
-
-        //后面
-         0.5f, -0.5f,  -0.5f,  1, 0, 0,  0, 0,
-        -0.5f, -0.5f,  -0.5f,  0, 1, 0,  1, 0,
-        -0.5f,  0.5f,  -0.5f,  0, 0, 1,  1, 1,
-         0.5f,  0.5f,  -0.5f,  1, 1, 1,  0, 1,
-
-        //左面
-        -0.5f, -0.5f, -0.5f,  1, 0, 0,  0, 0,
-        -0.5f, -0.5f,  0.5f,  0, 1, 0,  1, 0,
-        -0.5f,  0.5f,  0.5f,  0, 0, 1,  1, 1,
-        -0.5f,  0.5f, -0.5f,  1, 1, 1,  0, 1,
-
-        //右面
-         0.5f, -0.5f,  0.5f,  1, 0, 0,  0, 0,
-         0.5f, -0.5f, -0.5f,  0, 1, 0,  1, 0,
-         0.5f,  0.5f, -0.5f,  0, 0, 1,  1, 1,
-         0.5f,  0.5f,  0.5f,  1, 1, 1,  0, 1,
-
-        //上面
-        -0.5f,  0.5f,  0.5f,  1, 0, 0,  0, 0,
-         0.5f,  0.5f,  0.5f,  0, 1, 0,  1, 0,
-         0.5f,  0.5f, -0.5f,  0, 0, 1,  1, 1,
-        -0.5f,  0.5f, -0.5f,  1, 1, 1,  0, 1,
-
-        //下面
-        -0.5f, -0.5f, -0.5f,  1, 0, 0,  0, 0,
-         0.5f, -0.5f, -0.5f,  0, 1, 0,  1, 0,
-         0.5f, -0.5f,  0.5f,  0, 0, 1,  1, 1,
-        -0.5f, -0.5f,  0.5f,  1, 1, 1,  0, 1,
-    };
-
-    const float translucent_vertices[] = {
-        // 正面 +Z：从立方体外部观察为逆时针
-        -0.8f, -0.8f,  0.0f,  1, 0, 0,  0, 0,
-         0.8f, -0.8f,  0.0f,  0, 1, 0,  1, 0,
-         0.8f,  0.8f,  0.0f,  0, 0, 1,  1, 1,
-        -0.8f,  0.8f,  0.0f,  1, 1, 1,  0, 1,
-    };
-
-    const unsigned int indices[] = {
-        0, 1, 2,
-        2, 3, 0,
-        4, 5, 6,
-        6, 7, 4,
-        8, 9, 10,
-        10, 11, 8,
-        12, 13, 14,
-        14, 15, 12,
-        16,17, 18,
-        18, 19, 16,
-        20,21,22,
-        22,23,20,
-    };
-
-    const unsigned int translucent_indices[] = {
-        0, 1, 2,
-        2, 3, 0,
-    };
 
     ImageData image;
-    const ImageData translucent_image = CreateTranslucentImage();
     if (!LoadImageRgba("assets/textures/lesson21-quadrants.png",image)) {
         return false;
     }
-    if (!shader_program_.Initialize(vertex_source, fragment_source)) return false;
-    if (!cube_vertex_array_.Initialize(cube_vertices,std::size(cube_vertices),indices,std::size(indices))) return false;
-    if (!translucent_vertex_array_.Initialize(translucent_vertices,std::size(translucent_vertices),translucent_indices,std::size(translucent_indices))) return false;
+    const ImageData translucent_image = CreateTranslucentImage();
+    const MeshData cube = CreateTexturedCubeMesh();
+    if (!cube_vertex_array_.Initialize(cube)) return false;
     if (!cube_texture_.Initialize(image.width, image.height,image.rgba_pixels.data())) return false;
+    const MeshData plane = CreateTexturedPlaneMesh();
+    if (!translucent_vertex_array_.Initialize(plane)) return false;
     if (!translucent_texture_.Initialize(translucent_image.width, translucent_image.height,translucent_image.rgba_pixels.data())) return false;
+    std::cout<<"data is Create!"<<std::endl;
+
+    //初始化program
+    if (!shader_program_.Initialize(vertex_source, fragment_source)) return false;
+    std::cout<<"shader_program is Initialized!"<<std::endl;
     shader_program_.Use();
     if (!shader_program_.SetInt("texture_sampler", 0)) {
         return false;
