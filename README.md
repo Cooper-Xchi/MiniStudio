@@ -2,7 +2,7 @@
 
 现代 C++ 与实时渲染学习项目。当前使用 OpenGL 4.1、GLFW、GLM；先完成第一套桌面渲染器，再按课程进入移动端和其他后端。
 
-- 版本：v0.2.0。第 1～56 课已完成；下一课是第 57 课（B04），网格与光照数据边界复盘。
+- 版本：v0.2.0。第 1～57 课已完成；下一课是第 58 课（B05），非均匀缩放后的法线。
 - 学什么、下一课做什么：只看 [逐课任务清单](docs/lessons.md)。
 - AI 协作规则：[AGENTS.md](AGENTS.md)。详细旧记录保留在 Git 历史，不再维护多份交接、复盘或路线文档。
 
@@ -62,8 +62,10 @@ cmake --build build/windows-debug --parallel
 
 2026-09-11 第 56 课在世界空间实现固定方向光的 Lambert 漫反射，立方体使用白色材质，透明平面保留原有纹理与混合路径，并将背景调整为黑色以增强明暗对比；增量构建会重新复制外部 Shader。macOS Debug 编译无警告，uniform 上传、漫反射截断、世界法线变换及完整 OpenGL 回归 CTest 1/1 通过；Windows 尚未验证本课改动。
 
+2026-09-11 第 57 课完成网格与光照数据边界复盘，没有修改运行行为。当前 `Renderer` 协调固定场景的资源加载、GPU 上传和绘制；CPU `MeshData`、图片像素和 Shader 源码在上传后可以销毁，GPU 包装对象仍必须在 OpenGL Context 有效的主线程释放。等多个对象需要复用网格或材质时，再由场景或资源容器统一拥有资源，对象保存引用或句柄，Renderer 借用绘制数据。
+
 ## 代码位置
 
-`src/app` 编排主循环，`src/platform` 管窗口和输入，`src/camera` 保存纯 CPU 相机状态，`src/mesh` 保存 CPU 网格数据并生成内置 primitive，`src/io` 负责无状态文本读取，`src/render` 管绘制及 GPU RAII 资源，`src/image` 负责无状态解码；GLSL 位于 `assets/shaders`，`tests/V02Regression.cpp` 是可选集成回归。
+`src/app` 编排主循环，`src/platform` 管窗口和输入，`src/camera` 保存纯 CPU 相机状态，`src/mesh` 保存 CPU 网格数据并生成内置 primitive，`src/io` 负责无状态文本读取，`src/render` 管绘制及 GPU RAII 资源，`src/image` 负责无状态解码；GLSL 位于 `assets/shaders`，`tests/V02Regression.cpp` 是可选集成回归。当前固定场景的 GPU 资源由 Renderer 直接拥有；出现多个对象和共享资源的实际需求后，再拆分场景实例与资源所有权。
 
 Application 按值拥有窗口、Renderer 和 Camera；Renderer 的 GPU 资源必须在窗口和 Context 之前销毁。GLFW/OpenGL 调用及资源释放均在持有 Current Context 的主线程。
