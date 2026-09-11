@@ -2,7 +2,7 @@
 
 现代 C++ 与实时渲染学习项目。当前使用 OpenGL 4.1、GLFW、GLM；先完成第一套桌面渲染器，再按课程进入移动端和其他后端。
 
-- 版本：v0.2.0。第 1～53 课已完成；下一课是第 54 课（B02）。
+- 版本：v0.2.0。第 1～54 课已完成；下一课是第 55 课（B03）。
 - 学什么、下一课做什么：只看 [逐课任务清单](docs/lessons.md)。
 - AI 协作规则：[AGENTS.md](AGENTS.md)。详细旧记录保留在 Git 历史，不再维护多份交接、复盘或路线文档。
 
@@ -55,6 +55,8 @@ cmake --build build/windows-debug --parallel
 2026-09-11 在公司 macOS arm64 使用 AppleClang 21 完成全新 Debug 配置与编译，未输出编译器警告；CTest 1/1 通过。完整程序创建 OpenGL 4.1 Core Context、Shader 链接成功，实际画面正常，Esc 退出码为 0。本轮未完整复测 W/A/S/D 与鼠标交互，也未运行 Sanitizer。第 52 课的测试和整理由助手完成，个人季度复盘按要求跳过。
 
 2026-09-11 第 53 课将立方体和透明平面的 CPU 数据整理为带类型顶点的 `MeshData`，由无状态 primitive 工厂生成并交给 `VertexArray` 上传；macOS Debug 编译无警告，CPU 数据契约、非法索引、资源移动／释放及完整 OpenGL 画面回归 CTest 1/1 通过。Windows 尚未验证本课改动。
+
+2026-09-11 第 54 课为内置网格补充逐面法线及对应顶点属性，以物体空间法线颜色显示立方体方向，同时保留透明平面的原有混合路径；macOS Debug 编译无警告，法线数据契约和完整 OpenGL 回归 CTest 1/1 通过，实际画面符合预期。Windows 尚未验证本课改动。
 
 ## 代码位置
 

@@ -75,13 +75,17 @@ bool Renderer::Initialize() {
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 color;
 layout(location = 2) in vec2 uv;
+layout(location = 3) in vec3 normal;
+
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 out vec2 uv_coord;
+out vec3 normal_direction;
 
 void main() {
     uv_coord = uv;
+    normal_direction = normal;
     gl_Position = projection * view * model * vec4(position, 1.0);
 }
 )";
@@ -89,12 +93,20 @@ void main() {
     const char* fragment_source = R"(#version 410 core
     out vec4 fragment_color;
     in vec2 uv_coord;
+    in vec3 normal_direction;
 uniform sampler2D texture_sampler;
 uniform vec4 tint;
+uniform int visualize_normals;
 
 void main() {
     vec4 texel = texture(texture_sampler, uv_coord);
-    fragment_color = tint * texel;
+    vec3 normal_color = normalize(normal_direction) * 0.5 + 0.5;
+if(visualize_normals != 0 ){
+fragment_color = vec4(normal_color, 1.0);
+}else{
+fragment_color = tint * texel;
+}
+
 }
 )";
 
@@ -162,14 +174,17 @@ bool Renderer::DrawFrame(
     if (!shader_program_.SetMat4("projection", projection)) {
         return false;
     }
-    cube_vertex_array_.Bind();
-    cube_texture_.Bind(0);
     if (!shader_program_.SetMat4("model",CubeModel(elapsed_seconds))) {
         return false;
     }
     if (!shader_program_.SetVec4("tint",glm::vec4(1.0f,1.0f,1.0f,1.0f))) {
         return false;
     }
+    if (!shader_program_.SetInt("visualize_normals",1)) {
+        return false;
+    }
+    cube_vertex_array_.Bind();
+    cube_texture_.Bind(0);
     RenderCommand::DrawIndexedTriangles(cube_vertex_array_.IndexCount());
     if (!DrawTransparentSurfaces(view)) {
         return false;
@@ -183,6 +198,9 @@ bool Renderer::DrawFrame(
 
 bool Renderer::DrawTransparentSurfaces(const glm::mat4& view) {
     const auto items = CreateTransparentDrawItems(view);
+    if (!shader_program_.SetInt("visualize_normals", 0)) {
+        return false;
+    }
     RenderCommand::SetDepthWriteEnabled(false);
     RenderCommand::SetBlendingEnabled(true);
     RenderCommand::SetBlendFunction(RenderCommand::BlendFactor::SourceAlpha,
