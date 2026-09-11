@@ -16,6 +16,8 @@ set(MINISTUDIO_SOURCES
         src/image/ImageLoader.cpp
         src/camera/Camera.cpp
         src/mesh/PrimitiveMeshes.cpp
+        src/io/TextFileLoader.h
+        src/io/TextFileLoader.cpp
 )
 
 add_executable(ministudio src/main.cpp ${MINISTUDIO_SOURCES})
