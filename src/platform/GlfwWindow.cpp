@@ -25,7 +25,6 @@ bool GlfwWindow::Initialize(
         return false;
     }
     glfw_initialized_ = true;
-    std::cout << "GLFW initialized!" << std::endl;
     //OpenGl——api版本初始化
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -83,21 +82,13 @@ bool GlfwWindow::Initialize(
         handle_,
         OnFramebufferSizeChanged
     );
-    int major = glfwGetWindowAttrib(window,GLFW_CONTEXT_VERSION_MAJOR);
-    int minor = glfwGetWindowAttrib(window,GLFW_CONTEXT_VERSION_MINOR);
-    int profile = glfwGetWindowAttrib(window, GLFW_OPENGL_PROFILE);
-    bool is_core_profile = profile == GLFW_OPENGL_CORE_PROFILE;
-    std::cout << "GLFW context version " << major << "." << minor << std::endl;
-    std::cout << "GLFW core profile equal profile： " << is_core_profile << std::endl;
-    std::cout << "GLFW Window created!" << std::endl;
+    glfwSetKeyCallback(handle_,OnKeyChanged);
     int f_width;
     int f_height;
     glfwGetWindowSize(window,&width,&height);
     glfwGetFramebufferSize(window,&f_width,&f_height);
-    std::cout<<"windowSize: "<<width<<"x"<<height<<std::endl;
-    std::cout<<"FrameBufferSize"<<f_width<<"x"<<f_height<<std::endl;
     glViewport(0,0,f_width,f_height);
-
+    std::cout << "GLFW Window created!" << std::endl;
     return true;
 }
 
@@ -106,16 +97,17 @@ void GlfwWindow::OnFramebufferSizeChanged(GLFWwindow *,int width,int height) {
     glViewport(0,0,width,height);
 }
 
+void GlfwWindow::OnKeyChanged(GLFWwindow *window, int key, int, int action, int) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+}
 bool GlfwWindow::ShouldClose() const {
     return glfwWindowShouldClose(handle_) == GLFW_TRUE;
 }
 
 void GlfwWindow::PollEvents() {
     glfwPollEvents();
-}
-
-bool GlfwWindow::IsEscapePressed() const {
-    return glfwGetKey(handle_, GLFW_KEY_ESCAPE) == GLFW_PRESS;
 }
 
 void GlfwWindow::RequestClose() {
@@ -143,6 +135,9 @@ GlfwWindow::MovementKeyState GlfwWindow::GetMovementKeyState() const {
     }
     if (glfwGetKey(handle_, GLFW_KEY_D) == GLFW_PRESS) {
         movement_key_state.d_pressed = true;
+    }
+    if (glfwGetKey(handle_, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+        movement_key_state.super_camera_ = true;
     }
     return movement_key_state;
 }

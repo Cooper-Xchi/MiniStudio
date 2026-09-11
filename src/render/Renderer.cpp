@@ -5,6 +5,7 @@
 #include "Renderer.h"
 #include <algorithm>
 #include <array>
+#include <iostream>
 
 #include "image/ImageLoader.h"
 #include <iterator>
@@ -175,6 +176,7 @@ void main() {
     if (!shader_program_.SetInt("texture_sampler", 0)) {
         return false;
     }
+    std::cout<<"Renderer is created!"<<std::endl;
     return true;
 }
 

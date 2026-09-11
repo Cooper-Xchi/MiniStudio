@@ -75,9 +75,8 @@ unsigned int ShaderProgram::LinkProgram(unsigned int vid, unsigned int fid) {
     std::string info_log(static_cast<std::size_t>(log_length),
     '\0');
     glGetProgramInfoLog(pid, log_length, nullptr, info_log.data());
-    std::cout << "Link : " << success << std::endl;
-    std::cout << "Log : " << info_log << std::endl;
     if (success == GL_FALSE) {
+        std::cerr << "Program link failed: " << info_log << '\n';
         glDeleteProgram(pid);
         return 0;
     }

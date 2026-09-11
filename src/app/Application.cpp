@@ -1,5 +1,6 @@
 #include "Application.h"
 #include <chrono>
+#include <iostream>
 
 int Application::Run() {
     constexpr bool fullscreen_on_secondary_monitor = false;
@@ -12,16 +13,14 @@ int Application::Run() {
         return 1;
     }
     if (!renderer_.Initialize()) return 1;
-    constexpr float camera_speed = 0.25f;
+    constexpr float camera_speed = 0.25f ;
     constexpr float mouse_sensitivity = 0.1f;
     const auto start_time = std::chrono::steady_clock::now();
     auto previous_time = start_time;
-    camera_.SetPosition(glm::vec3(0.25f, 0.0f, 0.0f));
+    camera_.SetPosition(glm::vec3(0.25f, 0.0f, 1.5f));
+    std::cout<<"Render Start!"<<std::endl;
     while (!window_.ShouldClose()) {
         window_.PollEvents();
-        if (window_.IsEscapePressed()) {
-            window_.RequestClose();
-        }
         const auto current_time = std::chrono::steady_clock::now();
         const float elapsed_seconds = std::chrono::duration<float>(current_time - start_time).count();
         const float delta_seconds = std::chrono::duration<float>(current_time - previous_time).count();
@@ -49,7 +48,8 @@ int Application::Run() {
         if (glm::dot(movement, movement) > 0.0f) {
             movement = glm::normalize(movement);
         }
-        camera_.Move(movement * camera_speed * delta_seconds);
+        float super_speed = keys.super_camera_?2:1;
+        camera_.Move(movement * camera_speed *  super_speed *delta_seconds);
         int framebuffer_width = 0;
         int framebuffer_height = 0;
         window_.GetFramebufferSize(framebuffer_width, framebuffer_height);

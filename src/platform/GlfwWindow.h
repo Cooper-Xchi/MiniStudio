@@ -9,6 +9,7 @@ public:
         bool a_pressed = false;
         bool s_pressed = false;
         bool d_pressed = false;
+        bool super_camera_  = false;
     };
     GlfwWindow() = default;
     ~GlfwWindow();
@@ -25,6 +26,7 @@ public:
         bool right_pressed = false;
     };
 
+
     [[nodiscard]] MouseInputState ReadMouseInput();
     void SetCursorCaptured(bool captured);
 
@@ -36,7 +38,6 @@ public:
     );
     bool ShouldClose() const;
     void PollEvents();
-    bool IsEscapePressed() const;
     void RequestClose();
     void Present();
     [[nodiscard]] MovementKeyState GetMovementKeyState() const;
@@ -49,6 +50,8 @@ private:
     int width,
     int height
 );
+    static void OnKeyChanged(
+        GLFWwindow *window, int key, int scancode, int action, int mods);
     double previous_cursor_x_ = 0.0;
     double previous_cursor_y_ = 0.0;
     bool has_cursor_baseline_ = false;

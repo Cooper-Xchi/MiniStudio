@@ -8,7 +8,7 @@
 
 ## 运行效果与操作
 
-当前显示旋转的纹理立方体和红、蓝两层半透明平面，背景为蓝灰色。W/A/S/D 移动，左键捕获鼠标并转头，右键释放，Esc 退出；窗口缩放会更新 viewport 和投影比例。
+当前显示旋转的纹理立方体和红、蓝两层半透明平面，背景为蓝灰色。W/A/S/D 移动，按住左 Shift 两倍加速，左键捕获鼠标并转头，右键释放，Esc 退出；窗口缩放会更新 viewport 和投影比例。
 
 [v0.2 短演示](docs/media/ministudio-v02-demo.gif)来自真实 GPU 帧读回，使用预设相机轨迹，不是鼠标交互录屏。
 
@@ -50,9 +50,9 @@ cmake --build build/windows-debug --parallel
 
 ## 当前验证状态
 
-2026-09-10 的 v0.2：家用 Windows MSVC x64 全新 Debug、Release 和默认关闭测试的构建均通过，未输出编译器警告；Debug/Release CTest 均 1/1 通过。覆盖相机数值、资源移动/释放、Alpha 裁剪、透明排序颜色与深度、状态恢复、resize 和关闭标志；故意反转排序后测试能检出错误，恢复后通过。
+2026-09-10 的 v0.2：家用 Windows MSVC x64 全新 Debug、Release 和默认关闭测试的构建均通过，未输出编译器警告；Debug/Release CTest 均 1/1 通过。覆盖相机数值、资源移动/释放、透明排序颜色与深度、状态恢复、resize 和关闭标志；故意反转排序后测试能检出错误，恢复后通过。Alpha 裁剪已从当前默认场景替换为半透明混合，回归程序仍用独立的受控 Shader 验证 alpha 为零与 `discard` 的颜色和深度差异。
 
-公司 macOS 保留原构建路径，但本次 v0.2 未实测；本轮也未运行 Sanitizer。历史 macOS 成功记录不能代替当前版本回归。第 52 课的测试和整理由助手完成，个人季度复盘按要求跳过。
+2026-09-11 在公司 macOS arm64 使用 AppleClang 21 完成全新 Debug 配置与编译，未输出编译器警告；CTest 1/1 通过。完整程序创建 OpenGL 4.1 Core Context、Shader 链接成功，实际画面正常，Esc 退出码为 0。本轮未完整复测 W/A/S/D 与鼠标交互，也未运行 Sanitizer。第 52 课的测试和整理由助手完成，个人季度复盘按要求跳过。
 
 ## 代码位置
 
