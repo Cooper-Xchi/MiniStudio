@@ -2,7 +2,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <cmath>
 
-void Camera::SetPosition(const glm::vec3& position) {
+void Camera::SetPosition(const glm::vec3 &position) {
     position_ = position;
 }
 
@@ -10,8 +10,12 @@ glm::mat4 Camera::ViewMatrix() const {
     return glm::lookAt(position_, position_ + forward_, up_);
 }
 
-void Camera::Move(const glm::vec3& displacement) {
+void Camera::Move(const glm::vec3 &displacement) {
     position_ += displacement;
+}
+
+glm::vec4 Camera::Position() const {
+    return glm::vec4(position_.x, position_.y, position_.z, 1.0f);
 }
 
 void Camera::Rotate(
@@ -22,9 +26,6 @@ void Camera::Rotate(
     pitch_degrees_ += pitch_delta_degrees;
     pitch_degrees_ = glm::clamp(pitch_degrees_, -89.0f, 89.0f);
     UpdateForward();
-
-
-
 }
 
 glm::vec3 Camera::Forward() const {

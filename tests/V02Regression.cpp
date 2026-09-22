@@ -485,7 +485,10 @@ void CheckPixels(const Frame& frame, const glm::vec3& eye, const glm::mat4& view
 }
 
 Frame Render(Renderer& renderer, int width, int height, const glm::mat4& view, float time = 0) {
-    Require(renderer.DrawFrame(time, width, height, view), "Renderer returned failure");
+    // The view matrix is built with glm::lookAt(eye, ...), so the translation
+    // column of its inverse recovers the world-space camera position.
+    const glm::vec4 camera_position = glm::inverse(view)[3];
+    Require(renderer.DrawFrame(time, width, height, view, camera_position), "Renderer returned failure");
     GLboolean writes = GL_FALSE;
     glGetBooleanv(GL_DEPTH_WRITEMASK, &writes);
     Require(writes == GL_TRUE && glIsEnabled(GL_DEPTH_TEST) && glIsEnabled(GL_CULL_FACE) &&
@@ -542,7 +545,8 @@ void RunIntegration(const std::filesystem::path& captures) {
         CheckPixels(Render(renderer, width, height, back), back_eye, back);
         Require(Render(renderer, width, height, front, 0.125f).rgba != baseline.rgba, "Cube rotation did not change the frame");
         Require(Render(renderer, width, height, front).rgba == baseline.rgba, "Stale color/depth survived into the next frame");
-        Require(renderer.DrawFrame(0, 0, height, front) && renderer.DrawFrame(0, width, 0, front), "Zero-size frame was not skipped");
+        Require(renderer.DrawFrame(0, 0, height, front, glm::vec4(front_eye, 1.0f)) &&
+                renderer.DrawFrame(0, width, 0, front, glm::vec4(front_eye, 1.0f)), "Zero-size frame was not skipped");
         Require(ReadFrame(width, height).rgba == baseline.rgba, "Zero-size frame modified color");
         RenderCommand::SetDepthWriteEnabled(false);
         RenderCommand::SetBlendingEnabled(true);

@@ -23,7 +23,8 @@ public:
         float elapsed_seconds,
         int framebuffer_width,
         int framebuffer_height,
-        const glm::mat4 &view
+        const glm::mat4 &view,
+        const glm::vec4 &camera_position
     );
 
 private:
