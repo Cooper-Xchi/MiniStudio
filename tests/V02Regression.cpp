@@ -306,29 +306,58 @@ void CheckDirectionalDiffuse(int width, int height) {
     RenderCommand::SetBlendingEnabled(false);
     RenderCommand::SetFaceCullingEnabled(false);
 
-    const auto draw = [&](const glm::vec3& light_direction, const glm::mat4& model) {
-        Require(shader.SetVec3("light_direction", light_direction) && shader.SetMat4("model", model),
+    const auto draw = [&](const glm::vec3& light_direction,
+                          const glm::mat4& model,
+                          const glm::mat3& normal_matrix) {
+        Require(shader.SetVec3("light_direction", light_direction) &&
+                shader.SetMat4("model", model) &&
+                shader.SetMat3("normal_matrix", normal_matrix),
                 "Directional diffuse draw uniform upload failed");
         RenderCommand::Clear(0, 0, 0, 1);
         RenderCommand::DrawIndexedTriangles(quad.IndexCount());
         return ReadFrame(width, height);
     };
     const auto center = static_cast<std::size_t>(height / 2) * width + width / 2;
-    const auto front_lit = draw(glm::vec3(0, 0, 1), glm::mat4(1.0f));
+    const auto front_lit = draw(glm::vec3(0, 0, 1), glm::mat4(1.0f), glm::mat3(1.0f));
     Require(front_lit.rgba[center * 4] == 255 && Near(front_lit.depth[center], 0.5f),
             "Front-facing normal did not receive full diffuse light");
-    const auto front_dark = draw(glm::vec3(0, 0, -1), glm::mat4(1.0f));
+    const auto front_dark = draw(glm::vec3(0, 0, -1), glm::mat4(1.0f), glm::mat3(1.0f));
     Require(front_dark.rgba[center * 4] == 0 && Near(front_dark.depth[center], 0.5f),
             "Opposite light direction was not clamped to zero");
+    const glm::mat4 rotated_model =
+        glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0, 1, 0));
     const auto rotated_lit = draw(
         glm::vec3(0, 0, -1),
-        glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0, 1, 0))
+        rotated_model,
+        glm::transpose(glm::inverse(glm::mat3(rotated_model)))
     );
     Require(rotated_lit.rgba[center * 4] == 255 && Near(rotated_lit.depth[center], 0.5f),
             "Model transform did not rotate the world-space normal");
+
+    glm::mat4 non_uniform_model = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 0.5f));
+    non_uniform_model = glm::rotate(
+        non_uniform_model,
+        glm::radians(-45.0f),
+        glm::vec3(0, 1, 0)
+    );
+    const glm::vec3 light_direction = glm::normalize(glm::vec3(0.4f, 0.8f, 1.0f));
+    const auto wrong_normal = draw(light_direction, non_uniform_model, glm::mat3(non_uniform_model));
+    const glm::mat3 correct_normal_matrix =
+        glm::transpose(glm::inverse(glm::mat3(non_uniform_model)));
+    const auto correct_normal = draw(light_direction, non_uniform_model, correct_normal_matrix);
+    const glm::vec3 expected_normal = glm::normalize(correct_normal_matrix * glm::vec3(0, 0, 1));
+    const int expected_diffuse = static_cast<int>(std::lround(
+        std::max(glm::dot(expected_normal, light_direction), 0.0f) * 255.0f
+    ));
+    const auto sample = static_cast<std::size_t>(height / 2) * width + width / 2 + width / 16;
+    Require(wrong_normal.rgba[sample * 4] == 0,
+            "Direct model transform did not expose the non-uniform-scale normal error");
+    Require(std::abs(static_cast<int>(correct_normal.rgba[sample * 4]) - expected_diffuse) <= 2 &&
+            correct_normal.rgba[sample * 4] > wrong_normal.rgba[sample * 4] + 100,
+            "Inverse-transpose normal matrix did not restore the expected diffuse light");
     Require(OpenGLDebug::CheckErrors("directional diffuse regression"),
             "Directional diffuse regression produced an OpenGL error");
-    std::cout << "PASS clamped directional diffuse and world-space normal transform\n";
+    std::cout << "PASS clamped diffuse, world-space rotation and inverse-transpose normal transform\n";
 }
 
 // Independent pixel-ray reference, not the renderer's object-center sorting algorithm.
@@ -348,6 +377,32 @@ float CubeIntersection(const glm::vec3& eye, const glm::vec3& direction) {
     return leave >= entry ? entry : -1;
 }
 
+struct PlaneHit {
+    float distance = -1.0f;
+    bool near_edge = false;
+};
+
+PlaneHit SlantedPlaneIntersection(const glm::vec3& eye, const glm::vec3& direction) {
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.6f, 0.0f, -0.8f));
+    model = glm::scale(model, glm::vec3(0.45f, 0.45f, 0.12f));
+    model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(0, 1, 0));
+    const glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(model)));
+    const glm::vec3 world_normal = glm::normalize(normal_matrix * glm::vec3(0, 0, 1));
+    if (glm::dot(world_normal, -direction) <= 0.0f) return {};
+
+    const glm::mat4 inverse_model = glm::inverse(model);
+    const glm::vec3 local_eye = glm::vec3(inverse_model * glm::vec4(eye, 1));
+    const glm::vec3 local_direction = glm::vec3(inverse_model * glm::vec4(direction, 0));
+    if (std::abs(local_direction.z) < 0.000001f) return {};
+    const float distance = -local_eye.z / local_direction.z;
+    if (distance <= 0.0f) return {};
+    const glm::vec3 point = local_eye + distance * local_direction;
+    if (std::abs(point.x) >= 0.8f || std::abs(point.y) >= 0.8f) return {};
+    return {distance,
+            std::abs(std::abs(point.x) - 0.8f) < 0.02f ||
+            std::abs(std::abs(point.y) - 0.8f) < 0.02f};
+}
+
 void CheckPixels(const Frame& frame, const glm::vec3& eye, const glm::mat4& view) {
     const glm::mat4 projection = glm::perspective(glm::radians(45.0f),
         static_cast<float>(frame.width) / frame.height, 0.1f, 100.0f);
@@ -356,6 +411,7 @@ void CheckPixels(const Frame& frame, const glm::vec3& eye, const glm::mat4& view
     const std::array<glm::vec3, 2> colors{{{1,0,0}, {0,0,1}}};
     std::array<int, 4> region_counts{};
     int cube_samples = 0;
+    int slanted_plane_samples = 0;
     for (int y = 7; y < frame.height; y += 13) {
         for (int x = 7; x < frame.width; x += 13) {
             const float nx = 2.0f * (x + 0.5f) / frame.width - 1.0f;
@@ -364,6 +420,17 @@ void CheckPixels(const Frame& frame, const glm::vec3& eye, const glm::mat4& view
             const glm::vec3 ray = glm::normalize(glm::vec3(near_point) / near_point.w - eye);
             const auto index = static_cast<std::size_t>(y) * frame.width + x;
             const float cube_t = CubeIntersection(eye, ray);
+            const PlaneHit slanted_plane = SlantedPlaneIntersection(eye, ray);
+            if (slanted_plane.near_edge) continue;
+            if (slanted_plane.distance > 0 &&
+                (cube_t <= 0 || slanted_plane.distance < cube_t)) {
+                const glm::vec4 clip = projection * view *
+                    glm::vec4(eye + slanted_plane.distance * ray, 1);
+                Require(Near(frame.depth[index], clip.z / clip.w * 0.5f + 0.5f),
+                        "Slanted plane depth/transparent depth mask failed");
+                ++slanted_plane_samples;
+                continue;
+            }
             if (cube_t > 0) {
                 const glm::vec4 clip = projection * view * glm::vec4(eye + cube_t * ray, 1);
                 Require(Near(frame.depth[index], clip.z / clip.w * 0.5f + 0.5f), "Opaque cube depth/transparent depth mask failed");
@@ -402,11 +469,19 @@ void CheckPixels(const Frame& frame, const glm::vec3& eye, const glm::mat4& view
             ++region_counts[mask];
         }
     }
-    Require(cube_samples > 0 && std::all_of(region_counts.begin(), region_counts.end(), [](int n) { return n > 0; }),
-            "Reference did not cover cube/background/red/blue/overlap");
+    const glm::vec3 direction_to_slanted_plane =
+        glm::normalize(glm::vec3(-0.6f, 0.0f, -0.8f) - eye);
+    const bool slanted_plane_front_facing =
+        SlantedPlaneIntersection(eye, direction_to_slanted_plane).distance > 0.0f;
+    const bool slanted_plane_coverage = slanted_plane_front_facing
+        ? slanted_plane_samples > 0
+        : slanted_plane_samples == 0;
+    Require(cube_samples > 0 && slanted_plane_coverage &&
+            std::all_of(region_counts.begin(), region_counts.end(), [](int n) { return n > 0; }),
+            "Reference did not cover cube/slanted plane/background/red/blue/overlap");
     std::cout << "PASS pixel rays " << frame.width << 'x' << frame.height << " regions=";
     for (int n : region_counts) std::cout << n << ' ';
-    std::cout << "cube=" << cube_samples << '\n';
+    std::cout << "cube=" << cube_samples << " slanted=" << slanted_plane_samples << '\n';
 }
 
 Frame Render(Renderer& renderer, int width, int height, const glm::mat4& view, float time = 0) {
