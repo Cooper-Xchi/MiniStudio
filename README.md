@@ -2,7 +2,7 @@
 
 现代 C++ 与实时渲染学习项目。当前使用 OpenGL 4.1、GLFW、GLM；先完成第一套桌面渲染器，再按课程进入移动端和其他后端。
 
-- 版本：v0.2.0。第 1～61 课已完成；下一课是第 62 课（B09），glTF 结构与解析依赖评估。
+- 版本：v0.2.0。第 1～62 课已完成；下一课是第 63 课（B10），从 accessor 读取一个 primitive。
 - 学什么、下一课做什么：只看 [逐课任务清单](docs/lessons.md)。
 - AI 协作规则：[AGENTS.md](AGENTS.md)。详细旧记录保留在 Git 历史，不再维护多份交接、复盘或路线文档。
 
@@ -71,6 +71,8 @@ cmake --build build/windows-debug --parallel
 2026-09-22 第 60 课将光照参数从 Shader 硬编码提升为 Material 值对象（src/render/Material.h，聚合体：diffuse_color／specular_color／shininess），立方体与斜面分别使用 shininess 32 与 128 两种材质；Renderer 新增 SetMaterialUniform 以 const 引用上传三个 uniform。回归测试的 CheckDirectionalDiffuse 补上传退化材质（白漫反射、黑高光）保持既有断言语义，断言值未改动。macOS Debug 编译无警告，CTest 1/1 通过，实际运行确认两种高光形态可区分、透明平面不变。Windows 尚未验证本课改动。
 
 2026-09-22 第 61 课完成材质与资源所有权复盘（抽查式），没有修改运行行为。结论：GPU 资源保持单一所有者（当前为 Renderer 成员）+ 非拥有引用借用；Material 只持参数与引用，不拥有资源本体；GL 删除调用必须在 Context 有效期内（Application 成员声明顺序 window_ 在前保障析构在后）；移动语义无 double-free 经代码核对确认。详细抽查结果记在 lessons.md 课程行。
+
+2026-09-22 第 62 课完成 glTF 结构与解析依赖评估，没有修改代码或引入依赖。手推了最小样例的完整索引引用链；对比四个解析库后选定 tinygltf（header-only、MIT、API 与规范字段一一映射、维护活跃），引入方式拟同 stb_image 放入 third_party，不新增构建依赖；实际引入留待 B10 并经学习者确认。
 
 ## 代码位置
 
