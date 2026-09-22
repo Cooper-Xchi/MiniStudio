@@ -1,6 +1,8 @@
 #pragma once
 
 #include <glm/mat4x4.hpp>
+
+#include "Material.h"
 #include "Texture2D.h"
 #include "render/ShaderProgram.h"
 #include "render/VertexArray.h"
@@ -29,6 +31,8 @@ public:
 
 private:
     bool DrawTransparentSurfaces(const glm::mat4 &view);
+
+    bool SetMaterialUniform(const Material &mat);
 
     bool SetModelUniforms(const glm::mat4 &model);
 

@@ -298,7 +298,12 @@ void CheckDirectionalDiffuse(int width, int height) {
             shader.SetInt("use_diffuse_lighting", 1) &&
             shader.SetVec4("tint", glm::vec4(1.0f)) &&
             shader.SetMat4("view", glm::mat4(1.0f)) &&
-            shader.SetMat4("projection", glm::mat4(1.0f)),
+            shader.SetMat4("projection", glm::mat4(1.0f)) &&
+            // White diffuse / black specular degenerates the material formula
+            // back to the plain Lambert behavior these assertions verify.
+            shader.SetVec3("diffuse_color", glm::vec3(1.0f)) &&
+            shader.SetVec3("specular_color", glm::vec3(0.0f)) &&
+            shader.SetFloat("shininess", 32.0f),
             "Directional diffuse baseline uniform upload failed");
     quad.Bind();
     texture.Bind(0);

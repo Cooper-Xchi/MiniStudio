@@ -2,7 +2,7 @@
 
 现代 C++ 与实时渲染学习项目。当前使用 OpenGL 4.1、GLFW、GLM；先完成第一套桌面渲染器，再按课程进入移动端和其他后端。
 
-- 版本：v0.2.0。第 1～59 课已完成；下一课是第 60 课（B07），Material 参数值对象。
+- 版本：v0.2.0。第 1～60 课已完成；下一课是第 61 课（B08），材质与资源所有权复盘。
 - 学什么、下一课做什么：只看 [逐课任务清单](docs/lessons.md)。
 - AI 协作规则：[AGENTS.md](AGENTS.md)。详细旧记录保留在 Git 历史，不再维护多份交接、复盘或路线文档。
 
@@ -67,6 +67,8 @@ cmake --build build/windows-debug --parallel
 2026-09-11 第 58 课为每次模型矩阵上传配套的逆转置法线矩阵，并复用平面网格增加非均匀缩放斜面。macOS Debug 编译无警告，GPU 回归验证普通模型矩阵会破坏斜面法线方向、逆转置矩阵恢复预期漫反射，同时覆盖实际斜面深度与透明状态；CTest 1/1 通过。Windows 尚未验证本课改动。
 
 2026-09-22 第 59 课在既有单方向光 Lambert 漫反射上增加 Blinn-Phong 高光：顶点着色器输出世界坐标，片元着色器以半角向量计算高光项（shininess 32，白色高光），相机位置由 Application 经 DrawFrame 传入；透明平面保持原有纹理混合路径不受影响。回归测试同步适配新签名，测试内由 view 矩阵逆反推相机位置。macOS Debug 编译无警告，CTest 1/1 通过，实际运行确认立方体与斜面高光随视角滑动、透明平面无高光。Windows 尚未验证本课改动。
+
+2026-09-22 第 60 课将光照参数从 Shader 硬编码提升为 Material 值对象（src/render/Material.h，聚合体：diffuse_color／specular_color／shininess），立方体与斜面分别使用 shininess 32 与 128 两种材质；Renderer 新增 SetMaterialUniform 以 const 引用上传三个 uniform。回归测试的 CheckDirectionalDiffuse 补上传退化材质（白漫反射、黑高光）保持既有断言语义，断言值未改动。macOS Debug 编译无警告，CTest 1/1 通过，实际运行确认两种高光形态可区分、透明平面不变。Windows 尚未验证本课改动。
 
 ## 代码位置
 
