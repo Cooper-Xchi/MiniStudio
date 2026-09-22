@@ -128,7 +128,8 @@ bool Renderer::DrawFrame(
     const float elapsed_seconds,
     const int framebuffer_width,
     const int framebuffer_height,
-    const glm::mat4 &view
+    const glm::mat4 &view,
+    const glm::vec4 &camera_position
 ) {
     //检查
     if (framebuffer_width <= 0 || framebuffer_height <= 0) {
@@ -172,6 +173,9 @@ bool Renderer::DrawFrame(
         return false;
     }
     if (!shader_program_.SetInt("use_diffuse_lighting", 1)) {
+        return false;
+    }
+    if (!shader_program_.SetVec4("camera_position", camera_position)) {
         return false;
     }
     cube_vertex_array_.Bind();

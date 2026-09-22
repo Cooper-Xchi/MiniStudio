@@ -5,17 +5,23 @@
 
 class Camera {
 public:
-    void SetPosition(const glm::vec3& position);
+    void SetPosition(const glm::vec3 &position);
+
     [[nodiscard]] glm::mat4 ViewMatrix() const;
-    void Move(const glm::vec3& displacement);
+
+    void Move(const glm::vec3 &displacement);
+
 
     void Rotate(
-    float yaw_delta_degrees,
-    float pitch_delta_degrees
-);
+        float yaw_delta_degrees,
+        float pitch_delta_degrees
+    );
 
     [[nodiscard]] glm::vec3 Forward() const;
+
     [[nodiscard]] glm::vec3 Right() const;
+
+    [[nodiscard]] glm::vec4 Position() const;
 
 private:
     glm::vec3 position_{0.0f};

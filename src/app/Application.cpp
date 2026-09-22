@@ -5,20 +5,20 @@
 int Application::Run() {
     constexpr bool fullscreen_on_secondary_monitor = false;
     if (!window_.Initialize(
-            1280,
-            960,
-            "MiniStudio",
-            fullscreen_on_secondary_monitor
-        )) {
+        1280,
+        960,
+        "MiniStudio",
+        fullscreen_on_secondary_monitor
+    )) {
         return 1;
     }
     if (!renderer_.Initialize()) return 1;
-    constexpr float camera_speed = 0.25f ;
+    constexpr float camera_speed = 0.25f;
     constexpr float mouse_sensitivity = 0.1f;
     const auto start_time = std::chrono::steady_clock::now();
     auto previous_time = start_time;
     camera_.SetPosition(glm::vec3(0.25f, 0.0f, 1.5f));
-    std::cout<<"Render Start!"<<std::endl;
+    std::cout << "Render Start!" << std::endl;
     while (!window_.ShouldClose()) {
         window_.PollEvents();
         const auto current_time = std::chrono::steady_clock::now();
@@ -35,9 +35,9 @@ int Application::Run() {
             window_.SetCursorCaptured(false);
         }
         const float yaw_delta =
-            static_cast<float>(mouse.delta_x) * mouse_sensitivity;
+                static_cast<float>(mouse.delta_x) * mouse_sensitivity;
         const float pitch_delta =
-            static_cast<float>(-mouse.delta_y) * mouse_sensitivity;
+                static_cast<float>(-mouse.delta_y) * mouse_sensitivity;
         camera_.Rotate(yaw_delta, pitch_delta);
         const glm::vec3 forward = camera_.Forward();
         const glm::vec3 right = camera_.Right();
@@ -48,22 +48,23 @@ int Application::Run() {
         if (glm::dot(movement, movement) > 0.0f) {
             movement = glm::normalize(movement);
         }
-        float super_speed = keys.super_camera_?2:1;
-        camera_.Move(movement * camera_speed *  super_speed *delta_seconds);
+        float super_speed = keys.super_camera_ ? 2 : 1;
+        camera_.Move(movement * camera_speed * super_speed * delta_seconds);
         int framebuffer_width = 0;
         int framebuffer_height = 0;
         window_.GetFramebufferSize(framebuffer_width, framebuffer_height);
         const glm::mat4 view = camera_.ViewMatrix();
+        const glm::vec4 camera_position = camera_.Position();
         if (!renderer_.DrawFrame(
-                elapsed_seconds,
-                framebuffer_width,
-                framebuffer_height,
-                view
-            )) {
+            elapsed_seconds,
+            framebuffer_width,
+            framebuffer_height,
+            view,
+            camera_position
+        )) {
             return 1;
         }
         window_.Present();
-
     }
     return 0;
 }
