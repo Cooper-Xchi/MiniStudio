@@ -2,7 +2,7 @@
 
 现代 C++ 与实时渲染学习项目。当前使用 OpenGL 4.1、GLFW、GLM；先完成第一套桌面渲染器，再按课程进入移动端和其他后端。
 
-- 版本：v0.2.0。第 1～60 课已完成；下一课是第 61 课（B08），材质与资源所有权复盘。
+- 版本：v0.2.0。第 1～61 课已完成；下一课是第 62 课（B09），glTF 结构与解析依赖评估。
 - 学什么、下一课做什么：只看 [逐课任务清单](docs/lessons.md)。
 - AI 协作规则：[AGENTS.md](AGENTS.md)。详细旧记录保留在 Git 历史，不再维护多份交接、复盘或路线文档。
 
@@ -69,6 +69,8 @@ cmake --build build/windows-debug --parallel
 2026-09-22 第 59 课在既有单方向光 Lambert 漫反射上增加 Blinn-Phong 高光：顶点着色器输出世界坐标，片元着色器以半角向量计算高光项（shininess 32，白色高光），相机位置由 Application 经 DrawFrame 传入；透明平面保持原有纹理混合路径不受影响。回归测试同步适配新签名，测试内由 view 矩阵逆反推相机位置。macOS Debug 编译无警告，CTest 1/1 通过，实际运行确认立方体与斜面高光随视角滑动、透明平面无高光。Windows 尚未验证本课改动。
 
 2026-09-22 第 60 课将光照参数从 Shader 硬编码提升为 Material 值对象（src/render/Material.h，聚合体：diffuse_color／specular_color／shininess），立方体与斜面分别使用 shininess 32 与 128 两种材质；Renderer 新增 SetMaterialUniform 以 const 引用上传三个 uniform。回归测试的 CheckDirectionalDiffuse 补上传退化材质（白漫反射、黑高光）保持既有断言语义，断言值未改动。macOS Debug 编译无警告，CTest 1/1 通过，实际运行确认两种高光形态可区分、透明平面不变。Windows 尚未验证本课改动。
+
+2026-09-22 第 61 课完成材质与资源所有权复盘（抽查式），没有修改运行行为。结论：GPU 资源保持单一所有者（当前为 Renderer 成员）+ 非拥有引用借用；Material 只持参数与引用，不拥有资源本体；GL 删除调用必须在 Context 有效期内（Application 成员声明顺序 window_ 在前保障析构在后）；移动语义无 double-free 经代码核对确认。详细抽查结果记在 lessons.md 课程行。
 
 ## 代码位置
 
