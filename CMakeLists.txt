@@ -18,6 +18,7 @@ set(MINISTUDIO_SOURCES
         src/mesh/PrimitiveMeshes.cpp
         src/io/TextFileLoader.h
         src/io/TextFileLoader.cpp
+        src/render/Material.h
 )
 
 add_executable(ministudio src/main.cpp ${MINISTUDIO_SOURCES})

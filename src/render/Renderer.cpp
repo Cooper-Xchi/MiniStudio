@@ -11,6 +11,8 @@
 #include <iterator>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+
+#include "Material.h"
 #include "OpenGLDebug.h"
 #include "RenderCommand.h"
 #include "io/TextFileLoader.h"
@@ -35,6 +37,7 @@ namespace {
         }
         return image;
     }
+
 
     struct TransparentDrawItem {
         glm::mat4 model;
@@ -124,6 +127,20 @@ bool Renderer::Initialize() {
     return true;
 }
 
+bool Renderer::SetMaterialUniform(const Material &mat) {
+    if (!shader_program_.SetVec3("diffuse_color", mat.diffuse_color)) {
+        return false;
+    }
+    if (!shader_program_.SetVec3("specular_color", mat.specular_color)) {
+        return false;
+    }
+    if (!shader_program_.SetFloat("shininess", mat.shininess)) {
+        return false;
+    }
+    return true;
+}
+
+
 bool Renderer::DrawFrame(
     const float elapsed_seconds,
     const int framebuffer_width,
@@ -159,6 +176,8 @@ bool Renderer::DrawFrame(
         0.1f,
         100.0f
     );
+    Material mat1{glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.0};
+    Material mat2{glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 128.0};
     const glm::mat4 model = CubeModel(elapsed_seconds);
     if (!SetModelUniforms(model)) {
         return false;
@@ -178,6 +197,9 @@ bool Renderer::DrawFrame(
     if (!shader_program_.SetVec4("camera_position", camera_position)) {
         return false;
     }
+    if (!SetMaterialUniform(mat1)) {
+        return false;
+    }
     cube_vertex_array_.Bind();
     cube_texture_.Bind(0);
     RenderCommand::DrawIndexedTriangles(cube_vertex_array_.IndexCount());
@@ -186,6 +208,9 @@ bool Renderer::DrawFrame(
     }
     plane_vertex_array_.Bind();
     cube_texture_.Bind(0);
+    if (!SetMaterialUniform(mat2)) {
+        return false;
+    }
     RenderCommand::DrawIndexedTriangles(
         plane_vertex_array_.IndexCount()
     );
