@@ -19,14 +19,17 @@ set(MINISTUDIO_SOURCES
         src/io/TextFileLoader.h
         src/io/TextFileLoader.cpp
         src/render/Material.h
+        src/mesh/GltfMeshLoader.h
 )
 
-add_executable(ministudio src/main.cpp ${MINISTUDIO_SOURCES})
+add_executable(ministudio src/main.cpp ${MINISTUDIO_SOURCES}
+        src/mesh/GltfMeshLoader.h)
 
 option(MINISTUDIO_ENABLE_SANITIZERS
         "Enable AddressSanitizer and UndefinedBehaviorSanitizer"
         OFF)
 option(MINISTUDIO_BUILD_TESTS "Build opt-in OpenGL integration checks (requires a display)" OFF)
+option(MINISTUDIO_BUILD_GLTF_EXERCISE "Build the lesson 63 CPU glTF checks" OFF)
 
 find_package(glfw3 3.4 REQUIRED)
 find_package(glm CONFIG REQUIRED)
@@ -83,3 +86,34 @@ foreach(target IN LISTS MINISTUDIO_TARGETS)
         target_compile_definitions(${target} PRIVATE GL_SILENCE_DEPRECATION)
     endif()
 endforeach()
+
+# CPU-only checks stay independent of the renderer and its OpenGL test option.
+if(MINISTUDIO_BUILD_GLTF_EXERCISE)
+    enable_testing()
+    add_executable(ministudio_gltf_exercise
+        tests/GltfPrimitiveExercise.cpp
+        src/mesh/GltfMeshLoader.cpp
+    )
+    add_dependencies(ministudio_gltf_exercise ministudio_assets)
+    target_include_directories(ministudio_gltf_exercise PRIVATE src)
+    target_include_directories(ministudio_gltf_exercise SYSTEM PRIVATE third_party/tinygltf)
+    target_link_libraries(ministudio_gltf_exercise PRIVATE glm::glm)
+    target_compile_features(ministudio_gltf_exercise PRIVATE cxx_std_20)
+    set_target_properties(ministudio_gltf_exercise PROPERTIES CXX_EXTENSIONS OFF)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+        target_compile_options(ministudio_gltf_exercise PRIVATE -Wall -Wextra -Wpedantic)
+        if(MINISTUDIO_ENABLE_SANITIZERS)
+            target_compile_options(ministudio_gltf_exercise PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+            target_link_options(ministudio_gltf_exercise PRIVATE -fsanitize=address,undefined)
+        endif()
+    endif()
+    if(MSVC)
+        target_compile_options(ministudio_gltf_exercise PRIVATE /utf-8)
+    endif()
+    add_test(NAME ministudio.gltf.primitive COMMAND ministudio_gltf_exercise)
+    set_tests_properties(ministudio.gltf.primitive PROPERTIES
+        WORKING_DIRECTORY "$<TARGET_FILE_DIR:ministudio_gltf_exercise>"
+        TIMEOUT 30
+        LABELS "cpu;gltf"
+    )
+endif()

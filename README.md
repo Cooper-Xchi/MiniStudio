@@ -2,7 +2,7 @@
 
 现代 C++ 与实时渲染学习项目。当前使用 OpenGL 4.1、GLFW、GLM；先完成第一套桌面渲染器，再按课程进入移动端和其他后端。
 
-- 版本：v0.2.0。第 1～62 课已完成；下一课是第 63 课（B10），从 accessor 读取一个 primitive。
+- 版本：v0.2.0。第 1～63 课已完成；第 63 课（B10）在指导下实现并由助手收尾，macOS 验收通过。已支持将受限 glTF 单 primitive 读取为 CPU MeshData；下一课 B11 接入显示。
 - 学什么、下一课做什么：只看 [逐课任务清单](docs/lessons.md)。
 - AI 协作规则：[AGENTS.md](AGENTS.md)。详细旧记录保留在 Git 历史，不再维护多份交接、复盘或路线文档。
 
@@ -48,7 +48,25 @@ cmake --build build/windows-debug --parallel
 - Clang/GNU 下可在独立 Debug 目录增加 `-DMINISTUDIO_ENABLE_SANITIZERS=ON`，启用 ASan/UBSan；当前项目不在 MSVC 下启用这组选项。
 - 资源会复制到可执行文件目录；从仓库根目录或可执行文件目录运行。Debug 保留逐帧 OpenGL 错误检查，Release 移除该检查。
 
+### 第 63 课 CPU glTF 检查
+
+在各平台已有的独立构建目录上增加 `-DMINISTUDIO_BUILD_GLTF_EXERCISE=ON`，会生成仅链接 GLM 和 C++ 运行库的 `ministudio_gltf_exercise`。它不创建窗口，不需要 OpenGL Context；项目整体配置仍保留原有图形依赖。macOS 从仓库根目录执行：
+
+```bash
+cmake -S . -B build/macos-debug -DMINISTUDIO_BUILD_GLTF_EXERCISE=ON
+cmake --build build/macos-debug --target ministudio_gltf_exercise --parallel
+./build/macos-debug/ministudio_gltf_exercise
+```
+
+Windows 在自己的 `build/windows-debug` 配置中增加同一选项，构建同名 target，运行对应 `.exe`。两个 accessor 读取函数位于 `src/mesh/GltfMeshLoader.cpp`。程序接受可选的样例目录参数，默认使用 `assets/models/lesson63`；11 个样例覆盖紧密／交错布局、两种合法的 2 字节索引偏移，以及类型、范围、稀疏、非法／保留索引和缺失文件。有效模型得到 3 个顶点、3 个索引，失败保留调用方旧值。
+
+启用该选项也会注册 `ministudio.gltf.primitive`，可运行 `ctest --test-dir build/macos-debug -L cpu --output-on-failure`。CPU 检查可独立于 `MINISTUDIO_BUILD_TESTS` 启用，后者仍只控制需要图形环境的 OpenGL 回归。
+
+经学习者确认，本课固定 tinygltf v2.9.7 的 C++ API，随库保存 `json.hpp`，关闭图片读写；来源、完整 commit 与 SHA-256 见 `third_party/tinygltf/source.json`，许可证保留在原文件中。当前上游主线已转为 v3 C API，旧 C++ 实现被弃用，不能沿用第 62 课对其维护状态的判断。更新时需重新评估 API、记录版本与校验值，并分别验证 macOS 和 Windows。
+
 ## 当前验证状态
+
+2026-10-08 第 63 课验收通过（指导下实现、助手收尾）：学习者完成 FLOAT/VEC3 与 UNSIGNED_SHORT/SCALAR 读取、下标／范围检查及失败回退；助手完成依赖、加载外壳、样例与测试，并按请求整理错误提示、移除调试输出、补充边界回归和接入 CTest。公司 macOS arm64 Debug 配置与完整构建无警告，OpenGL 与 glTF CTest 2/2 通过；独立 `build/macos-gltf-sanitize` 中 CPU CTest 1/1、内部 11 个样例全部通过，ASan/UBSan 无报错。索引字节大小与整数加宽的理解经纠错讲解后确认，未做无提示完整复述；导入结果尚未接入渲染。Windows 尚未验证本课改动。
 
 2026-09-10 的 v0.2：家用 Windows MSVC x64 全新 Debug、Release 和默认关闭测试的构建均通过，未输出编译器警告；Debug/Release CTest 均 1/1 通过。覆盖相机数值、资源移动/释放、透明排序颜色与深度、状态恢复、resize 和关闭标志；故意反转排序后测试能检出错误，恢复后通过。Alpha 裁剪已从当前默认场景替换为半透明混合，回归程序仍用独立的受控 Shader 验证 alpha 为零与 `discard` 的颜色和深度差异。
 

@@ -1,0 +1,19 @@
+{
+  "upstream": "https://github.com/syoyo/tinygltf",
+  "tag": "v2.9.7",
+  "commit": "488a70a3df62a4df1a736e9e56fb8836580c4888",
+  "license": "MIT; tinygltf LICENSE and bundled json.hpp license text retained",
+  "status": "Pinned legacy C++ API for lesson 63; upstream v3 uses a C API and has deprecated the C++ implementation",
+  "bundled_json_version": "3.10.4",
+  "sha256": {
+    "tiny_gltf.h": "b63dc0ae9e4b1ae5af288bb2b9b69ba06bc65bf9fd880795a7ba3cabe96df072",
+    "json.hpp": "c9ac7589260f36ea7016d4d51a6c95809803298c7caec9f55830a0214c5f9140",
+    "LICENSE": "2ae461f8c8b78ed77c14e9c3b7e353ba277e44cb3dbfb5a6d380f76f2ae081a2"
+  },
+  "configuration": [
+    "TINYGLTF_IMPLEMENTATION in GltfMeshLoader.cpp only",
+    "TINYGLTF_NO_STB_IMAGE",
+    "TINYGLTF_NO_STB_IMAGE_WRITE",
+    "TINYGLTF_NO_EXTERNAL_IMAGE"
+  ]
+}
